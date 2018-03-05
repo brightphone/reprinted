@@ -1,12 +1,15 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: AFNetworking 概述（一）
 date: 2016-03-21 10:57:28.000000000 +08:00
-permalink: /:title
-tags: iOS AFNetworking
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
-
 
 
 ![afnetworking-logo](http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-21-afnetworking-logo.png)
@@ -153,3 +156,5 @@ AFNetworking 实际上只是对 `NSURLSession` 高度地封装, 提供一些简�
 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze)
 
 Blog: [Draveness](http://draveness.me)
+
+

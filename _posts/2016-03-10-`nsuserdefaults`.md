@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: NSUserDefaults 的默认值
 date: 2016-03-10 17:39:45.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 `NSUserDefaults` 提供了一个与默认设置交互的接口. 这些默认设置允许一个 App 为每一个单独的用户的设置提供定制化的行为.
@@ -62,3 +67,5 @@ if ([[NSUserDefaults standUserDefaults] objectForKey:isLatestVersion] == nil) {
 <iframe src="http://ghbtns.com/github-btn.html?user=draveness&type=follow&size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowTransparency="true"></iframe>
 
 Blog: [draveness.me](http://draveness.me)
+
+

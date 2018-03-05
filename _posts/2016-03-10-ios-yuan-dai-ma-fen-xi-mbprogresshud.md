@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: iOS 源代码分析 ---- MBProgressHUD
 date: 2016-03-10 17:40:48.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 [MBProgressHUD]() 是一个为 iOS app 添加透明浮层 HUD 的第三方框架. 作为一个 UI 层面的框架, 它的实现很简单, 但是其中也有一些非常有意思的代码.
@@ -353,3 +358,5 @@ self.showStarted = [NSDate date]
 <iframe src="http://ghbtns.com/github-btn.html?user=draveness&type=follow&size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowTransparency="true"></iframe>
 
 Blog: [draveness.me](http://draveness.me)
+
+

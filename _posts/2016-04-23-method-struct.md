@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: 深入解析 ObjC 中方法的结构
 date: 2016-04-23 13:26:37.000000000 +08:00
-permalink: /:title
-tags: iOS runtime
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 Blog: [Draveness](http://draveness.me)

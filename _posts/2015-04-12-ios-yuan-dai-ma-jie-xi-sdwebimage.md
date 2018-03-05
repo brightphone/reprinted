@@ -1,12 +1,15 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: iOS 源代码分析----SDWebImage
 date: 2015-04-12 13:44:09.000000000 +08:00
-permalink: /:title
-tags: iOS SDWebImage
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
-
 
 世人都说阅读源代码对于功力的提升是十分显著的, 但是很多的著名开源框架源代码动辄上万行, 复杂度实在太高, 在暑假的时候我曾经试图读一些开源框架的源代码, 比如说 `AFNetworking`, `SDWebImage`, `ReactiveCocoa` 但是由于当时比较浮躁, 实在没法静下心来看, 而且有一些急功近利, 所以面对宝藏实在无力挖掘.
 
@@ -588,3 +591,5 @@ SDWebImage 中为 UIView 提供了一个分类叫做 WebCache, 这个分类中�
 只要有足够的耐心, 阅读这个开源项目的源代码也是没有太多困难的.
 
 `SDWebImage` 的探索到目前为止差不多结束了, 对于这个框架的学习以及解析确实使我受益匪浅, 我也将在之后继续阅读其它的著名框架的源代码. 在这篇博客之中难免会有错误, 希望各位能够指正~
+
+

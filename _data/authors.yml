@@ -1,8 +1,7 @@
-Brightness:
-  username: Brightness
-  name: Brightness
-  location: NanJing, China
-  url_full: https://brightphone/github.io/blogs/
-  url: brightphone/github.io/blogs/
-  bio: Go Forward.
-  assets: assets/images/logo.jpg
+Draveness:
+  username: Draveness
+  name: Draveness
+  location: Beijing, China
+  url_full: https://draveness.me/index
+  url: draveness.me/index
+  assets: assets/images/draven.png

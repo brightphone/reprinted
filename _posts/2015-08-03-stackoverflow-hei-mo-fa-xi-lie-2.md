@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: StackOverflow 黑魔法系列 <2>
 date: 2015-08-03 11:08:19.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 距离上一次的 StackOverflow 黑魔法系列的 post 已经很久了, 自己也很久没有写技术博客了, 虽然这次带来的又是一篇水文. 但是好久没有写了, 写写水文也好试试手.
 
@@ -117,3 +122,5 @@ UIEventTypeRemoteControl,
 如果有其他的视图变成了第一响应者, 那么在其他视图响应结束后, 恢复当前视图的第一响应者身份.
 
 链接: [How do I detect when someone shakes an iPhone?](http://stackoverflow.com/questions/150446/how-do-i-detect-when-someone-shakes-an-iphone)
+
+

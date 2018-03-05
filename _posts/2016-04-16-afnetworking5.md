@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: 验证 HTTPS 请求的证书（五）
 date: 2016-04-16 12:40:52.000000000 +08:00
-permalink: /:title
-tags: iOS AFNetworking
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 
@@ -366,3 +371,5 @@ if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthent
 <iframe src="http://ghbtns.com/github-btn.html?user=draveness&type=follow&size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowTransparency="true"></iframe>
 
 Blog: [Draveness](http://draveness.me)
+
+

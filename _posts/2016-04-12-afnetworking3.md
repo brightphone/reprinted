@@ -1,12 +1,15 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: 处理请求和响应 AFURLSerialization（三）
 date: 2016-04-12 22:01:09.000000000 +08:00
-permalink: /:title
-tags: iOS AFNetworking
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
-
 
 
 Blog: [Draveness](http://draveness.me)
@@ -46,7 +49,7 @@ Blog: [Draveness](http://draveness.me)
 
 在具体了解模块中类的实现之前，先看一下这个小模块的结构：
 
-![AFURLResponseSerialization](media/14598507516362/AFURLResponseSerialization.png)￼
+![AFURLResponseSerialization](media/14598507516362/AFURLResponseSerialization.png)
 
 + 模块中的所有类都遵循 `AFURLResponseSerialization` 协议
 + `AFHTTPResponseSerializer` 为模块中最终要的根类
@@ -690,3 +693,5 @@ for (NSString *keyPath in AFHTTPRequestSerializerObservedKeyPaths()) {
 <iframe src="http://ghbtns.com/github-btn.html?user=draveness&type=follow&size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowTransparency="true"></iframe>
 
 Blog: [Draveness](http://draveness.me)
+
+

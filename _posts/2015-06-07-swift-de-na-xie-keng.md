@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: MagicMove 在 iOS 中的实现
 date: 2015-06-07 21:33:57.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 最近由于去武汉参加 hackday, 十多天没有更新博客了. 今天就来说一说, 我在 hackday 上使用 swift 开发 App 遇到的哪些问题吧.
@@ -50,3 +55,5 @@ func copyWithZone(zone: NSZone) -> AnyObject {
 ~~~
 
 这就是我所实现的 `copyWithZone` 方法, 你可以视情况实现你的 `copyWithZone` 方法.
+
+

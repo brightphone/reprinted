@@ -1,10 +1,14 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: Swift 类构造器的使用
 date: 2015-04-22 20:21:15.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
 
 
@@ -404,3 +408,5 @@ Swift 中构造器需要遵循的规则还是很多的, 总结一下, 有以下�
 
 
 Swift 中的构造器 `init` 中坑还是很多的, 而目前我也终于把这个构造器这个坑填上了, 最终决定还是要重新**详细**看一遍 Swift 的[官方文档](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/index.html#//apple_ref/doc/uid/TP40014097-CH3-ID0), 而整篇博客和问题的解决都是基于官方文档的. 使用下来 Swift 比 Objective-C 语言使用起来的注意事项和坑更多, 也有很多的黑魔法, 等待着我们去开发和探索.
+
+

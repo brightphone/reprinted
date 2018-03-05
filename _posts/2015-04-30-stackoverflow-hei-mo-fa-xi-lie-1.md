@@ -1,10 +1,16 @@
 ---
 layout: post
+cover: 'assets/images/cover2.jpg'
+navigation: True
 toc: true
 title: StackOverflow 黑魔法系列 <1>
 date: 2015-04-30 21:52:25.000000000 +08:00
 permalink: /:title
-tags: iOS
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
 
 
@@ -203,3 +209,5 @@ tableView.allowsSelection = NO;
 ~~~
 
 链接: [How can I disable the UITableView selection highlighting?](http://stackoverflow.com/questions/190908/how-can-i-disable-the-uitableview-selection-highlighting)
+
+

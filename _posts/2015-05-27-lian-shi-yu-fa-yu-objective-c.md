@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: 链式语法与 Objective-C
 date: 2015-05-27 15:44:22.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 作为一个 Objective-C 语言的使用者已经有近两年的时间了. 在逐渐熟悉手中的工具, Objective-C 语言的同时, 我也开始从更高的角度来观察这一门语言.
@@ -159,3 +164,5 @@ UILabel.make
 ## 总结
 
 这就是我对链式语法在 Objective-C 中使用的总结和体会. 虽然并没有得出什么重要的结论, 不过我还是相信**简洁与优雅的方法最终总会被开发者采纳**.
+
+

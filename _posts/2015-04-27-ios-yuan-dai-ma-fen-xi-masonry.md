@@ -1,10 +1,16 @@
 ---
 layout: post
+cover: 'assets/images/cover2.jpg'
+navigation: True
 toc: true
 title: iOS 源代码分析----Masonry
 date: 2015-04-27 16:40:22.000000000 +08:00
 permalink: /:title
-tags: iOS Masonry
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
 
 
@@ -474,3 +480,5 @@ Masonry 与其它的第三方开源框架一样选择了使用分类的方式为
 虽然 Masonry 这个框架中的代码并不是非常的多, 只有 1,2 万行的代码, 但是感觉这个项目阅读起来十分的困难, 没有 SDWebImage 清晰, 因为代码中类的属性非常的多, 而且有很多相似的属性会干扰我们对这个项目的阅读, 整个框架运用了大量的 block 语法进行回调.
 
 虽然代码十分整洁不过我觉得却降低了可读性, 但是还是那句话, 把简洁留给别人复杂留给自己, 只要为开发者提供简洁的接口就可以了.
+
+

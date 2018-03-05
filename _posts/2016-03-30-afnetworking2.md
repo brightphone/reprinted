@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: AFNetworking 的核心 AFURLSessionManager（二）
 date: 2016-03-30 09:50:43.000000000 +08:00
-permalink: /:title
-tags: iOS AFNetworking
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 Blog: [Draveness](http://draveness.me)
@@ -581,3 +586,5 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze)
 
 Blog: [Draveness](http://draveness.me)
+
+

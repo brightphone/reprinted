@@ -1,11 +1,18 @@
 ---
 layout: post
+cover: 'assets/images/cover2.jpg'
+navigation: True
 toc: true
 title: DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式
 date: 2015-05-09 15:13:35.000000000 +08:00
 permalink: /:title
 tags: iOS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 **最新: [成熟的夜间模式解决方案](http://draveness.me/night)**
@@ -169,3 +176,5 @@ DKNightVersion 为大多数常用的 `color` 比如说: `backgroundColor` `tintC
 [DKNightVersion](https://github.com/Draveness/DKNightVersion) 的实现并不复杂. 它不仅使用了 `erb` 和 Ruby 脚本来减少了大量的工作量, 而且使用了 `objc/runtime` 的特性来魔改 UIKit 组件, 达到为 iOS 应用添加夜间模式的效果.
 
 <iframe src="https://ghbtns.com/github-btn.html?user=Draveness&repo=DKNightVersion&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+
+

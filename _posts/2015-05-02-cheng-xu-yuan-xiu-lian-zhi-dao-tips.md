@@ -1,9 +1,16 @@
 ---
 layout: post
+cover: 'assets/images/cover2.jpg'
+navigation: True
 toc: true
 title: 程序员修炼之道 Tips
 date: 2015-05-02 15:42:21.000000000 +08:00
 permalink: /:title
+tags: other
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
 
 
@@ -430,3 +437,5 @@ permalink: /:title
 > Sign Your Work
 
 > 在你的作品上签名
+
+

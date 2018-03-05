@@ -1,10 +1,14 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: iOS 为 UIKit 属性增加钩子方法
 date: 2015-04-15 13:34:03.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
 
 最近在做一个用于实现夜间模式的开源框架, 需监听 UIKit 中的属性, 而这个监听的通知者就是 UIKit **实例**本身, 当我最开始想要做的时候, 我感觉这个东西实在太简单了, 不过之后...
@@ -87,3 +91,5 @@ dispatch_once(&onceToken, ^{
 ##总结
 
 这次的 post 主要是在**分类**中为已有的**属性或者方法**添加钩子, 关键问题还是方法调剂的时间, 难度其实并不是很高. 不过实现感觉还是很有意思的啊 :)
+
+

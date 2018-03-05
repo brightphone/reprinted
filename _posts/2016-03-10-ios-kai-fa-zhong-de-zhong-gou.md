@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: iOS 开发中的重构
 date: 2016-03-10 17:42:11.000000000 +08:00
-permalink: /:title
-tags: iOS
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 `DRY` 的原则, 使得项目难以维护.
@@ -52,3 +57,5 @@ tags: iOS
 <iframe src="http://ghbtns.com/github-btn.html?user=draveness&type=follow&size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowTransparency="true"></iframe>
 
 Blog: [draveness.me](http://draveness.me)
+
+

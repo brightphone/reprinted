@@ -1,10 +1,16 @@
 ---
 layout: post
+cover: 'assets/images/cover2.jpg'
+navigation: True
 toc: true
 title: 使用代码为 Xcode 工程添加文件
 date: 2015-05-06 20:48:25.000000000 +08:00
 permalink: /:title
 tags: iOS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
 
 
@@ -257,3 +263,5 @@ project.save
 ~~~
 
 其实到现在为止, 我感觉到使用代码向 Xcodeproj 中添加文件是很简单的事情, 那是因为, 首先有 Xcodeproj 这样文档糟糕但是功能还是比较齐全的第三方框架, 而且这是我在几天不停地阅读源代码, 不停被坑, 一点一点尝试才摸索出来的结果, 都是泪啊...不想多说了...不过最后把这个问题解决之后, ~~自我感觉还是蛮好的~~还是挺高兴的. 嗯, 就这样.
+
+

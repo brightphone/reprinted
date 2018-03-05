@@ -1,12 +1,17 @@
 ---
 layout: post
+cover: 'assets/images/cover2.jpg'
+navigation: True
 toc: true
 title: 关于一些 iOS 面试问题的解答
 date: 2015-04-26 21:59:29.000000000 +08:00
 permalink: /:title
-tags: iOS
+tags: iOS OSS
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
-
 
 这篇 post 主要是对知乎上 [iOS程序员的问题列表](http://www.zhihu.com/question/19604641) 的回答, 也算是对自己已有的知识进行整理.
 
@@ -261,3 +266,5 @@ POST 请求比 GET 请求更加的安全, 因为你不会把信息添加到 URL 
 * [What is the difference between POST and GET?](http://stackoverflow.com/questions/3477333/what-is-the-difference-between-post-and-get)
 * [When do you use POST and when do you use GET?](http://stackoverflow.com/questions/46585/when-do-you-use-post-and-when-do-you-use-get)
 * [Objective-C高级编程-iOS与OS-X多线程和内存管理](http://www.amazon.cn/Objective-C%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B-iOS%E4%B8%8EOS-X%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%92%8C%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E5%9D%82%E6%9C%AC%E4%B8%80%E6%A0%91/dp/B00DE60G3S/ref=sr_1_1?ie=UTF8&qid=1430229077&sr=8-1&keywords=objective-c%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B+ios%E4%B8%8Eos+x%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%92%8C%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86)
+
+

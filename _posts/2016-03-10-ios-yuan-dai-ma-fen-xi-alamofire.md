@@ -1,11 +1,16 @@
 ---
 layout: post
-toc: true
+cover: 'assets/images/cover2.jpg'
+navigation: True
 title: iOS 源代码分析 ---- Alamofire
 date: 2016-03-10 17:41:36.000000000 +08:00
-permalink: /:title
-tags: iOS Alamofire
+tags: iOS OSS Swift
+subclass: 'post tag-fiction'
+logo: 'assets/images/ghost.png'
+author: Draveness
+categories: Draveness
 ---
+
 
 
 
@@ -396,3 +401,5 @@ extension NSURLRequest: URLStringConvertible {
 <iframe src="http://ghbtns.com/github-btn.html?user=draveness&type=follow&size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowTransparency="true"></iframe>
 
 Blog: [draveness.me](http://draveness.me)
+
+
