@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- Page Meta -->
-    <title>Brightness</title>
+    <title></title>
     <meta name="description" content="" />
 
     <!-- Mobile Meta -->
@@ -26,31 +26,31 @@
     <style>.hljs { background: none; }</style>
 
     <!-- Ghost outputs important style and meta data with this tag -->
-        <link rel="canonical" href="/reprinted//" />
+        <link rel="canonical" href="/reprinted//tag/others/" />
     <meta name="referrer" content="origin" />
     <link rel="next" href="/reprinted/page2/" />
 
     <meta property="og:site_name" content="" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Brightness" />
+    <meta property="og:title" content="" />
     <meta property="og:description" content="" />
-    <meta property="og:url" content="/reprinted//" />
-    <meta property="og:image" content="/reprinted/assets/images/cover1.jpg" />
+    <meta property="og:url" content="/reprinted//tag/others/" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Brightness" />
+    <meta name="twitter:title" content="" />
     <meta name="twitter:description" content="" />
-    <meta name="twitter:url" content="/reprinted//" />
-    <meta name="twitter:image:src" content="/reprinted/assets/images/cover1.jpg" />
+    <meta name="twitter:url" content="/reprinted//tag/others/" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
 
     <script type="application/ld+json">
 {
     "@context": "http://schema.org",
     "@type": "Website",
     "publisher": "",
-    "name": "Brightness",
-    "url": "/reprinted//",
-    "image": "/reprinted/assets/images/cover1.jpg",
+    "name": "",
+    "url": "/reprinted//tag/others/",
+    "image": "/reprinted/assets/images/cover2.jpg",
     "description": ""
 }
     </script>
@@ -60,7 +60,7 @@
 
 
 </head>
-<body class="home-template nav-closed">
+<body class="tag-template nav-closed">
 
     <!-- The blog navigation links -->
     <div class="nav">
@@ -69,12 +69,12 @@
         <span class="hidden">Close</span>
     </a>
     <ul>
-        <li class="nav-home  nav-current" role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
         <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
         <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
         <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
         <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
-        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+        <li class="nav-others  nav-current" role="presentation"><a href="/reprinted/tag/others">others</a></li>
     </ul>
     <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
 </div>
@@ -84,12 +84,14 @@
     <div class="site-wrapper">
 
         <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
-        <!-- < default -->
+        <!-- dynamically overriding backgrounds for tags as well as descriptions -->
+
+
+<!-- default -->
 <!-- The tag above means - insert everything in this file into the [body] of the default.hbs template -->
 
-<!-- The big featured header  -->
-<header class="main-header "
-        style="background-image: url(/reprinted/assets/images/cover1.jpg) ">
+<!-- If we have a tag cover, display that - else blog cover - else nothing -->
+<header class="main-header tag-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
     <nav class="main-nav overlay clearfix">
         <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
         
@@ -98,11 +100,14 @@
     </nav>
     <div class="vertical">
         <div class="main-header-content inner">
-            <h1 class="page-title"></h1>
-            <h2 class="page-description"></h2>
+            <h1 class="page-title">others</h1>
+            <h2 class="page-description">
+            
+			    A 1-post collection
+            
+            </h2>
         </div>
     </div>
-    <a class="scroll-down icon-arrow-left" href="#content" data-offset="-45"><span class="hidden">Scroll Down</span></a>
 </header>
 
 <!-- The main content area on the homepage -->
@@ -152,37 +157,6 @@
                 
             
             <time class="post-date" datetime="2018-03-05">05 Mar 2018</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/looking-glass-house">Looking-Glass house</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>One thing was certain, that the white kitten had had nothing to do with it:— it was the black kitten’s fault entirely. For the white kitten... <a class="read-more" href="/reprinted/looking-glass-house">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/logo.jpg" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Brightness'>Brightness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/fiction'>fiction</a>
-                    
-                
-            
-            <time class="post-date" datetime="1871-03-18">18 Mar 1871</time>
         </footer>
     </article>
     
