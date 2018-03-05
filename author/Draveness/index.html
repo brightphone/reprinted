@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- Page Meta -->
-    <title>Brightness</title>
+    <title>Author</title>
     <meta name="description" content="" />
 
     <!-- Mobile Meta -->
@@ -26,31 +26,31 @@
     <style>.hljs { background: none; }</style>
 
     <!-- Ghost outputs important style and meta data with this tag -->
-        <link rel="canonical" href="/reprinted//" />
+        <link rel="canonical" href="/reprinted//author/Draveness/" />
     <meta name="referrer" content="origin" />
     <link rel="next" href="/reprinted/page2/" />
 
     <meta property="og:site_name" content="" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Brightness" />
+    <meta property="og:title" content="Author" />
     <meta property="og:description" content="" />
-    <meta property="og:url" content="/reprinted//" />
-    <meta property="og:image" content="/reprinted/assets/images/cover1.jpg" />
+    <meta property="og:url" content="/reprinted//author/Draveness/" />
+    <meta property="og:image" content="/reprinted/assets/images/cover4.jpg" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Brightness" />
+    <meta name="twitter:title" content="Author" />
     <meta name="twitter:description" content="" />
-    <meta name="twitter:url" content="/reprinted//" />
-    <meta name="twitter:image:src" content="/reprinted/assets/images/cover1.jpg" />
+    <meta name="twitter:url" content="/reprinted//author/Draveness/" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover4.jpg" />
 
     <script type="application/ld+json">
 {
     "@context": "http://schema.org",
     "@type": "Website",
     "publisher": "",
-    "name": "Brightness",
-    "url": "/reprinted//",
-    "image": "/reprinted/assets/images/cover1.jpg",
+    "name": "Author",
+    "url": "/reprinted//author/Draveness/",
+    "image": "/reprinted/assets/images/cover4.jpg",
     "description": ""
 }
     </script>
@@ -60,7 +60,7 @@
 
 
 </head>
-<body class="home-template nav-closed">
+<body class="author-template nav-closed">
 
     <!-- The blog navigation links -->
     <div class="nav">
@@ -69,7 +69,7 @@
         <span class="hidden">Close</span>
     </a>
     <ul>
-        <li class="nav-home  nav-current" role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
         <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
         <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
         <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
@@ -84,31 +84,47 @@
     <div class="site-wrapper">
 
         <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
-        <!-- < default -->
+        <!-- < default}} -->
 <!-- The tag above means - insert everything in this file into the [body] of the default.hbs template -->
 
-<!-- The big featured header  -->
-<header class="main-header "
-        style="background-image: url(/reprinted/assets/images/cover1.jpg) ">
-    <nav class="main-nav overlay clearfix">
-        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+<!-- The big featured header -->
+
+<!-- Everything inside the #author tags pulls data from the author -->
+<!-- #author  -->
+    <header class="main-header author-head " style="background-image: url(/reprinted/assets/images/cover4.jpg) ">
+        <nav class="main-nav overlay clearfix">
+            <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+            
+                <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+            
+        </nav>
+    </header>
+
+    <section class="author-profile inner">
         
-            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+            
+                
+                <figure class="author-image">
+                    <div class="img" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></div>
+                </figure>
+                
+                <h1 class="author-title">Draveness</h1>
+                
+                <div class="author-meta">
+                    <span class="author-location icon-location">Beijing, China</span>
+                    <span class="author-link icon-link"><a href="https://draveness.me/index">draveness.me/index</a></span>
+                    <!-- <span class="author-stats"><i class="icon-stats"></i> [[plural ../pagination.total empty='No posts' singular='% post' plural='% posts']]</span> -->
+                    <span class="author-stats"><i class="icon-stats"></i>27 posts</span>
+                </div>
+            
         
-    </nav>
-    <div class="vertical">
-        <div class="main-header-content inner">
-            <h1 class="page-title"></h1>
-            <h2 class="page-description"></h2>
-        </div>
-    </div>
-    <a class="scroll-down icon-arrow-left" href="#content" data-offset="-45"><span class="hidden">Scroll Down</span></a>
-</header>
+    </section>
+<!-- /author -->
 
 <!-- The main content area on the homepage -->
 <main id="content" class="content" role="main">
 
-    <!-- The tag below includes the post loop - partials/loop.hbs -->
+    <!-- The tag below includes the post loop - partials/loop.hbs  -->
         <!-- Previous/next page links - only displayed on page 2+ -->
     <div class="extra-pagination inner">
         
@@ -116,7 +132,7 @@
     
     <span class="page-number"> Page 1 of 3 </span>
      
-        <a class="older-posts" href="/reprinted/page2/" title="Next Page">Next Page &raquo;</a>
+        <a class="older-posts" href="/reprinted/author//page2/" title="Next Page">Older Posts &raquo;</a>
      
 </nav>
         
@@ -489,7 +505,7 @@
     
     <span class="page-number"> Page 1 of 3 </span>
      
-        <a class="older-posts" href="/reprinted/page2/" title="Next Page">Next Page &raquo;</a>
+        <a class="older-posts" href="/reprinted/author//page2/" title="Next Page">Older Posts &raquo;</a>
      
 </nav>
     

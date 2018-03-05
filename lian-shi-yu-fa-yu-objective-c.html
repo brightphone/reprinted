@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>链式语法与 Objective-C</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//lian-shi-yu-fa-yu-objective-c" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="链式语法与 Objective-C" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//lian-shi-yu-fa-yu-objective-c" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="链式语法与 Objective-C" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//lian-shi-yu-fa-yu-objective-c" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "链式语法与 Objective-C",
+    "url": "/reprinted//lian-shi-yu-fa-yu-objective-c",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c  nav-current" role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">链式语法与 Objective-C</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2015-05-27">27 May 2015</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>作为一个 Objective-C 语言的使用者已经有近两年的时间了. 在逐渐熟悉手中的工具, Objective-C 语言的同时, 我也开始从更高的角度来观察这一门语言.</p>
+
+<p>虽然至今我也不敢说我精通 Objective-C 和 Cocoa Touch, 但是我对它们也有了一些自己的见解.</p>
+
+<h2 id="objective-c">Objective-C</h2>
+
+<p>Objective-C 语言的语法使得我感觉到这门语言是如此的<strong>优雅</strong>. 在别人看来啰嗦的 label, 其实更是为了增加语言的可读性, 使 Objective-C 更像一门自然语言而做出的努力.</p>
+
+<p>大多数的方法都不需要去查看文档, 只凭借方法的签名就能获得这个方法的作用, 这点使我们 iOS 开发者在编码的过程中更容易的达到<strong>代码即注释</strong>.</p>
+
+<pre><code class="language-objectivec">- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre>
+
+<p>然而凡事都是有双面性, Objective-C 中一些重要框架的使用, 往往让人诟病.</p>
+
+<h2 id="core-data">Core Data</h2>
+
+<p>作为一名 iOS 开发者就会不可避免的接触到 Core Data 这个框架, 但是它的使用却一直被开发者吐槽, 主要是它的使用实在太过于复杂, 麻烦.</p>
+
+<p>但是你有时却不得不使用它.</p>
+
+<p>当然, 我在我所开发的应用中并没有过多的使用 Core Data, 而是使用了 levelDB 来代替, 这种 Key-Value 存储的数据库更适合于大部分的应用.</p>
+
+<h2 id="autolayout">AutoLayout</h2>
+
+<p>在 AutoLayout 刚刚出现的时候, 许多的开发者都觉得 AutoLayout 必将快速将原来 iOS 开发中使用 frame 布局转变到使用 constraint 布局.</p>
+
+<p>但是知道真正使用的时候才发现原来 AutoLayout 的使用方法是如此的繁琐.</p>
+
+<pre><code class="language-objectivec">[superview addConstraints:@[
+
+    //view1 constraints
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeTop
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeTop
+                                multiplier:1.0
+                                  constant:padding.top],
+
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeLeft
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeLeft
+                                multiplier:1.0
+                                  constant:padding.left],
+
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeBottom
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeBottom
+                                multiplier:1.0
+                                  constant:-padding.bottom],
+
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeRight
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeRight
+                                multiplier:1
+                                  constant:-padding.right],
+
+ ]];
+</code></pre>
+
+<p>使用这种方式来构建布局简直就是一种折磨, 这也是为什么在 AutoLayout 刚刚出现的时候, 并没有什么人去使用它. 反而, 真正使 AutoLayout 被开发者广泛使用的是另一个 DSL, 也就是大名鼎鼎的 <a href="https://github.com/SnapKit/Masonry">Masonry</a>.</p>
+
+<p>它使用一种非常非常简洁的方式来实现自动布局.</p>
+
+<pre><code class="language-objectivec">[view1 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(superview.mas_top).with.offset(padding.top); //with is an optional semantic filler
+    make.left.equalTo(superview.mas_left).with.offset(padding.left);
+    make.bottom.equalTo(superview.mas_bottom).with.offset(-padding.bottom);
+    make.right.equalTo(superview.mas_right).with.offset(-padding.right);
+}];
+</code></pre>
+
+<p>其中最关键的一点就是使用了<strong>链式语法</strong>.</p>
+
+<pre><code class="language-objectivec">make.top.equalTo(superview.mas_top).with.offset(padding.top);
+</code></pre>
+
+<h2 id="animation">Animation</h2>
+
+<p>在 Masonry 之后, 也就是前一段时间, 又有开发者为动画实现了同样简洁优雅的链式语法, 也就是 <a href="https://github.com/jhurray/JHChainableAnimations">JHChainableAnimations</a>.</p>
+
+<p>在 JHChainableAnimations 作者的同意下, 我也同样将它移植到了 Swift 上 <a href="https://github.com/Draveness/DKChainableAnimationKit">DKChainableAnimationKit</a>.</p>
+
+<p>这是使用 Objective-C 原有的方法实现的动画, 虽然它非常的易读, 并且符合 Objective-C 一贯的风格.</p>
+
+<pre><code class="language-objectivec">[UIView animateWithDuration:1.0
+                      delay:0.0
+     usingSpringWithDamping:0.8
+      initialSpringVelocity:1.0
+                    options:0 animations:^{
+                       CGPoint newPosition = self.myView.frame.origin;
+                       newPosition.x += 50;
+                       self.myView.frame.origin = newPosition;
+} completion:^(BOOL finished) {
+   [UIView animateWithDuration:0.5
+                         delay:0.0
+                       options:UIViewAnimationOptionCurveEaseIn
+                    animations:^{
+       self.myView.backgroundColor = [UIColor purpleColor];
+   } completion:nil];
+}];
+</code></pre>
+
+<p>但是这段代码与下面的<strong>链式语法</strong>比起来就显得冗长与罗嗦了.</p>
+
+<pre><code class="language-objectivec">self.myView.moveX(50).spring.thenAfter(1.0).makeBackground([UIColor purpleColor]).easeIn.animate(0.5);
+</code></pre>
+
+<p>虽然有人说, 这是<strong>对属性的误用</strong>, 不过在我看来<strong>与它带来的便捷, 优雅与易读相比, 属性的误用又算什么呢</strong>?</p>
+
+<p>链式的语法能够极大的改变原有 Objective-C Swift 的使用, 而在这两者的启发下, 我也开始了各种各样的尝试.</p>
+
+<h2 id="uikit">UIKit</h2>
+
+<p>首先, 我在 UIKit 中进行了尝试, 希望能对原有的语法进行改造. 使用链式语法取代原有的语法. 这也就有了 <a href="https://github.com/Draveness/ChainableKit">ChainableKit</a> 使用链式语法配置 UIKit 组件的第三方库.</p>
+
+<pre><code class="language-objectivec">UIColor *red = [UIColor redColor];
+UILabel.make
+    .backgroundColor(red)
+    .textAlignment(NSTextAlignmentCenter)
+</code></pre>
+
+<p>但是, 当这一框架刚刚诞生并且我尝试写出之后, 我却感到有些怪异, 这好像并不符合我们的直觉, 因为这些属性并没有顺序上的关系. 但是却不失为一种尝试.</p>
+
+<p>不过, 它也确实能够极大的减少代码的行数, <strong>将配置 UILabel 的全部代码聚合在一起</strong>.</p>
+
+<h2 id="attributedstring">AttributedString</h2>
+
+<p>由于 <a href="https://github.com/fazibear/colorize">colorize</a> 的启发, 我又在 AttributedString 中尝试使用链式语法来解决创建配置<strong>属性字符串</strong>的问题. <a href="https://github.com/Draveness/Typeset">Typeset</a></p>
+
+<pre><code class="language-objectivec">@"Hello".typeset.match(@"He").red.string;
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p>这就是我对链式语法在 Objective-C 中使用的总结和体会. 虽然并没有得出什么重要的结论, 不过我还是相信<strong>简洁与优雅的方法最终总会被开发者采纳</strong>.</p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=链式语法与 Objective-C&amp;url=lian-shi-yu-fa-yu-objective-c"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=lian-shi-yu-fa-yu-objective-c"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=lian-shi-yu-fa-yu-objective-c"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/swift-de-na-xie-keng">
+            <section class="post">
+                <h2>MagicMove 在 iOS 中的实现</h2>
+                <p>最近由于去武汉参加 hackday, 十多天没有更新博客了. 今天就来说一说, 我在 hackday 上使用 swift 开发 App 遇到的哪些问题吧. ## 神奇移动 我曾经在很多的 App...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi">
+            <section class="post">
+                <h2>DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式</h2>
+                <p>最新: 成熟的夜间模式解决方案 注意: 这篇文章已经过时了, 最新版本的 2.3.0 实现已经更改了. 在很多重阅读或者需要在夜间观看的软件其实都会把夜间模式当做一个 App 所需要具备的特性. 而如何在不改变原有的架构, 甚至不改变原有的代码的基础上, 就能为应用优雅地添加夜间模式就成为一个在很多应用开发的过程中不得不面对的一个问题. 就是以上事情的驱动, 使我思考如何才能使用一种优雅并且简洁的方法解决这一问题....</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

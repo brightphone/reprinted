@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>StackOverflow 黑魔法系列 <1></title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//stackoverflow-hei-mo-fa-xi-lie-1" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="StackOverflow 黑魔法系列 <1>" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//stackoverflow-hei-mo-fa-xi-lie-1" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StackOverflow 黑魔法系列 <1>" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//stackoverflow-hei-mo-fa-xi-lie-1" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "StackOverflow 黑魔法系列 <1>",
+    "url": "/reprinted//stackoverflow-hei-mo-fa-xi-lie-1",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">StackOverflow 黑魔法系列 <1></h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2015-04-30">30 Apr 2015</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>最近看到了很多关于 iOS 开发的黑魔法, 发现最终的链接都是来自与 <a href="http://stackoverflow.com/">stackoverflow</a>, 我感觉需要在 stackoverflow 上这个社区逛一逛, 找一些比较<del>屌~~神奇的黑魔法来分享一下, 也能够</del>多两篇水文~~提高一下自己的水平, 当然我会在每一条”咒语”的后面加上原文的链接.</p>
+
+<h2 id="原子atomic和非原子nonatomic的区别是什么">原子(atomic)和非原子(nonatomic)的区别是什么?</h2>
+
+<pre><code class="language-objectivec">@property(nonatomic, retain) UITextField *userName;
+@property(atomic, retain) UITextField *userName;
+@property(retain) UITextField *userName;
+</code></pre>
+
+<p>这三行代码中的后两行是相同的, 因为 <code class="highlighter-rouge">atomic</code> 是默认的行为. 在现在的 LLVM 的版本中, 使用 <code class="highlighter-rouge">atomic</code> 和 <code class="highlighter-rouge">nonatomic</code> 声明的属性在自动生成 <code class="highlighter-rouge">getter/setter</code> 方法时有所不同.</p>
+
+<p>如果你是用了 <code class="highlighter-rouge">atomic</code>, 那么自动合成的 <code class="highlighter-rouge">getter/setter</code> 方法会确保值会正确从 <code class="highlighter-rouge">getter</code> 中返回, 或者能够正确的被 <code class="highlighter-rouge">setter</code> 所设置, 也就是加锁. 同一时间只能访问(包含 <code class="highlighter-rouge">getter/setter</code>)这个属性一次.</p>
+
+<p>在 <code class="highlighter-rouge">nonatomic</code> 中, 就不会保证同一时间只有一个操作能够访问该属性了, 这也会加快属性的访问速度, 使得 <code class="highlighter-rouge">nonatomic</code> 比 <code class="highlighter-rouge">atomic</code> 快的多.</p>
+
+<p>然而 <code class="highlighter-rouge">atomic</code> 并不能保证线程的安全, 如果在 <code class="highlighter-rouge">线程 A</code> 中调用 getter, 与此同时在 <code class="highlighter-rouge">线程 B</code> 和 <code class="highlighter-rouge">线程 C</code> 中调用 <code class="highlighter-rouge">setter</code>, 那么 <code class="highlighter-rouge">线程 A</code> 中可能获得 B/C 中某一个属性的值. 但是我们并不知道结果. 所以, <code class="highlighter-rouge">atomic</code> 虽然能在一定程度上确保 <code class="highlighter-rouge">getter/setter</code> 方法的正确调用但是并不能 100% 的确保线程的安全.</p>
+
+<p>而确保线程安全和数据完整, 也是我们在使用多线程编程中的主要挑战, 它可以通过别的方法来解决.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/588866/whats-the-difference-between-the-atomic-and-nonatomic-attributes">What’s the difference between the atomic and nonatomic attributes?</a></p>
+
+<hr />
+
+<h2 id="如何使用-iphone-sdk-检查当前网络的状态">如何使用 iPhone SDK 检查当前网络的状态?</h2>
+
+<p>检查当前网络的状态还是有多种方法的.</p>
+
+<p>提问的人首先提了一个非常取巧也非常聪明的办法, 它直接使用了 <code class="highlighter-rouge">stringWithContentsOfURL:</code> 这个方法来访问 Google, 然后查看是否有 response 来判断网络的状态.</p>
+
+<pre><code class="language-objectivec">- (BOOL) connectedToInternet {
+  NSString *URLString = [NSString stringWithContentsOfURL:[NSURL URLWithString:@"http://www.google.com"]];
+  return ( URLString != NULL ) ? YES : NO;
+}
+</code></pre>
+
+<p>但是这段代码在天朝还是行不通啊, 我们并没有 Google 这个网站, 当然可以把 Google 改成随便什么别的网站来解决这个问题, 但是我们还是需要一种更加”靠谱”的解决方案.</p>
+
+<p>第二种方法是使用第三方开源框架 <a href="https://github.com/tonymillion/Reachability">Reachability</a></p>
+
+<p>在实现文件的中添加如下代码, 然后填写你想要测试连通性的 host:</p>
+
+<pre><code class="language-objectivec">// Checks if we have an internet connection or not
+    - (void)testInternetConnection {   
+    // Allocate a reachability object
+    Reachability* reach = [Reachability reachabilityWithHostname:@"www.google.com"];
+
+    // Set the blocks
+    reach.reachableBlock = ^(Reachability*reach) {
+    // keep in mind this is called on a background thread
+    // and if you are updating the UI it needs to happen
+    // on the main thread, like this:
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"REACHABLE!");
+        });
+    };
+
+    reach.unreachableBlock = ^(Reachability*reach) {
+        NSLog(@"UNREACHABLE!");
+    };
+
+    // Start the notifier, which will cause the reachability object to retain itself!
+    [reach startNotifier];
+}
+</code></pre>
+
+<p>链接: <a href="http://stackoverflow.com/questions/1083701/how-to-check-for-an-active-internet-connection-on-iphone-sdk">How to check for an active Internet Connection on iPhone SDK?</a></p>
+
+<hr />
+
+<h2 id="在-objective-c-的字符串中如何查询是否含有子字符串">在 Objective-C 的字符串中如何查询是否含有子字符串?</h2>
+
+<p>在 iOS8 以前, 我们需要使用 <code class="highlighter-rouge">rangeOfString:</code> 方法来判断是否含有子字符串:</p>
+
+<pre><code class="language-objectivec">NSString *string = @"hello bla bla";
+if ([string rangeOfString:@"bla"].location == NSNotFound) {
+   NSLog(@"string does not contain bla");
+} else {
+   NSLog(@"string contains bla!");
+}
+</code></pre>
+
+<p>其中最关键的地方是 <code class="highlighter-rouge">rangeOfString:</code> 会返回一个 <code class="highlighter-rouge">NSRange</code> 的结构体, <code class="highlighter-rouge">{NSNotFound, 0}</code>, 所以我们要获取结构体中的 <code class="highlighter-rouge">location</code> 来判断是否存在该字符串, 详见<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSString_Class/index.html#//apple_ref/occ/instm/NSString/rangeOfString:">文档</a>.</p>
+
+<p>而在 iOS8 之后, 苹果<del>大发慈悲地</del>为我们提供了更加友善的解决办法, 也就是 <code class="highlighter-rouge">containString:</code> 方法直接解决了这个问题.</p>
+
+<pre><code class="language-objectivec">NSString *string = @"hello bla blah";
+if ([string containsString:@"bla"]) {
+   NSLog(@"string contains bla!");
+} else {
+   NSLog(@"string does not contain bla");
+}
+</code></pre>
+
+<p>链接: <a href="http://stackoverflow.com/questions/2753956/how-do-i-check-if-a-string-contains-another-string-in-objective-c">How do I check if a string contains another string in Objective-C?</a></p>
+
+<h2 id="当键盘出现时-如何使-uitextfield-向上移动">当键盘出现时, 如何使 <code class="highlighter-rouge">UITextField</code> 向上移动?</h2>
+
+<p>在 iOS 开发中, 我们经常会遇到这样的问题, 键盘的出现会遮挡已有的文本框使得用户无法看到自己的输入. 这其实是一个比较麻烦的问题, 并不是一两行代码能够解决的. 在这个问题中, 需要注意两点:</p>
+
+<ul>
+  <li>如果你所要显示的内容并没有全部在 iPhone 屏幕中, 那么就需要添加一个 <code class="highlighter-rouge">UIScrollView</code>, 也就是说, 如果仅仅为了使得 <code class="highlighter-rouge">UITextField</code> 上移, 添加 <code class="highlighter-rouge">UIScrollView</code> 是得不偿失并且浪费的.</li>
+  <li>解决这个问题最标准的办法就是, 在键盘出现的时候上移 <code class="highlighter-rouge">UITextField</code>, 在键盘消失的时候下移 <code class="highlighter-rouge">UITextField</code>.</li>
+</ul>
+
+<p>在这里我们要使用通知来解决这个问题, 首先我们要在 <code class="highlighter-rouge">viewWillAppear:</code> 和 <code class="highlighter-rouge">viewWillDisapear:</code> 中分别注册和移除通知.</p>
+
+<pre><code class="language-objectivec">- (void)viewWillAppear:(BOOL)animated {
+   [super viewWillAppear:animated];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow) name:UIKeyboardWillShowNotification object:nil];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+   [super viewWillDisappear:animated];
+   [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+   [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+}
+</code></pre>
+
+<p>然后我们需要实现一个 <code class="highlighter-rouge">UITextField</code> 的代理方法 <code class="highlighter-rouge">textFieldDidBeginEditing:</code> 当 <code class="highlighter-rouge">UITextField</code> 开始编辑键盘准备响应的时候, 让 <code class="highlighter-rouge">UITextField</code> 向上弹出.</p>
+
+<pre><code class="language-objectivec">- (void)textFieldDidBeginEditing:(UITextField *)sender {
+   //move the main view, so that the keyboard does not hide it.
+   if  (self.view.frame.origin.y &gt;= 0) {
+       [self setViewMovedUp:YES];
+   }
+}
+</code></pre>
+
+<p>接下来实现当键盘弹出或隐藏发出通知所响应的两个方法, <code class="highlighter-rouge">keyboardWillShow</code> 和 <code class="highlighter-rouge">keyboardWillHide</code>.</p>
+
+<pre><code class="language-objectivec">- (void)keyboardWillShow {
+   // Animate the current view out of the way
+   if (self.view.frame.origin.y &gt;= 0) {
+       [self setViewMovedUp:YES];
+   } else if (self.view.frame.origin.y &lt; 0) {
+       [self setViewMovedUp:NO];
+   }
+}
+
+- (void)keyboardWillHide {
+   if (self.view.frame.origin.y &gt;= 0) {
+       [self setViewMovedUp:YES];
+   } else if (self.view.frame.origin.y &lt; 0) {
+       [self setViewMovedUp:NO];
+   }
+}
+</code></pre>
+
+<p>在最后, 就来实现使 <code class="highlighter-rouge">UITextField</code> 移动的方法 <code class="highlighter-rouge">setViewMovedUp:</code> 了.</p>
+
+<pre><code class="language-objectivec">#define kOFFSET_FOR_KEYBOARD 80.0
+
+- (void)setViewMovedUp:(BOOL)movedUp {
+   [UIView beginAnimations:nil context:NULL];
+   [UIView setAnimationDuration:0.3]; // if you want to slide up the view
+
+   CGRect rect = self.view.frame;
+   if (movedUp) {
+       // 1. move the view's origin up so that the text field that will be hidden come above the keyboard
+       // 2. increase the size of the view so that the area behind the keyboard is covered up.
+       rect.origin.y -= kOFFSET_FOR_KEYBOARD;
+       rect.size.height += kOFFSET_FOR_KEYBOARD;
+   } else {
+       // revert back to the normal state.
+       rect.origin.y += kOFFSET_FOR_KEYBOARD;
+       rect.size.height -= kOFFSET_FOR_KEYBOARD;
+   }
+   self.view.frame = rect;
+
+   [UIView commitAnimations];
+}
+</code></pre>
+
+<p>这种重要的问题在苹果的<a href="https://developer.apple.com/library/ios/documentation/StringsTextFonts/Conceptual/TextAndWebiPhoneOS/KeyboardManagement/KeyboardManagement.html#//apple_ref/doc/uid/TP40009542-CH5-SW7">官方文档</a>中也对应的实现方法.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/1126726/how-to-make-a-uitextfield-move-up-when-keyboard-is-present">How to make a UITextField move up when keyboard is present</a></p>
+
+<hr />
+
+<h2 id="如何在-uitableview-中禁止选择的高亮">如何在 <code class="highlighter-rouge">UITableView</code> 中禁止选择的高亮?</h2>
+
+<pre><code class="language-objectivec">tableView.allowsSelection = NO;
+</code></pre>
+
+<p>链接: <a href="http://stackoverflow.com/questions/190908/how-can-i-disable-the-uitableview-selection-highlighting">How can I disable the UITableView selection highlighting?</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=StackOverflow 黑魔法系列 <1>&amp;url=stackoverflow-hei-mo-fa-xi-lie-1"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=stackoverflow-hei-mo-fa-xi-lie-1"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=stackoverflow-hei-mo-fa-xi-lie-1"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/cheng-xu-yuan-xiu-lian-zhi-dao-tips">
+            <section class="post">
+                <h2>程序员修炼之道 Tips</h2>
+                <p>这一篇文章其实就是记录[程序员修炼之道](http://www.amazon.cn/%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%AE%E7%82%BC%E4%B9%8B%E9%81%93-%E4%BB%8E%E5%B0%8F%E5%B7%A5%E5%88%B0%E4%B8%93%E5%AE%B6-%E4%BA%A8%E7%89%B9/dp/B004GV08CY/ref=sr_1_1?ie=UTF8&qid=1430723088&sr=8-1&keywords=%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%AE%E7%82%BC%E4%B9%8B%E9%81%93)中的所有 Tips, 我讲会在之后的每周实践两个 Tip, 并对这两个 Tips 进行补充和说明自己的体会, 最终成为书中所说的**卓有成效**的程序员. ### Tip 1: > Care About Your...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ios-yuan-dai-ma-fen-xi-masonry">
+            <section class="post">
+                <h2>iOS 源代码分析----Masonry</h2>
+                <p>Masonry 是 Objective-C 中用于自动布局的第三方框架, 我们一般使用它来代替冗长, 繁琐的 AutoLayout 代码. Masonry 的使用还是很简洁的: [button mas_makeConstraints:^(MASConstraintMaker *make) { make.centerX.equalTo(self.view);...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>StackOverflow 黑魔法系列 <2></title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//stackoverflow-hei-mo-fa-xi-lie-2" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="StackOverflow 黑魔法系列 <2>" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//stackoverflow-hei-mo-fa-xi-lie-2" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StackOverflow 黑魔法系列 <2>" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//stackoverflow-hei-mo-fa-xi-lie-2" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "StackOverflow 黑魔法系列 <2>",
+    "url": "/reprinted//stackoverflow-hei-mo-fa-xi-lie-2",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">StackOverflow 黑魔法系列 <2></h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2015-08-03">03 Aug 2015</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>距离上一次的 StackOverflow 黑魔法系列的 post 已经很久了, 自己也很久没有写技术博客了, 虽然这次带来的又是一篇水文. 但是好久没有写了, 写写水文也好试试手.</p>
+
+<h2 id="autoreleasepool">AutoReleasePool</h2>
+
+<p>iOS 中的 run loop 等待一些事件的发生并且响应这些实践. 这个事件可能包括用户触摸屏幕等等.</p>
+
+<p>处理每一个 iOS 中的事件时, 一个新的 autorelease pool 都会在开始时被创建, 然后在事件响应结束后被 <code class="highlighter-rouge">drain</code>. 从理论上来说, 自动释放池的嵌套可以使无数的, 但是你需要知道的最主要的自动释放池是 <strong>Event Loop</strong>.</p>
+
+<p>下面是应用程序生命周期的图:</p>
+
+<p><img src="/content/images/2015/08/nBjxr.jpg" alt="" /></p>
+
+<p>可以用下面的代码来表示</p>
+
+<pre><code class="language-objectivec">int UIApplicationMain(...) {
+    while (!shouldQuitApplication) {
+        Event *someEvent = // wait for next event;
+        NSAutoreleasePool *myPool = [[NSAutoreleasePool alloc] init];
+        // handle event
+        [myPool release];
+    }
+}
+</code></pre>
+
+<p>在 iOS 中有三种事件的类型.</p>
+
+<pre><code class="language-objectivec">UIEventTypeTouches,
+UIEventTypeMotion,
+UIEventTypeRemoteControl,
+</code></pre>
+
+<p>所以在每一次触摸, 运动和远程控制的事件结束之后, 自动释放池都会被排干.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/5766839/end-of-run-loop-autorelease-pool-recovery">End of run loop — autorelease pool recovery</a></p>
+
+<h2 id="gcd-nsthread-和-nsoperationqueue-之间有什么区别">GCD, NSThread 和 NSOperationQueue 之间有什么区别?</h2>
+
+<ol>
+  <li>当你需要<strong>直接控制你所创建的线程</strong>时, 使用 <code class="highlighter-rouge">NSThread</code>. e.g.
+    <ul>
+      <li>当你需要对控制线程的优先级有细颗粒度的控制或者与其他直接消耗线程对象的子系统直接交互并且需要停留在同一页上时, 就需要使用 <code class="highlighter-rouge">NSThread</code> 但是这种情况是及其罕见的, 但是它们确实发生, 特别是在实时应用中.</li>
+    </ul>
+  </li>
+  <li>当你的任务是简单的并行时, 使用 <code class="highlighter-rouge">GCD</code>. e.g.
+    <ul>
+      <li>你想要将一些工作简单的抛到后台去执行</li>
+      <li>串行化的获取某些数据结构</li>
+      <li>有一些可以使用 <code class="highlighter-rouge">dispatch_apply</code> 能够很好的串行化的 <code class="highlighter-rouge">for</code> 循环</li>
+      <li>有一些数据源或者计时器, <code class="highlighter-rouge">GCD</code> 的 <code class="highlighter-rouge">API</code> 能够让你非常容易的使它们工作在后台</li>
+    </ul>
+  </li>
+  <li>当你在处理 Cocoa API 层级并且有一些更复杂的操作需要并行时, 使用 <code class="highlighter-rouge">NSOperation</code>. <code class="highlighter-rouge">NSOperation</code> 允许子类化, 复杂的依赖图, 撤销并且支持一些其他更高层级的语法糖. <code class="highlighter-rouge">NSOperation</code> 是对 <code class="highlighter-rouge">GCD</code> 的封装, 所以它有点类似有多核, 多线程的能力的 <code class="highlighter-rouge">GCD</code>. 如果你直接在 POSIX 层级进行工作时, 你应该更希望使用 <code class="highlighter-rouge">GCD</code>.</li>
+</ol>
+
+<p>链接: <a href="http://stackoverflow.com/questions/12995344/which-is-the-best-of-gcd-nsthread-or-nsoperationqueue">Which is the best of GCD, NSThread or NSOperationQueue?</a></p>
+
+<h2 id="nsoperation-与-grand-central-dispatch-对比">NSOperation 与 Grand Central Dispatch 对比</h2>
+
+<p><code class="highlighter-rouge">GCD</code> 是一个底层级的以 C 语言为基础的 API, 可以用于以任务为基础的并行模型. <code class="highlighter-rouge">NSOperation</code> 和 <code class="highlighter-rouge">NSOperationQueue</code> 是 Objective-C 中用于完成相应工作的类. <code class="highlighter-rouge">NSOperation</code> 在 iOS 4 和 OS X 10.6 中被首次介绍, <code class="highlighter-rouge">NSOperationQueue</code> 和其它一些队列是使用 <code class="highlighter-rouge">GCD</code> 实现的.</p>
+
+<p>从总体上来说, 你应该使用满足需要的最高层级的抽象. 这意味着你需要使用 <code class="highlighter-rouge">NSOperationQueue</code> 来代替 <code class="highlighter-rouge">GCD</code>, 除非你需要完成一些事情, 但是 <code class="highlighter-rouge">NSOperationQueue</code> 无法支持.</p>
+
+<p>事实上, 有许多可以使用 <code class="highlighter-rouge">NSOperationQueue</code> 可以非常简单完成的工作, 但是使用 <code class="highlighter-rouge">GCD</code> 时需要很多的工作. 苹果公司借助 GCD 创建了拥有对象友好型的 API 的 <code class="highlighter-rouge">NSOperation</code>.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/10373331/nsoperation-vs-grand-central-dispatch">NSOperation vs Grand Central Dispatch</a></p>
+
+<h2 id="uitableviewcell-子视图在被点击时消失">UITableViewCell 子视图在被点击时消失</h2>
+
+<p>当 UITableViewCell 被点击时, 在 cell 的 <code class="highlighter-rouge">contentView</code> 上面的视图的颜色全部都会改变, 你可以通过子类化 <code class="highlighter-rouge">UIView</code> 来改变颜色或者使用 <code class="highlighter-rouge">UIImageView</code> 并使用 1x1 像素的拉伸图片来解决这个问题.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/6745919/uitableviewcell-subview-disappears-when-cell-is-selected">UITableViewCell subview disappears when cell is selected</a></p>
+
+<h2 id="判断-iphone-上的晃动手势">判断 iPhone 上的晃动手势</h2>
+
+<p>判断 iPhone 上面晃动手势的最简单办法是, 你需要有一些 UIView 来作为第一响应者来接收晃动实践. 这里有一写使用 UIView 获取晃动事件的代码.</p>
+
+<pre><code class="language-objectivec">@implementation ShakingView
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if ( event.subtype == UIEventSubtypeMotionShake ){
+        // Put in code here to handle shake
+    }
+
+    if ( [super respondsToSelector:@selector(motionEnded:withEvent:)] )
+        [super motionEnded:motion withEvent:event];
+}
+
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
+
+@end
+</code></pre>
+
+<p>你可以通过子类化任意一个 <code class="highlighter-rouge">UIView</code> 并覆写这些方法完成对晃动手势的监听.</p>
+
+<p>在视图控制器中, 你需要设置这个视图变成第一响应者:</p>
+
+<pre><code class="language-objectivec">- (void) viewWillAppear:(BOOL)animated {
+    [shakeView becomeFirstResponder];
+    [super viewWillAppear:animated];
+}
+- (void) viewWillDisappear:(BOOL)animated {
+    [shakeView resignFirstResponder];
+    [super viewWillDisappear:animated];
+}
+</code></pre>
+
+<p>如果有其他的视图变成了第一响应者, 那么在其他视图响应结束后, 恢复当前视图的第一响应者身份.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/150446/how-do-i-detect-when-someone-shakes-an-iphone">How do I detect when someone shakes an iPhone?</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=StackOverflow 黑魔法系列 <2>&amp;url=stackoverflow-hei-mo-fa-xi-lie-2"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=stackoverflow-hei-mo-fa-xi-lie-2"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=stackoverflow-hei-mo-fa-xi-lie-2"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/nsuserdefaults">
+            <section class="post">
+                <h2>NSUserDefaults 的默认值</h2>
+                <p>`NSUserDefaults` 提供了一个与默认设置交互的接口. 这些默认设置允许一个 App 为每一个单独的用户的设置提供定制化的行为. ## 数据的同步 我们可以通过 `NSUserDefaults` 对象在运行时从数据库读取用户的数据, 并添加到缓存中. 在我们正常获取或者设置 `NSUserDefaults` 的值时, 数据库和缓存中的数据其实并没有同步更新,...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/swift-de-na-xie-keng">
+            <section class="post">
+                <h2>MagicMove 在 iOS 中的实现</h2>
+                <p>最近由于去武汉参加 hackday, 十多天没有更新博客了. 今天就来说一说, 我在 hackday 上使用 swift 开发 App 遇到的哪些问题吧. 神奇移动 我曾经在很多的 App 中都实现了类似...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式",
+    "url": "/reprinted//dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios  nav-current" role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2015-05-09">09 May 2015</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p><strong>最新: <a href="http://draveness.me/night">成熟的夜间模式解决方案</a></strong></p>
+
+<p><strong>注意: 这篇文章已经过时了, 最新版本的 2.3.0 实现已经更改了.</strong></p>
+
+<p>在很多重阅读或者需要在夜间观看的软件其实都会把夜间模式当做一个 App 所需要具备的特性. 而如何在不改变原有的架构, 甚至不改变原有的代码的基础上, 就能为应用优雅地添加夜间模式就成为一个在很多应用开发的过程中不得不面对的一个问题.</p>
+
+<p>就是以上事情的驱动, 使我思考如何才能使用一种优雅并且简洁的方法解决这一问题.</p>
+
+<p>而 <a href="https://github.com/Draveness/DKNightVersion">DKNightVersion</a> 就是我带来的解决方案.</p>
+
+<p>到目前为止, 这个框架的大部分的工作都已经完成了, 或许它现在不够完善, 不过我会持续地维护这个框架, 帮助饱受实现夜间模式之苦的工程师们解决这个<del>坑的一逼的</del>需求.</p>
+
+<h2 id="实现">实现</h2>
+
+<p>现在我也终于有时间来<del>水一水</del>写一篇博客来说一下这个框架是如何实现夜间模式的, 它都有哪些特性.</p>
+
+<p>在很长的一段时间我都在想如何才能在不覆写 <code class="highlighter-rouge">UIKit</code> 控件的基础上, 为 iOS App 添加夜间模式. 而 <code class="highlighter-rouge">objc/runtime</code> 为我带来了不覆写 <code class="highlighter-rouge">UIKit</code> 就能实现这一目的的希望.</p>
+
+<h3 id="为-uikit-控件添加-nightcolor-属性">为 UIKit 控件添加 <code class="highlighter-rouge">nightColor</code> 属性</h3>
+
+<p>因为我们并不会子类化 UIKit 控件, 然后使用 <code class="highlighter-rouge"><span class="k">@property</span></code> 为它的子类添加属性. 而是使用 Objective-C 中神奇的分类(Category) 和 <code class="highlighter-rouge">objc/runtime</code>, 为 UI 系列的控件添加属性.</p>
+
+<p>使用 <code class="highlighter-rouge">objc/runtime</code> 为分类添加属性相信很多人都知道而且经常在开发中使用了. 如果不了解的话, 可以看<a href="http://nshipster.com/associated-objects/">这里</a>.</p>
+
+<p>DKNightVersion 为大多数常用的 <code class="highlighter-rouge">color</code> 比如说: <code class="highlighter-rouge">backgroundColor</code> <code class="highlighter-rouge">tintColor</code> 都添加了以 <code class="highlighter-rouge">night</code> 开头的夜间模式下的颜色, <code class="highlighter-rouge">nightBackgroundColor</code> <code class="highlighter-rouge">nightTintColor</code>.</p>
+
+<pre><code class="language-objectivec">- (UIColor *)nightBackgroundColor {
+    return objc_getAssociatedObject(self, &amp;nightBackgroundColorKey) ? :self.backgroundColor);
+}
+
+- (void)setNightBackgroundColor:(UIColor *)nightBackgroundColor {
+    objc_setAssociatedObject(self, &amp;nightBackgroundColorKey, nightBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+</code></pre>
+
+<p>我们创建这个属性以保存夜间模式下的颜色, 这样当应用的主题切换到夜间模式时, 将 <code class="highlighter-rouge">nightColor</code> 属性存储的颜色赋值给对应的 <code class="highlighter-rouge">color</code>, 但是这会有一个问题. 当应用重新切换回正常模式时, 我们失去了原有正常模式的 <code class="highlighter-rouge">color</code>.</p>
+
+<h3 id="添加-normalcolor-存储颜色">添加 <code class="highlighter-rouge">normalColor</code> 存储颜色</h3>
+
+<p>为了解决这一问题, 我们为 UIKit 控件添加了另一个属性 <code class="highlighter-rouge">normalColor</code> 来保存正常模式下的颜色.</p>
+
+<pre><code class="language-objectivec">- (UIColor *)normalBackgroundColor {
+    return objc_getAssociatedObject(self, &amp;normalBackgroundColorKey);
+}
+
+- (void)setNormalBackgroundColor:(UIColor *)normalBackgroundColor {
+    objc_setAssociatedObject(self, &amp;normalBackgroundColorKey, normalBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+</code></pre>
+
+<p>但是保存这个颜色的时机是非常重要的, 在最开始的时候, 我的选择是直接覆写 <code class="highlighter-rouge">setter</code> 方法, 在保存颜色之前存储 <code class="highlighter-rouge">normalColor</code>.</p>
+
+<pre><code class="language-objectivec">- (void)setBackgroundColor:(UIColor *)backgroundColor {
+    self.normalBackgroundColor = backgroundColor;
+    _backgroundColor = backgroundColor;
+}
+</code></pre>
+
+<p>然而这种看似可以运行的 <code class="highlighter-rouge">setter</code> 其实会导致视图不会被着色, 设置 <code class="highlighter-rouge">color</code> 包括正常的颜色都不会有任何的反应, 反而视图的背景颜色一片漆黑.</p>
+
+<p>由于上面这种方法行不通, 我想换一种方法使用观察者模式来存储 <code class="highlighter-rouge">normalColor</code>, 将实例自己注册为 <code class="highlighter-rouge">color</code> 属性的观察者, 当 <code class="highlighter-rouge">color</code> 属性变化时, 通知 UIKit 控件本身, 然后, 把属性存到 <code class="highlighter-rouge">normalColor</code> 属性中.</p>
+
+<p>然而在什么时候将自己注册为观察者这一问题, 又使我放弃了这一解决方案. 最终选择<a href="http://nshipster.com/method-swizzling/">方法调剂</a>来解决原有 <code class="highlighter-rouge">color</code> 的存储问题.</p>
+
+<p>使用方法调剂为原有属性的 <code class="highlighter-rouge">setter</code> 方法添加钩子, 在方法调用之前, 将属性存储起来, 用于切换回 <code class="highlighter-rouge">normal</code> 模式时, 为属性赋值.</p>
+
+<p>这是要与 <code class="highlighter-rouge">setter</code> 调剂的钩子方法:</p>
+
+<pre><code class="language-objectivec">- (void)hook_setBackgroundColor:(UIColor*)backgroundColor {
+    if ([DKNightVersionManager currentThemeVersion] == DKThemeVersionNormal) {
+        [self setNormalBackgroundColor:backgroundColor];
+    }
+    [self hook_setBackgroundColor:backgroundColor];
+}
+</code></pre>
+
+<p>如果当前是 <code class="highlighter-rouge">normal</code> 模式, 就会存储 <code class="highlighter-rouge">color</code>, 如果不是就会直接赋值, 如果你看不懂为什么这里好像会造成无限递归, 请看<a href="http://nshipster.com/method-swizzling/">这里</a>, 详细的解释了方法调剂是如何使用的.</p>
+
+<h3 id="dknightversionmanager-实现-color-切换">DKNightVersionManager 实现 <code class="highlighter-rouge">color</code> 切换</h3>
+
+<p>我们已经为 UIKit 控件添加了 <code class="highlighter-rouge">normalColor</code> 和 <code class="highlighter-rouge">nightColor</code>, 接下来我们需要实现 <code class="highlighter-rouge">color</code> 在这两者之间的切换, 而这 <code class="highlighter-rouge">DKNightVersionManager</code> 就是为了处理模式切换的类.</p>
+
+<p>通过为 <code class="highlighter-rouge">DKNightVersionManager</code> 创建一个单例来处理 <code class="highlighter-rouge">模式转换</code>, <code class="highlighter-rouge">使用默认颜色</code>, <code class="highlighter-rouge">动画时间</code> 等操作.</p>
+
+<p>当调用 <code class="highlighter-rouge">DKNightVersionManager</code> 的类方法 <code class="highlighter-rouge">nightFalling</code> 或者 <code class="highlighter-rouge">dawnComing</code> 时, 我们首先会获取全局的 <code class="highlighter-rouge">UIWindow</code>, 然后通过递归调用 <code class="highlighter-rouge">changeColor</code> 方法, 使能够响应 <code class="highlighter-rouge">changeColor</code> 方法的视图改变颜色.</p>
+
+<pre><code class="language-objectivec">- (void)changeColor:(id &lt;DKNightVersionChangeColorProtocol&gt;)object {
+    if ([object respondsToSelector:@selector(changeColor)]) {
+        [object changeColor];
+    }
+    if ([object respondsToSelector:@selector(subviews)]) {
+        if (![object subviews]) {
+            // Basic case, do nothing.
+            return;
+        } else {
+            for (id subview in [object subviews]) {
+                // recursice darken all the subviews of current view.
+                [self changeColor:subview];
+                if ([subview respondsToSelector:@selector(changeColor)]) {
+                    [subview changeColor];
+                }
+            }
+        }
+    }
+}
+</code></pre>
+
+<p>因为我在这个类中并没有引入 <code class="highlighter-rouge">category</code>, 编译器不知道 <code class="highlighter-rouge">id</code> 类型具有这两个方法. 所以我声明了一个协议, 使 <code class="highlighter-rouge">changeColor</code> 中的方法来满足两个方法 <code class="highlighter-rouge">changeColor</code> 和 <code class="highlighter-rouge">subViews</code>. 不让编译器提示错误.</p>
+
+<pre><code class="language-objectivec">@protocol DKNightVersionChangeColorProtocol &lt;NSObject&gt;
+
+- (void)changeColor;
+- (NSArray *)subviews;
+
+@end
+</code></pre>
+
+<p>然后让所有的 UIKit 控件遵循这个协议就可以了, 当然我们也可以不显式的遵循这个协议, 只要它能够响应这两个方法也是可以的.</p>
+
+<h3 id="实现默认颜色">实现默认颜色</h3>
+
+<p>我们要在 DKNightVersion 实现默认的夜间模式配色, 以便减少开发者的工作量.</p>
+
+<p>但是因为我们对每种 <code class="highlighter-rouge">color</code> 只在父类中实现一次, 这样使得子类能够继承父类的实现, 但是同样<strong>不想让 UIKit 系子类继承父类的默认颜色</strong>.</p>
+
+<pre><code class="language-objectivec">- (UIColor *)defaultNightBackgroundColor {
+    BOOL notUIKitSubclass = [self isKindOfClass:[UIView class]] &amp;&amp; ![NSStringFromClass(self.class) hasPrefix:@"UI"];
+    if ([self isMemberOfClass:[UIView class]] || notUIKitSubclass) {
+        return UIColorFromRGB(0x343434);
+    } else {
+        UIColor *resultColor = self.normalBackgroundColor ?: [UIColor clearColor];
+        return resultColor;
+    }
+}
+</code></pre>
+
+<p>通过使用 <code class="highlighter-rouge">isMemberOfClass:</code> 方法来判断<strong>实例是不是当前类的实例, 而不是该类子类的实例.</strong> 然后才会返回默认的颜色. 但是非 UIKit 中的子类是可以继承这个特性的, 所以使用这段代码来判断该实例是否是非 UIKit 的子类:</p>
+
+<pre><code class="language-objectivec">[self isKindOfClass:[UIView class]] &amp;&amp; ![NSStringFromClass(self.class) hasPrefix:@"UI"]
+</code></pre>
+
+<p>我们通过 <code class="highlighter-rouge">NSStringFromClass(self.class) hasPrefix:@"UI"</code> 巧妙地达到这一目的.</p>
+
+<h4 id="使用-erb-生成-objective-c-代码">使用 <code class="highlighter-rouge">erb</code> 生成 Objective-C 代码</h4>
+
+<p>这个框架大多数的工作都是重复的, 但是我并不想为每一个类重复编写近乎相同的代码, 这样的代码十分不易阅读和维护, 所以使用了 <code class="highlighter-rouge">erb</code> 文件, 来为生成的 Objective-C 代码提供模板, 只将元数据进行解析然后传入每一个模板, 动态生成所有的代码, 再通过另一个脚本将所有的文件加入目录中.</p>
+
+<hr />
+
+<p><a href="https://github.com/Draveness/DKNightVersion">DKNightVersion</a> 的实现并不复杂. 它不仅使用了 <code class="highlighter-rouge">erb</code> 和 Ruby 脚本来减少了大量的工作量, 而且使用了 <code class="highlighter-rouge">objc/runtime</code> 的特性来魔改 UIKit 组件, 达到为 iOS 应用添加夜间模式的效果.</p>
+
+<iframe src="https://ghbtns.com/github-btn.html?user=Draveness&amp;repo=DKNightVersion&amp;type=star&amp;count=true&amp;size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式&amp;url=dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/lian-shi-yu-fa-yu-objective-c">
+            <section class="post">
+                <h2>链式语法与 Objective-C</h2>
+                <p>作为一个 Objective-C 语言的使用者已经有近两年的时间了. 在逐渐熟悉手中的工具, Objective-C 语言的同时, 我也开始从更高的角度来观察这一门语言. 虽然至今我也不敢说我精通 Objective-C 和 Cocoa Touch, 但是我对它们也有了一些自己的见解. ## Objective-C...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/bei-xcodeproj-keng-de-zhe-ji-tian">
+            <section class="post">
+                <h2>使用代码为 Xcode 工程添加文件</h2>
+                <p>这几天在持续更新 DKNightVersion 这个仓库, 我对这个框架投入了很多的时间和精力. 我还是希望把这个框架的方方面面都做好的, 为框架的使用者提供最好的用户体验, 将开发者的使用成本和使用难度降到最低, 提升开发者的使用体验. 但是在我维护这个框架的过程中还是感觉到如何平衡框架的可扩展性和易用性实在是太难了. 为了减少开发者工作量以达到减少错误的目的, 我在这最近几乎每天 8 小时以上的与 xcodeproj 这个文件打交道,...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>神奇的 BlocksKit （一）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//blockskit-1" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="神奇的 BlocksKit （一）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//blockskit-1" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="神奇的 BlocksKit （一）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//blockskit-1" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "神奇的 BlocksKit （一）",
+    "url": "/reprinted//blockskit-1",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">神奇的 BlocksKit （一）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+<p><strong>高能预警：本篇文章非常长，因为 BlocksKit 的实现还是比较复杂和有意的。这篇文章不是为了剖析 iOS 开发中的 block 的实现以及它是如何组成甚至使用的，如果你想通过这篇文章来了解 block 的实现，它并不能帮到你。</strong></p>
+
+<p>Block 到底是什么？这可能是困扰很多 iOS 初学者的一个问题。如果你在 Google 上搜索类似的问题时，可以查找到几十万条结果，block 在 iOS 开发中有着非常重要的地位，而且它的作用也越来越重要。</p>
+
+<hr />
+
+<h2 id="概述">概述</h2>
+
+<p>这篇文章仅对 <a href="https://github.com/zwaldowski/BlocksKit">BlocksKit</a> v2.2.5 的源代码进行分析，从框架的内部理解下面的功能是如何实现的：</p>
+
+<ul>
+  <li>为 <code class="highlighter-rouge">NSArray</code>、 <code class="highlighter-rouge">NSDictionary</code> 和 <code class="highlighter-rouge">NSSet</code> 等集合类型以及对应的可变集合类型 <code class="highlighter-rouge">NSMutableArray</code>、 <code class="highlighter-rouge">NSMutableDictionary</code> 和 <code class="highlighter-rouge">NSMutableSet</code> 添加 <code class="highlighter-rouge">bk_each:</code> 等方法完成对集合中元素的<strong>快速遍历</strong></li>
+  <li>使用 block 对 <code class="highlighter-rouge">NSObject</code> 对象 KVO</li>
+  <li>为 <code class="highlighter-rouge">UIView</code> 对象添加 <code class="highlighter-rouge">bk_whenTapped:</code> 等方法快速添加手势</li>
+  <li>使用 block 替换 <code class="highlighter-rouge">UIKit</code> 中的 <code class="highlighter-rouge">delegate</code> ，涉及到核心模块 <code class="highlighter-rouge">DynamicDelegate</code>。</li>
+</ul>
+
+<p>BlocksKit 框架中包括但不仅限于上述的功能，这篇文章是对 <em>v2.2.5</em> 版本源代码的分析，其它版本的功能不会在本篇文章中具体讨论。</p>
+
+<h2 id="如何提供简洁的遍历方法">如何提供简洁的遍历方法</h2>
+
+<p>BlocksKit 实现的最简单的功能就是为集合类型添加方法遍历集合中的元素。</p>
+
+<pre><code class="language-objectivec">[@[@1,@2,@3] bk_each:^(id obj) {
+    NSLog(@"%@"，obj);
+}];
+</code></pre>
+
+<p>这段代码非常简单，我们可以使用 <code class="highlighter-rouge">enumerateObjectsUsingBlock:</code> 方法替代 <code class="highlighter-rouge">bk_each:</code> 方法：</p>
+
+<pre><code class="language-objectivec">[@[@1,@2,@3] enumerateObjectsUsingBlock:^(id obj，NSUInteger idx，BOOL *stop) {
+    NSLog(@"%@"，obj);
+}];
+
+2016-03-05 16:02:57.295 Draveness[10725:453402] 1
+2016-03-05 16:02:57.296 Draveness[10725:453402] 2
+2016-03-05 16:02:57.297 Draveness[10725:453402] 3
+</code></pre>
+
+<p>这部分代码的实现也没什么难度：</p>
+
+<pre><code class="language-objectivec">- (void)bk_each:(void (^)(id obj))block
+{
+	NSParameterAssert(block != nil);
+
+	[self enumerateObjectsUsingBlock:^(id obj，NSUInteger idx，BOOL *stop) {
+		block(obj);
+	}];
+}
+</code></pre>
+
+<p>它在 block 执行前会判断传进来的 block 是否为空，然后就是调用遍历方法，把数组中的每一个 <code class="highlighter-rouge">obj</code> 传给 block。</p>
+
+<p>BlocksKit 在这些集合类中所添加的一些方法在 Ruby、Haskell 等语言中也同样存在。如果你接触过上面的语言，理解这里方法的功能也就更容易了，不过这不是这篇文章关注的主要内容。</p>
+
+<pre><code class="language-objectivec">// NSArray+BlocksKit.h
+
+- (void)bk_each:(void (^)(id obj))block;
+- (void)bk_apply:(void (^)(id obj))block;
+- (id)bk_match:(BOOL (^)(id obj))block;
+- (NSArray *)bk_select:(BOOL (^)(id obj))block;
+- (NSArray *)bk_reject:(BOOL (^)(id obj))block;
+- (NSArray *)bk_map:(id (^)(id obj))block;
+- (id)bk_reduce:(id)initial withBlock:(id (^)(id sum，id obj))block;
+- (NSInteger)bk_reduceInteger:(NSInteger)initial withBlock:(NSInteger(^)(NSInteger result，id obj))block;
+- (CGFloat)bk_reduceFloat:(CGFloat)inital withBlock:(CGFloat(^)(CGFloat result，id obj))block;
+- (BOOL)bk_any:(BOOL (^)(id obj))block;
+- (BOOL)bk_none:(BOOL (^)(id obj))block;
+- (BOOL)bk_all:(BOOL (^)(id obj))block;
+- (BOOL)bk_corresponds:(NSArray *)list withBlock:(BOOL (^)(id obj1，id obj2))block;
+</code></pre>
+
+<h2 id="nsobject-上的魔法">NSObject 上的魔法</h2>
+
+<blockquote>
+  <p><code class="highlighter-rouge">NSObject</code> 是 iOS 中的『上帝类』。</p>
+</blockquote>
+
+<p>在 <code class="highlighter-rouge">NSObject</code> 上添加的方法几乎会添加到 Cocoa Touch 中的所有类上，关于 <code class="highlighter-rouge">NSObject</code> 的讨论和总共分为以下三部分进行：</p>
+
+<ol>
+  <li>AssociatedObject</li>
+  <li>BlockExecution</li>
+  <li>BlockObservation</li>
+</ol>
+
+<h3 id="添加-associatedobject">添加 AssociatedObject</h3>
+
+<p>经常跟 runtime 打交道的人不可能不知道 <a href="http://nshipster.cn/associated-objects/">AssociatedObject</a> ，当我们想要为一个已经存在的类添加属性时，就需要用到 AssociatedObject 为类添加属性，而  BlocksKit 提供了更简单的方法来实现，不需要新建一个分类。</p>
+
+<pre><code class="language-objectivec">NSObject *test = [[NSObject alloc] init];
+[test bk_associateValue:@"Draveness" withKey:@" name"];
+NSLog(@"%@"，[test bk_associatedValueForKey:@"name"]);
+
+2016-03-05 16:02:25.761 Draveness[10699:452125] Draveness
+</code></pre>
+
+<p>这里我们使用了 <code class="highlighter-rouge">bk_associateValue:withKey:</code> 和 <code class="highlighter-rouge">bk_associatedValueForKey:</code> 两个方法设置和获取 <code class="highlighter-rouge">name</code> 对应的值 <code class="highlighter-rouge">Draveness</code>.</p>
+
+<pre><code class="language-objectivec">- (void)bk_associateValue:(id)value withKey:(const void *)key
+{
+	objc_setAssociatedObject(self，key，value，OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+</code></pre>
+
+<p>这里的 <code class="highlighter-rouge">OBJC_ASSOCIATION_RETAIN_NONATOMIC</code> 表示当前属性为 <code class="highlighter-rouge">retain</code> <code class="highlighter-rouge">nonatomic</code> 的，还有其它的参数如下：</p>
+
+<pre><code class="language-objectivec">/**
+ * Policies related to associative references.
+ * These are options to objc_setAssociatedObject()
+ */
+typedef OBJC_ENUM(uintptr_t，objc_AssociationPolicy) {
+    OBJC_ASSOCIATION_ASSIGN = 0，          /**&lt; Specifies a weak reference to the associated object. */
+    OBJC_ASSOCIATION_RETAIN_NONATOMIC = 1，/**&lt; Specifies a strong reference to the associated object.
+                                            *   The association is not made atomically. */
+    OBJC_ASSOCIATION_COPY_NONATOMIC = 3，  /**&lt; Specifies that the associated object is copied.
+                                            *   The association is not made atomically. */
+    OBJC_ASSOCIATION_RETAIN = 01401，      /**&lt; Specifies a strong reference to the associated object.
+                                            *   The association is made atomically. */
+    OBJC_ASSOCIATION_COPY = 01403          /**&lt; Specifies that the associated object is copied.
+                                            *   The association is made atomically. */
+};
+</code></pre>
+
+<p>上面的这个 NS_ENUM 也没什么好说的，需要注意的是这里没有 <code class="highlighter-rouge">weak</code> 属性。</p>
+
+<p>BlocksKit 通过另一种方式实现了『弱属性』：</p>
+
+<pre><code class="language-objectivec">- (void)bk_weaklyAssociateValue:(__autoreleasing id)value withKey:(const void *)key
+{
+	_BKWeakAssociatedObject *assoc = objc_getAssociatedObject(self，key);
+	if (!assoc) {
+		assoc = [_BKWeakAssociatedObject new];
+		[self bk_associateValue:assoc withKey:key];
+	}
+	assoc.value = value;
+}
+</code></pre>
+
+<p>在这里先获取了一个 <code class="highlighter-rouge">_BKWeakAssociatedObject</code> 对象 <code class="highlighter-rouge">assoc</code>，然后更新这个对象的属性 <code class="highlighter-rouge">value</code>。</p>
+
+<p>因为直接使用 AssociatedObject 不能为对象添加弱属性，所以在这里添加了一个对象，然后让这个对象持有一个弱属性：</p>
+
+<pre><code class="language-objectivec">@interface _BKWeakAssociatedObject : NSObject
+
+@property (nonatomic，weak) id value;
+
+@end
+
+@implementation _BKWeakAssociatedObject
+
+@end
+</code></pre>
+
+<p>这就是 BlocksKit 实现弱属性的方法，我觉得这个实现的方法还是比较简洁的。</p>
+
+<p>getter 方法的实现也非常类似：</p>
+
+<pre><code class="language-objectivec">- (id)bk_associatedValueForKey:(const void *)key
+{
+	id value = objc_getAssociatedObject(self，key);
+	if (value &amp;&amp; [value isKindOfClass:[_BKWeakAssociatedObject class]]) {
+		return [(_BKWeakAssociatedObject *)value value];
+	}
+	return value;
+}
+</code></pre>
+
+<h3 id="在任意对象上执行-block">在任意对象上执行 block</h3>
+
+<p>通过这个类提供的一些接口，可以在任意对象上快速执行线程安全、异步的 block，而且这些 block 也可以在执行之前取消。</p>
+
+<pre><code class="language-objectivec">- (id &lt;NSObject，NSCopying&gt;)bk_performOnQueue:(dispatch_queue_t)queue afterDelay:(NSTimeInterval)delay usingBlock:(void (^)(id obj))block
+{
+    NSParameterAssert(block != nil);
+
+    return BKDispatchCancellableBlock(queue，delay，^{
+        block(self);
+    });
+}
+</code></pre>
+
+<p>判断 block 是否为空在这里都是细枝末节，这个方法中最关键的也就是它返回了一个可以取消的 block，而这个 block 就是用静态函数 <code class="highlighter-rouge">BKDispatchCancellableBlock</code> 生成的。</p>
+
+<pre><code class="language-objectivec">static id &lt;NSObject，NSCopying&gt; BKDispatchCancellableBlock(dispatch_queue_t queue，NSTimeInterval delay，void(^block)(void)) {
+    dispatch_time_t time = BKTimeDelay(delay);
+
+#if DISPATCH_CANCELLATION_SUPPORTED
+    if (BKSupportsDispatchCancellation()) {
+        dispatch_block_t ret = dispatch_block_create(0，block);
+        dispatch_after(time，queue，ret);
+        return ret;
+    }
+#endif
+
+    __block BOOL cancelled = NO;
+    void (^wrapper)(BOOL) = ^(BOOL cancel) {
+        if (cancel) {
+            cancelled = YES;
+            return;
+        }
+        if (!cancelled) block();
+    };
+
+    dispatch_after(time，queue，^{
+        wrapper(NO);
+    });
+
+    return wrapper;
+}
+</code></pre>
+
+<p>这个函数首先会执行 <code class="highlighter-rouge">BKSupportsDispatchCancellation</code> 来判断当前平台和版本是否支持使用 GCD 取消 block，当然一般都是支持的：</p>
+
+<ul>
+  <li>函数返回的是 <code class="highlighter-rouge">YES</code>，那么在 block 被派发到指定队列之后就会返回这个 <code class="highlighter-rouge">dispatch_block_t</code> 类型的 block</li>
+  <li>函数返回的是 <code class="highlighter-rouge">NO</code>，那么就会就会手动包装一个可以取消的 block，具体实现的部分如下：</li>
+</ul>
+
+<pre><code class="language-objectivec">__block BOOL cancelled = NO;
+void (^wrapper)(BOOL) = ^(BOOL cancel) {
+    if (cancel) {
+        cancelled = YES;
+        return;
+    }
+    if (!cancelled) block();
+};
+
+dispatch_after(time，queue，^{
+    wrapper(NO);
+});
+
+return wrapper;
+</code></pre>
+
+<p>上面这部分代码就先创建一个 <code class="highlighter-rouge">wrapper</code> block，然后派发到指定队列，派发到指定队列的这个 block 是一定会执行的，但是怎么取消这个 block 呢？</p>
+
+<p>如果当前 block 没有执行，我们在外面调用一次 <code class="highlighter-rouge">wrapper(YES)</code> 时，block 内部的 <code class="highlighter-rouge">cancelled</code> 变量就会被设置为 <code class="highlighter-rouge">YES</code>，所以 block 就不会执行。</p>
+
+<ol>
+  <li><code class="highlighter-rouge">dispatch_after  --- cancelled = NO</code></li>
+  <li><strong><code class="highlighter-rouge">wrapper(YES) --- cancelled = YES</code></strong></li>
+  <li><code class="highlighter-rouge">wrapper(NO) --- cancelled = YES</code> block 不会执行</li>
+</ol>
+
+<p>这是实现取消的关键部分：</p>
+
+<pre><code class="language-objectivec">+ (void)bk_cancelBlock:(id &lt;NSObject，NSCopying&gt;)block
+{
+    NSParameterAssert(block != nil);
+
+#if DISPATCH_CANCELLATION_SUPPORTED
+    if (BKSupportsDispatchCancellation()) {
+        dispatch_block_cancel((dispatch_block_t)block);
+        return;
+    }
+#endif
+
+    void (^wrapper)(BOOL) = (void(^)(BOOL))block;
+    wrapper(YES);
+}
+</code></pre>
+
+<ul>
+  <li>GCD 支持取消 block，那么直接调用 <code class="highlighter-rouge">dispatch_block_cancel</code> 函数取消 block</li>
+  <li>GCD 不支持取消 block 那么调用一次 <code class="highlighter-rouge">wrapper(YES)</code></li>
+</ul>
+
+<h3 id="使用-block-封装-kvo">使用 Block 封装 KVO</h3>
+
+<p>BlocksKit 对 KVO 的封装由两部分组成：</p>
+
+<ol>
+  <li><code class="highlighter-rouge">NSObject</code> 的分类负责提供便利方法</li>
+  <li>私有类 <code class="highlighter-rouge">_BKObserver</code> 具体实现原生的 KVO 功能</li>
+</ol>
+
+<h4 id="提供接口并在-dealloc-时停止-blockobservation">提供接口并在 <code class="highlighter-rouge">dealloc</code> 时停止 BlockObservation</h4>
+
+<p><code class="highlighter-rouge">NSObject+BKBlockObservation</code> 这个分类中的大部分接口都会调用这个方法:</p>
+
+<pre><code class="language-objectivec">- (void)bk_addObserverForKeyPaths:(NSArray *)keyPaths identifier:(NSString *)identifier options:(NSKeyValueObservingOptions)options context:(BKObserverContext)context task:(id)task
+{
+	#1: 检查参数，省略
+
+	#2: 使用神奇的方法在分类中覆写 dealloc
+
+	NSMutableDictionary *dict;
+	_BKObserver *observer = [[_BKObserver alloc] initWithObservee:self keyPaths:keyPaths context:context task:task];
+	[observer startObservingWithOptions:options];
+
+	#3: 惰性初始化 bk_observerBlocks 也就是下面的 dict，省略
+
+	dict[identifier] = observer;
+}
+</code></pre>
+
+<p>我们不会在这里讨论 <code class="highlighter-rouge">#1</code>、<code class="highlighter-rouge">#3</code> 部分，再详细阅读 <code class="highlighter-rouge">#2</code> 部分代码之前，先来看一下这个省略了绝大部分细节的核心方法。</p>
+
+<p>使用传入方法的参数创建了一个 <code class="highlighter-rouge">_BKObserver</code> 对象，然后调用 <code class="highlighter-rouge">startObservingWithOptions:</code> 方法开始 KVO 观测相应的属性，然后以 <code class="highlighter-rouge">{identifier，obeserver}</code> 的形式存到字典中保存。</p>
+
+<p>这里实在没什么新意，我们在下一小节中会介绍 <code class="highlighter-rouge">startObservingWithOptions:</code> 这一方法。</p>
+
+<h4 id="在分类中调剂-dealloc-方法">在分类中调剂 dealloc 方法</h4>
+
+<p>这个问题我觉得是非常值得讨论的一个问题，也是我最近在写框架时遇到很棘手的一个问题。</p>
+
+<blockquote>
+  <p>当我们在分类中注册一些通知或者使用 KVO 时，很有可能会找不到注销这些通知的时机。</p>
+</blockquote>
+
+<p>因为在<strong>分类中是无法直接实现 <code class="highlighter-rouge">dealloc</code> 方法的</strong>。 在 iOS8 以及之前的版本，如果某个对象被释放了，但是刚对象的注册的通知没有被移除，那么当事件再次发生，就会<em>向已经释放的对象发出通知</em>，整个程序就会崩溃。</p>
+
+<p>这里解决的办法就十分的巧妙:</p>
+
+<pre><code class="language-objectivec">Class classToSwizzle = self.class;
+// 获取所有修改过 dealloc 方法的类
+NSMutableSet *classes = self.class.bk_observedClassesHash;
+
+// 保证互斥避免 classes 出现难以预测的结果
+@synchronized (classes) {
+
+   // 获取当前类名，并判断是否修改过 dealloc 方法以减少这部分代码的调用次数
+   NSString *className = NSStringFromClass(classToSwizzle);
+   if (![classes containsObject:className]) {
+       // 这里的 sel_registerName 方法会返回 dealloc 的 selector，因为 dealloc 已经注册过
+       SEL deallocSelector = sel_registerName("dealloc");
+
+		__block void (*originalDealloc)(__unsafe_unretained id，SEL) = NULL;
+
+       // 实现新的 dealloc 方法
+		id newDealloc = ^(__unsafe_unretained id objSelf) {
+           //在方法 dealloc 之前移除所有 observer
+           [objSelf bk_removeAllBlockObservers];
+
+           if (originalDealloc == NULL) {
+               // 如果原有的 dealloc 方法没有被找到就会查找父类的 dealloc 方法，调用父类的 dealloc 方法
+               struct objc_super superInfo = {
+                   .receiver = objSelf,
+                   .super_class = class_getSuperclass(classToSwizzle)
+               };
+
+               void (*msgSend)(struct objc_super *，SEL) = (__typeof__(msgSend))objc_msgSendSuper;
+               msgSend(&amp;superInfo，deallocSelector);
+           } else {
+               // 如果 dealloc 方法被找到就会直接调用该方法，并传入参数
+               originalDealloc(objSelf，deallocSelector);
+           }
+       };
+
+       // 构建选择子实现 IMP
+       IMP newDeallocIMP = imp_implementationWithBlock(newDealloc);
+
+       // 向当前类添加方法，但是多半不会成功，因为类已经有 dealloc 方法
+       if (!class_addMethod(classToSwizzle，deallocSelector，newDeallocIMP，"v@:")) {
+           // 获取原有 dealloc 实例方法
+           Method deallocMethod = class_getInstanceMethod(classToSwizzle，deallocSelector);
+
+           // 存储 dealloc 方法实现防止在 set 的过程中调用该方法
+           originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_getImplementation(deallocMethod);
+
+           // 重新设置 dealloc 方法的实现，并存储到 originalDealloc 防止方法实现改变
+           originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_setImplementation(deallocMethod，newDeallocIMP);
+       }
+
+       // 将当前类名添加到已经改变的类的集合中
+       [classes addObject:className];
+   }
+}
+</code></pre>
+
+<p>这部分代码的执行顺序如下:</p>
+
+<ol>
+  <li>首先调用 <code class="highlighter-rouge">bk_observedClassesHash</code> 类方法获取所有修改过 <code class="highlighter-rouge">dealloc</code> 方法的类的集合 <code class="highlighter-rouge">classes</code></li>
+  <li>使用 <code class="highlighter-rouge">@synchronized (classes)</code> 保证互斥，避免同时修改 <code class="highlighter-rouge">classes</code> 集合的类过多出现意料之外的结果</li>
+  <li>判断即将调剂方法的类 <code class="highlighter-rouge">classToSwizzle</code> 是否调剂过 <code class="highlighter-rouge">dealloc</code> 方法</li>
+  <li>如果 <code class="highlighter-rouge">dealloc</code> 方法没有调剂过，就会通过 <code class="highlighter-rouge">sel_registerName("dealloc")</code> 方法获取选择子，这行代码并不会真正注册 <code class="highlighter-rouge">dealloc</code> 选择子而是会获取 <code class="highlighter-rouge">dealloc</code> 的选择子，具体原因可以看这个方法的实现 <a href="https://developer.apple.com/library/prerelease/ios/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/sel_registerName">sel_registerName</a></li>
+  <li>
+    <p>在新的 <code class="highlighter-rouge">dealloc</code> 中<strong>添加移除 Observer 的方法</strong>， 再调用原有的 <code class="highlighter-rouge">dealloc</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> id newDealloc = ^(__unsafe_unretained id objSelf) {
+ 	[objSelf bk_removeAllBlockObservers];
+
+    if (originalDealloc == NULL) {
+     	struct objc_super superInfo = {
+      		.receiver = objSelf,
+     		.super_class = class_getSuperclass(classToSwizzle)
+     	};
+         void (*msgSend)(struct objc_super *，SEL) = (__typeof__(msgSend))objc_msgSendSuper;
+         msgSend(&amp;superInfo，deallocSelector);
+     } else {
+         originalDealloc(objSelf，deallocSelector);
+     }
+ };
+ IMP newDeallocIMP = imp_implementationWithBlock(newDealloc);
+</code></pre></div>    </div>
+
+    <ol>
+      <li>调用 <code class="highlighter-rouge">bk_removeAllBlockObservers</code> 方法移除所有观察者，也就是这段代码的最终目的</li>
+      <li>根据 <code class="highlighter-rouge">originalDealloc</code> 是否为空，决定是向父类发送消息，还是直接调用 <code class="highlighter-rouge">originalDealloc</code> 并传入 <code class="highlighter-rouge">objSelf，deallocSelector</code> 作为参数</li>
+    </ol>
+  </li>
+  <li>
+    <p>在我们获得了新 <code class="highlighter-rouge">dealloc</code> 方法的选择子和 <code class="highlighter-rouge">IMP</code> 时，就要改变原有的 <code class="highlighter-rouge">dealloc</code> 的实现了</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (!class_addMethod(classToSwizzle，deallocSelector，newDeallocIMP，"v@:")) {
+     // The class already contains a method implementation.
+     Method deallocMethod = class_getInstanceMethod(classToSwizzle，deallocSelector);
+
+    // We need to store original implementation before setting new implementation
+     // in case method is called at the time of setting.
+     originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_getImplementation(deallocMethod);
+
+    // We need to store original implementation again，in case it just changed.
+     originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_setImplementation(deallocMethod，newDeallocIMP);
+ }
+</code></pre></div>    </div>
+
+    <ol>
+      <li>调用 <code class="highlighter-rouge">class_addMethod</code> 方法为当前类添加选择子为 <code class="highlighter-rouge">dealloc</code> 的方法（当然 99.99% 的可能不会成功）</li>
+      <li>获取原有的 <code class="highlighter-rouge">dealloc</code> 实例方法</li>
+      <li>将原有的实现保存到 <code class="highlighter-rouge">originalDealloc</code> 中，防止使用 <code class="highlighter-rouge">method_setImplementation</code> 重新设置该方法的过程中调用 <code class="highlighter-rouge">dealloc</code> 导致无方法可用</li>
+      <li>重新设置 <code class="highlighter-rouge">dealloc</code> 方法的实现。同样，将实现存储到 <code class="highlighter-rouge">originalDealloc</code> 中防止实现改变</li>
+    </ol>
+  </li>
+</ol>
+
+<p>关于在分类中调剂 <code class="highlighter-rouge">dealloc</code> 方法的这部分到这里就结束了，下一节将继续分析私有类 <code class="highlighter-rouge">_BKObserver</code>。</p>
+
+<h4 id="私有类-_bkobserver">私有类 <code class="highlighter-rouge">_BKObserver</code></h4>
+
+<p><code class="highlighter-rouge">_BKObserver</code> 是用来观测属性的对象，它在接口中定义了 4 个属性：</p>
+
+<pre><code class="language-objectivec">@property (nonatomic，readonly，unsafe_unretained) id observee;
+@property (nonatomic，readonly) NSMutableArray *keyPaths;
+@property (nonatomic，readonly) id task;
+@property (nonatomic，readonly) BKObserverContext context;
+</code></pre>
+
+<p>上面四个属性的具体作用在这里不说了，上面的 <code class="highlighter-rouge">bk_addObserverForKeyPaths:identifier:options:context:</code> 方法中调用 <code class="highlighter-rouge">_BKObserver</code> 的初始化方法 <code class="highlighter-rouge">initWithObservee:keyPaths:context:task:</code> 太简单了也不说了。</p>
+
+<pre><code class="language-objectivec">_BKObserver *observer = [[_BKObserver alloc] initWithObservee:self keyPaths:keyPaths context:context task:task];
+[observer startObservingWithOptions:options];
+</code></pre>
+
+<p>上面的第一行代码生成一个 <code class="highlighter-rouge">observer</code> 实例之后立刻调用了 <code class="highlighter-rouge">startObservingWithOptions:</code> 方法开始观测对应的 <code class="highlighter-rouge">keyPath</code>：</p>
+
+<pre><code class="language-objectivec">- (void)startObservingWithOptions:(NSKeyValueObservingOptions)options
+{
+	@synchronized(self) {
+		if (_isObserving) return;
+
+		#1：遍历 keyPaths 实现 KVO
+
+		_isObserving = YES;
+	}
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">startObservingWithOptions:</code> 方法最重要的就是第 <code class="highlighter-rouge">#1</code> 部分：</p>
+
+<pre><code class="language-objectivec">[self.keyPaths bk_each:^(NSString *keyPath) {
+	[self.observee addObserver:self forKeyPath:keyPath options:options context:BKBlockObservationContext];
+}];
+</code></pre>
+
+<p>遍历自己的 <code class="highlighter-rouge">keyPaths</code> 然后让 <code class="highlighter-rouge">_BKObserver</code> 作观察者观察自己，然后传入对应的 <code class="highlighter-rouge">keyPath</code>。</p>
+
+<p>关于 <code class="highlighter-rouge">_stopObservingLocked</code> 方法的实现也十分的相似，这里就不说了。</p>
+
+<pre><code class="language-objectivec">[keyPaths bk_each:^(NSString *keyPath) {
+	[observee removeObserver:self forKeyPath:keyPath context:BKBlockObservationContext];
+}];
+</code></pre>
+
+<p>到目前为止，我们还没有看到实现 KVO 所必须的方法 <code class="highlighter-rouge">observeValueForKeyPath:ofObject:change:context</code>，这个方法就是每次属性改变之后的回调：</p>
+
+<pre><code class="language-objectivec">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if (context != BKBlockObservationContext) return;
+
+	@synchronized(self) {
+		switch (self.context) {
+			case BKObserverContextKey: {
+				void (^task)(id) = self.task;
+				task(object);
+				break;
+			}
+			case BKObserverContextKeyWithChange: {
+				void (^task)(id，NSDictionary *) = self.task;
+				task(object，change);
+				break;
+			}
+			case BKObserverContextManyKeys: {
+				void (^task)(id，NSString *) = self.task;
+				task(object，keyPath);
+				break;
+			}
+			case BKObserverContextManyKeysWithChange: {
+				void (^task)(id，NSString *，NSDictionary *) = self.task;
+				task(object，keyPath，change);
+				break;
+			}
+		}
+	}
+}
+</code></pre>
+
+<p>这个方法的实现也很简单，根据传入的 <code class="highlighter-rouge">context</code> 值，对 <code class="highlighter-rouge">task</code> 类型转换，并传入具体的值。</p>
+
+<p>这个模块倒着就介绍完了，在下一节会介绍 BlocksKit 对 UIKit 组件一些简单的改造。</p>
+
+<h2 id="改造-uikit">改造 UIKit</h2>
+
+<p>在这个小结会具体介绍 BlocksKit 是如何对一些简单的控件进行改造的，本节大约有两部分内容：</p>
+
+<ul>
+  <li>UIGestureRecongizer + UIBarButtonItem + UIControl</li>
+  <li>UIView</li>
+</ul>
+
+<h3 id="改造-uigesturerecongizeruibarbuttonitem-和-uicontrol">改造 UIGestureRecongizer，UIBarButtonItem 和 UIControl</h3>
+
+<p>先来看一个 <code class="highlighter-rouge">UITapGestureRecognizer</code> 使用的例子</p>
+
+<pre><code class="language-objectivec"> UITapGestureRecognizer *singleTap = [UITapGestureRecognizer bk_recognizerWithHandler:^(id sender) {
+     NSLog(@"Single tap.");
+ } delay:0.18];
+ [self addGestureRecognizer:singleTap];
+</code></pre>
+
+<p>代码中的 <code class="highlighter-rouge">bk_recognizerWithHandler:delay:</code> 方法在最后都会调用初始化方法 <code class="highlighter-rouge">bk_initWithHandler:delay:</code> 生成一个 <code class="highlighter-rouge">UIGestureRecongizer</code> 的实例</p>
+
+<pre><code class="language-objectivec">- (instancetype)bk_initWithHandler:(void (^)(UIGestureRecognizer *sender，UIGestureRecognizerState state，CGPoint location))block delay:(NSTimeInterval)delay
+{
+	self = [self initWithTarget:self action:@selector(bk_handleAction:)];
+	if (!self) return nil;
+
+	self.bk_handler = block;
+	self.bk_handlerDelay = delay;
+
+	return self;
+}
+</code></pre>
+
+<p>它会在这个方法中传入 <code class="highlighter-rouge">target</code> 和 <code class="highlighter-rouge">selector</code>。 其中 <code class="highlighter-rouge">target</code> 就是 <code class="highlighter-rouge">self</code>，而 <code class="highlighter-rouge">selector</code> 也会在这个分类中实现：</p>
+
+<pre><code class="language-objectivec">- (void)bk_handleAction:(UIGestureRecognizer *)recognizer
+{
+	void (^handler)(UIGestureRecognizer *sender，UIGestureRecognizerState state，CGPoint location) = recognizer.bk_handler;
+	if (!handler) return;
+
+	NSTimeInterval delay = self.bk_handlerDelay;
+
+	#1: 封装 block 并控制 block 是否可以执行
+
+	self.bk_shouldHandleAction = YES;
+
+    [NSObject bk_performAfterDelay:delay usingBlock:block];
+}
+</code></pre>
+
+<p>因为在初始化方法 <code class="highlighter-rouge">bk_initWithHandler:delay:</code> 中保存了当前手势的 <code class="highlighter-rouge">bk_handler</code>，所以直接调用在 Block Execution 一节中提到过的 <code class="highlighter-rouge">bk_performAfterDelay:usingBlock:</code> 方法，将 block 派发到指定的队列中，最终完成对 block 的调用。</p>
+
+<h4 id="封装-block-并控制-block-是否可以执行">封装 block 并控制 block 是否可以执行</h4>
+
+<p>这部分代码和前面的部分有些相似，因为这里也用到了一个属性 <code class="highlighter-rouge">bk_shouldHandleAction</code> 来控制 block 是否会被执行：</p>
+
+<pre><code class="language-objectivec">CGPoint location = [self locationInView:self.view];
+void (^block)(void) = ^{
+	if (!self.bk_shouldHandleAction) return;
+	handler(self，self.state，location);
+};
+</code></pre>
+
+<p>====</p>
+
+<p>同样 <code class="highlighter-rouge">UIBarButtonItem</code> 和 <code class="highlighter-rouge">UIControl</code> 也是用了几乎相同的机制，把 <code class="highlighter-rouge">target</code> 设置为 <code class="highlighter-rouge">self</code>，让后在分类的方法中调用指定的 block。</p>
+
+<h4 id="uicontrolwrapper">UIControlWrapper</h4>
+
+<p>稍微有些不同的是 <code class="highlighter-rouge">UIControl</code>。因为 <code class="highlighter-rouge">UIControl</code> 有多种 <code class="highlighter-rouge">UIControlEvents</code>，所以使用另一个类 <code class="highlighter-rouge">BKControlWrapper</code> 来封装 <code class="highlighter-rouge">handler</code> 和 <code class="highlighter-rouge">controlEvents</code></p>
+
+<pre><code class="language-objectivec">@property (nonatomic) UIControlEvents controlEvents;
+@property (nonatomic，copy) void (^handler)(id sender);
+</code></pre>
+
+<p>其中 <code class="highlighter-rouge">UIControlWrapper</code> 对象以 <code class="highlighter-rouge">{controlEvents，wrapper}</code> 的形式作为 <code class="highlighter-rouge">UIControl</code> 的属性存入字典。</p>
+
+<h3 id="改造-uiview">改造 UIView</h3>
+
+<p>因为在上面已经改造过了 <code class="highlighter-rouge">UIGestureRecognizer</code>，在这里改造 <code class="highlighter-rouge">UIView</code> 就变得很容易了：</p>
+
+<pre><code class="language-objectivec">- (void)bk_whenTouches:(NSUInteger)numberOfTouches tapped:(NSUInteger)numberOfTaps handler:(void (^)(void))block
+{
+	if (!block) return;
+
+	UITapGestureRecognizer *gesture = [UITapGestureRecognizer bk_recognizerWithHandler:^(UIGestureRecognizer *sender，UIGestureRecognizerState state，CGPoint location) {
+		if (state == UIGestureRecognizerStateRecognized) block();
+	}];
+
+	gesture.numberOfTouchesRequired = numberOfTouches;
+	gesture.numberOfTapsRequired = numberOfTaps;
+
+	[self.gestureRecognizers enumerateObjectsUsingBlock:^(id obj，NSUInteger idx，BOOL *stop) {
+		if (![obj isKindOfClass:[UITapGestureRecognizer class]]) return;
+
+		UITapGestureRecognizer *tap = obj;
+		BOOL rightTouches = (tap.numberOfTouchesRequired == numberOfTouches);
+		BOOL rightTaps = (tap.numberOfTapsRequired == numberOfTaps);
+		if (rightTouches &amp;&amp; rightTaps) {
+			[gesture requireGestureRecognizerToFail:tap];
+		}
+	}];
+
+	[self addGestureRecognizer:gesture];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">UIView</code> 分类只有这一个核心方法，其它的方法都是向这个方法传入不同的参数，这里需要注意的就是。它会遍历所有的 <code class="highlighter-rouge">gestureRecognizers</code>，然后把对所有有冲突的手势调用 <code class="highlighter-rouge">requireGestureRecognizerToFail:</code> 方法，保证添加的手势能够正常的执行。</p>
+
+<p>由于这篇文章中的内容较多，所以内容分成了两个部分，下一部分介绍的是 BlocksKit 中的最重要的部分动态代理：</p>
+
+<ul>
+  <li><a href="http://draveness.me/blockskit-1/">神奇的 BlocksKit（一）</a></li>
+  <li><a href="http://draveness.me/blockskit-2/">神奇的 BlocksKit（二）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=神奇的 BlocksKit （一）&amp;url=blockskit-1"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=blockskit-1"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=blockskit-1"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/blockskit-2">
+            <section class="post">
+                <h2>神奇的 BlocksKit （二）</h2>
+                <p>> 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) 这篇文章『神奇的 BlocksKit』的第二部分，关于第一部分的内容在这里： + [神奇的 BlocksKit（一）](http://draveness.me/blockskit-1/) + [神奇的 BlocksKit（二）](http://draveness.me/blockskit-2/) ## 动态代理 动态代理这部分可以说是 BlocksKit 的精华。它**使用...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">
+            <section class="post">
+                <h2>iOS 开发中的重构</h2>
+                <p>随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 DRY 的原则, 使得项目难以维护. 为什么要重构 为什么要重构, 重构其实是一件持续性的工作, 工程师在进行开发的过程中难免会有无法考虑周全的地方,...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

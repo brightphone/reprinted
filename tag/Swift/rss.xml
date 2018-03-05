@@ -1,0 +1,2864 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+   
+      <title>brightphone.github.io/reprinted/</title>
+   
+   <link></link>
+   <description></description>
+   <language>en-uk</language>
+   <managingEditor> </managingEditor>
+   <atom:link href="rss" rel="self" type="application/rss+xml" />
+   
+	<item>
+	  <title>神奇的 BlocksKit （二）</title>
+	  <link>/reprinted//blockskit-2</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:42:55+00:00</pubDate>
+	  <guid>/reprinted//blockskit-2</guid>
+	  <description><![CDATA[
+	     <iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+<p>这篇文章『神奇的 BlocksKit』的第二部分，关于第一部分的内容在这里：</p>
+
+<ul>
+  <li><a href="http://draveness.me/blockskit-1/">神奇的 BlocksKit（一）</a></li>
+  <li><a href="http://draveness.me/blockskit-2/">神奇的 BlocksKit（二）</a></li>
+</ul>
+
+<h2 id="动态代理">动态代理</h2>
+
+<p>动态代理这部分可以说是 BlocksKit 的精华。它<strong>使用 block 属性替换 UIKit 中的所有能够通过代理完成的事件</strong>，省略了设置代理和实现方法的过程，让对象自己实现代理方法，而且这个功能的实现是极其动态的。</p>
+
+<blockquote>
+  <p>其实不是对象自己实现的代理方法，只是框架为我们提供的便捷方法，不需要构造其它对象就能完成代理方法的实现，具体我们会在后面详细地解释。</p>
+</blockquote>
+
+<p>下面是这部分几个关键的类：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">A2BlockInvocation</code> 的主要作用是存储和转发 block</li>
+  <li><code class="highlighter-rouge">A2DynamicDelegate</code> 用来实现类的代理和数据源，它是 <code class="highlighter-rouge">NSProxy</code> 的子类</li>
+  <li><code class="highlighter-rouge">NSObject+A2DynamicDelegate</code> 负责为返回 <code class="highlighter-rouge">bk_dynamicDelegate</code> 和 <code class="highlighter-rouge">bk_dynamicDataSource</code> 等 <code class="highlighter-rouge">A2DynamicDelegate</code> 类型的实例，为 <code class="highlighter-rouge">NSObject</code> 提供主要的接口</li>
+  <li><code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 提供了一系列接口将代理方法映射到 block 上</li>
+  <li>其他的 UIKit 的分类提供对应的属性，并在对应的 <code class="highlighter-rouge">A2DynamicDelegate</code> 子类中实现代理方法</li>
+</ul>
+
+<p>这里是我对这部分代码结构的理解：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-20-blockskit.png" alt="" /></p>
+
+<p>这篇文成首先会从上到下对整个工作原理进行概述，然后再从底层到顶层详细地解释这个框架的机制和原理。</p>
+
+<h3 id="动态代理工作概述">动态代理工作概述</h3>
+
+<p>在这里我们要对这部分的实现进行一个简单的概述，从上到下跟踪 BlocksKit 的调用过程。</p>
+
+<p>以 <code class="highlighter-rouge">UIImagePickerController</code> 为例，因为这个文件中的代码较少，能省去很多不必要的实现细节。</p>
+
+<p>在头文件中声明了两个属性，也就是 <code class="highlighter-rouge">UIImagePickerController</code> 代理方法的对应 block 属性：</p>
+
+<pre><code class="language-objectivec">@property (nonatomic，copy) void(^bk_didFinishPickingMediaBlock)(UIImagePickerController *，NSDictionary *);
+@property (nonatomic，copy) void(^bk_didCancelBlock)(UIImagePickerController *);
+</code></pre>
+
+<p>然后在实现文件中动态生成这两个方法的存取方法</p>
+
+<pre><code class="language-objectivec">@dynamic bk_didFinishPickingMediaBlock;
+@dynamic bk_didCancelBlock;
+</code></pre>
+
+<p>你可以看到在这个名为 <code class="highlighter-rouge">BlocksKit</code> 的分类中只添加了一个方法：</p>
+
+<pre><code class="language-objectivec">+ (void)load
+{
+	@autoreleasepool {
+		[self bk_registerDynamicDelegate];
+		[self bk_linkDelegateMethods:@{ @"bk_didFinishPickingMediaBlock": @"imagePickerController:didFinishPickingMediaWithInfo:",
+                                        @"bk_didCancelBlock": @"imagePickerControllerDidCancel:" }];
+	}
+}
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">load</code> 中实现这个方法，能够减少其中两个方法的调用次数，在 <code class="highlighter-rouge">autoreleasepool</code> 块中调用方法，使得其它地方的代码不会受到这里注册代理，链接代理方法中产生的对象的影响。</p>
+
+<p><code class="highlighter-rouge">bk_registerDynamicDelegate</code> 方法是 <code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 分类中添加的方法，用于修改原有属性 <code class="highlighter-rouge">delegate</code> 方法的实现（<strong>动态替换 delegate 方法实现</strong>）。在这里就是与 <code class="highlighter-rouge">UIImagePickerController+BlocksKit</code> 处于同一文件下的 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code>，先不说这个文件的功能，会在之后介绍。</p>
+
+<p>在 <code class="highlighter-rouge">NSObject+A2DynamicDelegate</code> 分类中的 <code class="highlighter-rouge">bk_registerDynamicDelegateNamed:forProtocol:</code> 修改 <code class="highlighter-rouge">@selector(delegate)</code> 和 <code class="highlighter-rouge">@selector(setDelegate:)</code> 的实现，使用 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code> 替换原有的 <code class="highlighter-rouge">delegate</code></p>
+
+<pre><code class="language-objectivec">IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id delegate) {
+	A2DynamicDelegate *dynamicDelegate = getDynamicDelegate(delegatingObject，protocol，infoAsPtr，YES);
+	if ([delegate isEqual:dynamicDelegate]) {
+		delegate = nil;
+	}
+	dynamicDelegate.realDelegate = delegate;
+});
+
+IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+    return [delegatingObject bk_dynamicDelegateForProtocol:a2_protocolForDelegatingObject(delegatingObject，protocol)];
+});
+</code></pre>
+
+<p>在获取 <code class="highlighter-rouge">delegate</code> 属性时，就会获取 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code>， <code class="highlighter-rouge">realDelegate</code> 相当于原有的 <code class="highlighter-rouge">delegate</code> 属性，会在下面的小节中具体分析。</p>
+
+<p>在 <code class="highlighter-rouge">load</code> 方法中调用下一个方法是 <code class="highlighter-rouge">bk_linkDelegateMethods:</code> 这个方法会把代理方法和对应的 block 属性链接起来，这样可以通过代理方法的选择子查找对应的 block。</p>
+
+<pre><code class="language-objectivec">IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+	A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，NO);
+	return [delegate blockImplementationForMethod:selector];
+});
+
+IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id block) {
+	A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，YES);
+	[delegate implementMethod:selector withBlock:block];
+});
+</code></pre>
+
+<p>通过调用 <code class="highlighter-rouge">A2DynamicDelegate</code> 的实例方法 <code class="highlighter-rouge">blockImplementationForMethod:</code> 和 <code class="highlighter-rouge">implementMethod:withBlock:</code> 动态实现 block 的存取方法。</p>
+
+<p>当代理方法 <code class="highlighter-rouge">imagePickerController:didFinishPickingMediaWithInfo:</code> 被调用时，因为 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code> 是 <code class="highlighter-rouge">UIImagePickerController</code> 的代理，所以会调用它的方法：</p>
+
+<pre><code class="language-objectivec">- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+	id realDelegate = self.realDelegate;
+	if (realDelegate &amp;&amp; [realDelegate respondsToSelector:@selector(imagePickerController:didFinishPickingMediaWithInfo:)])
+		[realDelegate imagePickerController:picker didFinishPickingMediaWithInfo:info];
+
+	void (^block)(UIImagePickerController *，NSDictionary *) = [self blockImplementationForMethod:_cmd];
+	if (block) block(picker，info);
+}
+</code></pre>
+
+<p>通过 <code class="highlighter-rouge">blockImplementationForMethod:</code> 方法获取在上面存储的 block，然后传入参数执行该代码块。</p>
+
+<ol>
+  <li>在 <code class="highlighter-rouge">load</code> 方法注册动态代理并链接代理方法</li>
+  <li>在运行时修改原有的 <code class="highlighter-rouge">delegate</code> 属性的存取方法，使用 <code class="highlighter-rouge">A2DynamicDelegate</code> 替换原有的 <code class="highlighter-rouge">delegate</code>，原有的 <code class="highlighter-rouge">delegate</code> 换为 <code class="highlighter-rouge">realDelegate</code></li>
+  <li>为 block 属性动态实现存取方法，返回对应 <code class="highlighter-rouge">A2DynamicDelegate</code> 子类中存储的 block</li>
+  <li>在代理方法真正被调用时，查找 <code class="highlighter-rouge">realDelegate</code> 中是否对代理方法做出响应，无论是否响应，都通过选择子查找对应的 <code class="highlighter-rouge">block</code>，然后传入相应参数执行 block</li>
+</ol>
+
+<h3 id="自底向上分析动态代理的工作">自底向上分析动态代理的工作</h3>
+
+<p>我们已经自顶向下分析了 BlocksKit 的工作过程，也对这个部分有一个基本的了解，接下来我们将从底层到顶层分析整个 BlocksKit，我们再来看一下整个框架的结构图：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-20-blockskit.png" alt="" /></p>
+
+<p>我们将以下面的顺序来依次介绍这些模块，其中的 <code class="highlighter-rouge">UITextField</code> 可以换成其它的类：</p>
+
+<ol>
+  <li>A2BlockInvocation</li>
+  <li>A2DynamicDelegate</li>
+  <li>NSObject+A2DynamicDelegate</li>
+  <li>A2DynamicUITextFieldDelegate</li>
+  <li>UITextField+BlocksKit</li>
+</ol>
+
+<h4 id="a2blockinvocation">A2BlockInvocation</h4>
+
+<p><code class="highlighter-rouge">A2BlockInvocation</code> 使用来对闭包，也就是 block 进行存储和转发的类。</p>
+
+<p>先介绍这个的是因为 <code class="highlighter-rouge">A2BlockInvocation</code> 的功能比较底层，涉及的内容也都比较奇葩，所以想先简单介绍一下，避免之后一个类分几部分介绍。</p>
+
+<p>在 Objective-C 中，每一个方法甚至 block 都是有类型签名的：</p>
+
+<pre><code class="language-objectivec">@interface NSMethodSignature : NSObject {
+
+...
+
+@property (readonly) NSUInteger numberOfArguments;
+
+...
+
+@property (readonly) const char *methodReturnType NS_RETURNS_INNER_POINTER;
+
+...
+
+@end
+</code></pre>
+
+<p>它们有返回类型、参数数字和参数类型等等。</p>
+
+<h5 id="block-结构体">Block 结构体</h5>
+
+<p>block 的签名没有哪个函数能够直接获取，它存储在 block 的结构体中，就像这样：</p>
+
+<pre><code class="language-objectivec">typedef NS_OPTIONS(int，BKBlockFlags) {
+	BKBlockFlagsHasCopyDisposeHelpers = (1 &lt;&lt; 25),
+	BKBlockFlagsHasSignature          = (1 &lt;&lt; 30)
+};
+
+typedef struct _BKBlock {
+	__unused Class isa;
+	BKBlockFlags flags;
+	__unused int reserved;
+	void (__unused *invoke)(struct _BKBlock *block，...);
+	struct {
+		unsigned long int reserved;
+		unsigned long int size;
+		// requires BKBlockFlagsHasCopyDisposeHelpers
+		void (*copy)(void *dst，const void *src);
+		void (*dispose)(const void *);
+		// requires BKBlockFlagsHasSignature
+		const char *signature;
+		const char *layout;
+	} *descriptor;
+	// imported variables
+} *BKBlockRef;
+</code></pre>
+
+<p>这部分其实就是 block 实际存储在内存中的数据接口，可以在 runtime 中的源代码中看到这里的代码。</p>
+
+<h5 id="typesignatureforblock">typeSignatureForBlock</h5>
+
+<p>上面的 <code class="highlighter-rouge">signature</code> 就是 block 的签名，下面实现方法来获取这个签名</p>
+
+<pre><code class="language-objectivec">+ (NSMethodSignature *)typeSignatureForBlock:(id)block __attribute__((pure，nonnull(1)))
+{
+	BKBlockRef layout = (__bridge void *)block;
+
+	// 如果 block 没有签名直接返回空
+	if (!(layout-&gt;flags &amp; BKBlockFlagsHasSignature))
+		return nil;
+
+	void *desc = layout-&gt;descriptor;
+	desc += 2 * sizeof(unsigned long int);
+
+	if (layout-&gt;flags &amp; BKBlockFlagsHasCopyDisposeHelpers)
+		desc += 2 * sizeof(void *);
+
+	if (!desc)
+		return nil;
+
+	const char *signature = (*(const char **)desc);
+
+	return [NSMethodSignature signatureWithObjCTypes:signature];
+}
+</code></pre>
+
+<p>知道了这个方法的作用再理解它的实现就非常简单了，根据<code class="highlighter-rouge">flag</code> 来移动指针，最终 <code class="highlighter-rouge">signature</code> 所在的内存空间。</p>
+
+<blockquote>
+  <p>Unlike a typical method signature，a block type signature has no <code class="highlighter-rouge">self</code> (<code class="highlighter-rouge">'@'</code>)
+ or <code class="highlighter-rouge">_cmd</code> (<code class="highlighter-rouge">':'</code>) parameter，but instead just one parameter for the block itself
+ (<code class="highlighter-rouge">'@?'</code>)。</p>
+</blockquote>
+
+<p>在这里所涉及的 <code class="highlighter-rouge">@</code>、<code class="highlighter-rouge">:</code> 和<code class="highlighter-rouge">@?</code> 可以看这里的文档 <a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html">类型编码</a></p>
+
+<p>在一般的方法签名中 block 的类型签名是没有 <code class="highlighter-rouge">self</code> (<code class="highlighter-rouge">'@'</code>) 或者 <code class="highlighter-rouge">_cmd</code> (<code class="highlighter-rouge">':'</code>) 的，只有一个参数代表 block 自己 (<code class="highlighter-rouge">'@?'</code>).</p>
+
+<ul>
+  <li><code class="highlighter-rouge">^(UIActionSheet *) {}</code>
+    <ul>
+      <li>参数类型：<code class="highlighter-rouge">@?(@"UIActionSheet")</code></li>
+      <li>返回类型：<code class="highlighter-rouge">v</code></li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">- (void)willPresentActionSheet:(UIActionSheet *)actionSheet</code>
+    <ul>
+      <li>参数类型：<code class="highlighter-rouge">@:@</code></li>
+      <li>返回类型：<code class="highlighter-rouge">v</code></li>
+    </ul>
+  </li>
+</ul>
+
+<p>为什么要把 <code class="highlighter-rouge">@"UIActionSheet"</code> 标记上括号？因为它们属于同一个参数。</p>
+
+<p>同时因为 <code class="highlighter-rouge">UIActionSheet</code> 也是 <code class="highlighter-rouge">id</code> 类型，所以它的类型编码也是 <code class="highlighter-rouge">@</code>。</p>
+
+<p>当调用 <code class="highlighter-rouge">initWithBlock:</code> 方法时，会先调用上面说的方法 <code class="highlighter-rouge">typeSignatureForBlock:</code> 获取 block 的类型签名：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithBlock:(id)block
+{
+	NSParameterAssert(block);
+	NSMethodSignature *blockSignature = [[self class] typeSignatureForBlock:block];
+	NSMethodSignature *methodSignature = [[self class] methodSignatureForBlockSignature:blockSignature];
+	NSAssert(methodSignature，@"Incompatible block: %@"，block);
+	return (self = [self initWithBlock:block methodSignature:methodSignature blockSignature:blockSignature]);
+}
+</code></pre>
+
+<h5 id="methodsignatureforblocksignature">methodSignatureForBlockSignature</h5>
+
+<p>然后调用 <code class="highlighter-rouge">methodSignatureForBlockSignature:</code> 方法构造一个可以兼容的方法签名：</p>
+
+<pre><code class="language-objectivec">+ (NSMethodSignature *)methodSignatureForBlockSignature:(NSMethodSignature *)original
+{
+	#1: 检查方法签名的参数，省略
+
+	NSMutableString *signature = [[NSMutableString alloc] initWithCapacity:original.numberOfArguments + 1];
+
+	const char *retTypeStr = original.methodReturnType;
+	// 返回类型，id 类型(self @)，选择子类型(SEL :)
+	[signature appendFormat:@"%s%s%s"，retTypeStr，@encode(id)，@encode(SEL)];
+	// signature = (返回类型)@:
+
+	for (NSUInteger i = 1; i &lt; original.numberOfArguments; i++) {
+		const char *typeStr = [original getArgumentTypeAtIndex:i];
+		NSString *type = [[NSString alloc] initWithBytesNoCopy:(void *)typeStr length:strlen(typeStr) encoding:NSUTF8StringEncoding freeWhenDone:NO];
+		[signature appendString:type];
+	}
+
+	// signature = (返回类型)@:(参数类型)
+
+	return [NSMethodSignature signatureWithObjCTypes:signature.UTF8String];
+}
+</code></pre>
+
+<p>具体的实现细节我们就省略了，它的工作原理是把 <code class="highlighter-rouge">@?(@"UIActionSheet")</code> 类型签名转换成 <code class="highlighter-rouge">@:@</code>，然后返回方法签名。</p>
+
+<p>关于代码中的 <code class="highlighter-rouge">@encode</code> 可以看这里 <a href="https://gcc.gnu.org/onlinedocs/gcc-3.2/gcc/Function-Attributes.html">声明方法的属性</a></p>
+
+<h5 id="issignaturecompatiblewithsignature">isSignature:compatibleWithSignature:</h5>
+
+<p>在这个类中最后一个重要的方法就是 <code class="highlighter-rouge">isSignature:compatibleWithSignature:</code>，这个方法是判断传入的 block 和方法的类型签名是否兼容。</p>
+
+<pre><code class="language-objectivec">+ (BOOL)isSignature:(NSMethodSignature *)signatureA compatibleWithSignature:(NSMethodSignature *)signatureB __attribute__((pure))
+{
+	#1: 参数检查，省略
+
+	...
+
+	#2: 判断返回值是否相同，省略
+	if (signatureA.methodReturnType[0] != signatureB.methodReturnType[0]) return NO;
+
+	#3: 设置 methodSignature 和 blockSignature
+
+	...
+
+	#4: 比较 methodSignature 和 blockSignature
+
+	return YES;
+}
+</code></pre>
+
+<p>第 <code class="highlighter-rouge">#3</code> 部分设置 <code class="highlighter-rouge">methodSignature</code> 和 <code class="highlighter-rouge">blockSignature</code>。</p>
+
+<p>因为<strong>方法签名会比 block 类型签名多一个默认参数</strong>，所以，这里会将参数多的设置为 <code class="highlighter-rouge">methodSignature</code>，如果把为 block 类型签名的设置给了 <code class="highlighter-rouge">methodSignature</code> 也不会有问题，在 <code class="highlighter-rouge">#4</code> 部分会判断出来并返回 <code class="highlighter-rouge">NO</code>。</p>
+
+<blockquote>
+  <p>方法默认参数：<code class="highlighter-rouge">self，SEL</code>，block 默认类型参数: <code class="highlighter-rouge">block</code></p>
+</blockquote>
+
+<pre><code class="language-objectivec">NSMethodSignature *methodSignature = nil，*blockSignature = nil;
+if (signatureA.numberOfArguments &gt; signatureB.numberOfArguments) {
+    methodSignature = signatureA;
+    blockSignature = signatureB;
+} else if (signatureB.numberOfArguments &gt; signatureA.numberOfArguments) {
+    methodSignature = signatureB;
+    blockSignature = signatureA;
+} else {
+    return NO;
+}
+</code></pre>
+
+<p>第 <code class="highlighter-rouge">#4</code> 部分就是一次比较各个类型签名，也没什么复杂的，需要注意的就是选择正确的 index</p>
+
+<pre><code class="language-objectivec">NSUInteger numberOfArguments = methodSignature.numberOfArguments;
+for (NSUInteger i = 2; i &lt; numberOfArguments; i++) {
+    if ([methodSignature getArgumentTypeAtIndex:i][0] != [blockSignature getArgumentTypeAtIndex:i - 1][0])
+        return NO;
+}
+</code></pre>
+
+<h5 id="invokewithinvocationreturnvalueoutreturnvalue">invokeWithInvocation:returnValue:outReturnValue:</h5>
+
+<p>这一节主要介绍的是，当 <code class="highlighter-rouge">A2BlockInvocation</code> 对象具体需要执行某一个 <code class="highlighter-rouge">NSInvocation</code> 时是如何工作的，其实这个方法还是很容易理解的。</p>
+
+<pre><code class="language-objectivec">- (BOOL)invokeWithInvocation:(NSInvocation *)outerInv returnValue:(out NSValue **)outReturnValue setOnInvocation:(BOOL)setOnInvocation
+{
+	#1: 参数以及类型签名是否匹配的检查，省略
+
+	NSInvocation *innerInv = [NSInvocation invocationWithMethodSignature:self.blockSignature];
+
+	#2: 设置 innerInv 参数
+
+	...
+
+	[innerInv invokeWithTarget:self.block];
+
+	#3: 获取返回值
+
+	free(argBuf);
+
+	return YES;
+}
+</code></pre>
+
+<p>第 <code class="highlighter-rouge">#2</code>、<code class="highlighter-rouge">#3</code> 部分的代码是为了设置 <code class="highlighter-rouge">innerInv</code> 的参数，获取返回值：</p>
+
+<pre><code class="language-objectivec">void *argBuf = NULL;
+
+for (NSUInteger i = 2; i &lt; sig.numberOfArguments; i++) {
+	const char *type = [sig getArgumentTypeAtIndex:i];
+	NSUInteger argSize;
+	NSGetSizeAndAlignment(type，&amp;argSize，NULL);
+
+	if (!(argBuf = reallocf(argBuf，argSize))) {
+		return NO;
+	}
+
+	[outerInv getArgument:argBuf atIndex:i];
+	[innerInv setArgument:argBuf atIndex:i - 1];
+}
+
+// 执行 block
+
+NSUInteger retSize = sig.methodReturnLength;
+if (retSize) {
+    if (outReturnValue || setOnInvocation) {
+        if (!(argBuf = reallocf(argBuf，retSize))) {
+            return NO;
+        }
+
+        [innerInv getReturnValue:argBuf];
+
+        if (setOnInvocation) {
+            [outerInv setReturnValue:argBuf];
+        }
+
+        if (outReturnValue) {
+            *outReturnValue = [NSValue valueWithBytes:argBuf objCType:sig.methodReturnType];
+        }
+    }
+} else {
+    if (outReturnValue) {
+        *outReturnValue = nil;
+    }
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">A2BlockInvocation</code> 这一节就到这里了，接下来要说一下 <code class="highlighter-rouge">A2DynamicDelegate</code>。</p>
+
+<h4 id="a2dynamicdelegate">A2DynamicDelegate</h4>
+
+<p><code class="highlighter-rouge">A2DynamicDelegate</code> 可以说是 BlocksKit 实现动态代理的关键，是这个框架中很重要的类，它通过 block 实现了类的代理和数据源等协议。</p>
+
+<p><code class="highlighter-rouge">A2DynamicDelegate</code> 它的父类是 <code class="highlighter-rouge">NSProxy</code>，而 <code class="highlighter-rouge">NSProxy</code> 出现的目的就是为了代理一个对象的。</p>
+
+<pre><code class="language-objectivec">@interface NSProxy &lt;NSObject&gt;
+</code></pre>
+
+<p>我们不具体解释这里的 <code class="highlighter-rouge">NSProxy</code>，如果想要更详细的信息，请看<a href="https://developer.apple.com/library/prerelease/ios/documentation/Cocoa/Reference/Foundation/Classes/NSProxy_Class/index.html">这里</a>。</p>
+
+<p><code class="highlighter-rouge">A2DynamicDelegate</code> 作为 <code class="highlighter-rouge">NSProxy</code> 的子类，必须实现 <code class="highlighter-rouge">forwardInvocation:</code> <code class="highlighter-rouge">methodSignatureForSelector:</code> 方法进行对象转发，这是在苹果官方文档中说明的。</p>
+
+<h5 id="覆写必要的方法-methodsignatureforselector-和-forwardinvocation">覆写必要的方法 methodSignatureForSelector: 和 forwardInvocation:</h5>
+
+<p>我们首先来看一下 <code class="highlighter-rouge">methodSignatureForSelector:</code>，它为一个选择子返回合适的方法签名：</p>
+
+<pre><code class="language-objectivec">- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
+{
+	A2BlockInvocation *invocation = nil;
+	if ((invocation = [self.invocationsBySelectors bk_objectForSelector:aSelector]))
+		return invocation.methodSignature;
+	else if ([self.realDelegate methodSignatureForSelector:aSelector])
+		return [self.realDelegate methodSignatureForSelector:aSelector];
+	else if (class_respondsToSelector(object_getClass(self)，aSelector))
+		return [object_getClass(self) methodSignatureForSelector:aSelector];
+	return [[NSObject class] methodSignatureForSelector:aSelector];
+}
+</code></pre>
+
+<p>这里的逻辑如下：</p>
+
+<ol>
+  <li>判断 <code class="highlighter-rouge">invocationsBySelectors</code> 属性中是否存储了该选择子对应的 <code class="highlighter-rouge">A2BlockInvocation</code>，直接返回这个 <code class="highlighter-rouge">invocation</code> 对象的类型签名，也就是说自己实现了该选择子对应的方法</li>
+  <li>
+    <p>在真正的 <code class="highlighter-rouge">realDelegate</code> 中查找原有的代理(不是当前的动态代理 <code class="highlighter-rouge">A2DynamicDelegate</code>)是否实现了该选择子，并返回方法签名</p>
+
+    <blockquote>
+      <p>在这里的 <code class="highlighter-rouge">realDelegate</code> 是对象真正的代理，例如</p>
+    </blockquote>
+
+    <pre><code class="language-objectivec"> self.tableView.delegate = [[UIViewController alloc] init];
+</code></pre>
+
+    <p>其中 <code class="highlighter-rouge">realDelegate</code> 是视图控制器，但是在我们设置时，不需要这么设置</p>
+
+    <pre><code class="language-objectivec"> self.tableView.realDelegate = [[UIViewController alloc] init];
+</code></pre>
+
+    <p>因为在 <code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 中会进行<strong>方法调剂</strong>，修改原有方法的实现，每次在设置 <code class="highlighter-rouge">delegate</code> 时，会将这个值设置传到 <code class="highlighter-rouge">realDelegate</code> 中。</p>
+  </li>
+  <li>在自己的类中查找该方法的选择子</li>
+  <li>如果上面三个步骤都没有得到相应，那么调用 <code class="highlighter-rouge">NSObject</code> 对象的 <code class="highlighter-rouge">methodSignatureForSelector:</code> 方法获取方法签名，当然可能返回空值</li>
+</ol>
+
+<p>====</p>
+
+<p><code class="highlighter-rouge">forwardInvocation:</code> 的实现其实跟上面的方法的思路差不多</p>
+
+<pre><code class="language-objectivec">- (void)forwardInvocation:(NSInvocation *)outerInv
+{
+	SEL selector = outerInv.selector;
+	A2BlockInvocation *innerInv = nil;
+	if ((innerInv = [self.invocationsBySelectors bk_objectForSelector:selector])) {
+		[innerInv invokeWithInvocation:outerInv];
+	} else if ([self.realDelegate respondsToSelector:selector]) {
+		[outerInv invokeWithTarget:self.realDelegate];
+	}
+}
+</code></pre>
+
+<ol>
+  <li>
+    <p>判断 <code class="highlighter-rouge">invocationsBySelectors</code> 属性中是否存储了该选择子对应的 <code class="highlighter-rouge">A2BlockInvocation</code>，然后调用 <code class="highlighter-rouge">invokeWithInvocation:</code> 传入 <code class="highlighter-rouge">outerInv</code> 转发这个方法，最终会调用 <code class="highlighter-rouge">- [A2BlockInvocation invokeWithInvocation:returnValue:setOnInvocation:]
+</code></p>
+  </li>
+  <li>
+    <p>判断 <code class="highlighter-rouge">realDelegate</code> 是否实现了该方法，如果真正的代理能做出响应，将方法转发给 <code class="highlighter-rouge">realDelegate</code></p>
+  </li>
+</ol>
+
+<h5 id="block-实现方法-blockimplementationformethod-和-implementmethodwithblock">Block 实现方法 blockImplementationForMethod: 和 implementMethod:withBlock:</h5>
+
+<p>这部分的代码其实相当于平时的 Getter/Setter</p>
+
+<pre><code class="language-objectivec">- (id)blockImplementationForMethod:(SEL)selector
+{
+	A2BlockInvocation *invocation = nil;
+	if ((invocation = [self.invocationsBySelectors bk_objectForSelector:selector]))
+		return invocation.block;
+	return NULL;
+}
+</code></pre>
+
+<p>因为 block 都是在 <code class="highlighter-rouge">A2BlockInvocation</code> 中封装的，所以在通过选择子查找 block 的时候，实际上是查找对应的 <code class="highlighter-rouge">A2BlockInvocation</code>，然后返回它的 block。</p>
+
+<pre><code class="language-objectivec">- (void)implementMethod:(SEL)selector withBlock:(id)block
+{
+
+	#1: 参数检查，省略
+
+	if (!block) {
+		[self.invocationsBySelectors bk_removeObjectForSelector:selector];
+		return;
+	}
+
+	#2: 实例化 A2BlockInvocation
+
+	[self.invocationsBySelectors bk_setObject:inv forSelector:selector];
+}
+</code></pre>
+
+<p>如果能获取到方法的描述，那么就可以得到对应的方法签名，然后调用不同的初始化方法实例一个 <code class="highlighter-rouge">A2Blockinvocation</code> 对象。</p>
+
+<pre><code class="language-objectivec">	struct objc_method_description methodDescription = protocol_getMethodDescription(self.protocol，selector，YES，!isClassMethod);
+	if (!methodDescription.name) methodDescription = protocol_getMethodDescription(self.protocol，selector，NO，!isClassMethod);
+
+	A2BlockInvocation *inv = nil;
+	if (methodDescription.name) {
+	    NSMethodSignature *protoSig = [NSMethodSignature signatureWithObjCTypes:methodDescription.types];
+	    inv = [[A2BlockInvocation alloc] initWithBlock:block methodSignature:protoSig];
+	} else {
+	    inv = [[A2BlockInvocation alloc] initWithBlock:block];
+	}
+</code></pre>
+
+<p>这两个方法的实现，主要目的是<strong>为子类实现代理方法提供支持</strong>。</p>
+
+<h4 id="nsobjecta2dynamicdelegate-为对象添加动态代理">NSObject+A2DynamicDelegate 为对象添加动态代理</h4>
+
+<p>这个分类是为所有的对象提供简单快捷的接口找到对应的动态代理:</p>
+
+<pre><code class="language-objectivec">@property (readonly，strong) id bk_dynamicDataSource;
+@property (readonly，strong) id bk_dynamicDelegate;
+- (id)bk_dynamicDelegateForProtocol:(Protocol *)protocol;
+</code></pre>
+
+<p>以 <code class="highlighter-rouge">UITableView</code> 为例:</p>
+
+<ul>
+  <li>访问 <code class="highlighter-rouge">tableView.bk_dynamicDataSource</code> 那么它就会寻找 <code class="highlighter-rouge">A2DynamicUITableViewDataSource</code> 的对象</li>
+  <li>访问 <code class="highlighter-rouge">tableView.bk_dynamicDelegate</code> 那么它就会寻找 <code class="highlighter-rouge">A2DynamicUITableViewDelegate</code> 的对象</li>
+</ul>
+
+<p>这些对象都是在后台进程中惰性初始化的：</p>
+
+<pre><code class="language-objectivec">- (id)bk_dynamicDelegateWithClass:(Class)cls forProtocol:(Protocol *)protocol
+{
+	__block A2DynamicDelegate *dynamicDelegate;
+
+	dispatch_sync(a2_backgroundQueue()，^{
+		dynamicDelegate = objc_getAssociatedObject(self，(__bridge const void *)protocol);
+
+		if (!dynamicDelegate)
+		{
+			dynamicDelegate = [[cls alloc] initWithProtocol:protocol];
+			objc_setAssociatedObject(self，(__bridge const void *)protocol，dynamicDelegate，OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+		}
+	});
+
+	return dynamicDelegate;
+}
+</code></pre>
+
+<h4 id="nsobjecta2blockdelegate">NSObject+A2BlockDelegate</h4>
+
+<p>我们在概述的一部分实际上已经接触过这个分类里面的重要方法 <code class="highlighter-rouge">bk_linkProtocol:methods:</code>，它动态实现所有添加的 block 属性的存取方法，比如说 <code class="highlighter-rouge">bk_didFinishPickingMediaBlock</code> <code class="highlighter-rouge">bk_didCancelBlock</code></p>
+
+<pre><code class="language-objectivec">		IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+			A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，NO);
+			return [delegate blockImplementationForMethod:selector];
+		});
+
+		IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id block) {
+			A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，YES);
+			[delegate implementMethod:selector withBlock:block];
+		});
+</code></pre>
+
+<p>方法调剂之后的存取方法如下</p>
+
+<ul>
+  <li>getter: 以 selector 为键在动态代理中查找对应的 block</li>
+  <li>setter: 以 selector 也就是代理方法为键，通过 <code class="highlighter-rouge">implementMethod:withBlock:</code> 方法以 <code class="highlighter-rouge">A2BlockInvocation</code> 的形式存储 block</li>
+</ul>
+
+<p>另一个方法 <code class="highlighter-rouge">bk_registerDynamicDelegateNamed:forProtocol:</code>，它主要功能就是修改 getter 和 setter 方法，将原有的 <code class="highlighter-rouge">delegate</code> 转发到 <code class="highlighter-rouge">realDelegate</code>，修改原有的 <code class="highlighter-rouge">delegate</code> 的实现，实现的方法就是喜闻乐见的方法调节：</p>
+
+<pre><code class="language-objectivec">	IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id delegate) {
+		A2DynamicDelegate *dynamicDelegate = getDynamicDelegate(delegatingObject，protocol，infoAsPtr，YES);
+		if ([delegate isEqual:dynamicDelegate]) {
+			delegate = nil;
+		}
+		dynamicDelegate.realDelegate = delegate;
+	});
+
+	IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+		return [delegatingObject bk_dynamicDelegateForProtocol:a2_protocolForDelegatingObject(delegatingObject，protocol)];
+	});
+</code></pre>
+
+<p>注意，在这里省略了一些与脉络无关的实现细节，在调剂过后 <code class="highlighter-rouge">delegate</code> 的存取方法如下：</p>
+
+<ul>
+  <li>getter：返回一个动态代理对象</li>
+  <li>setter：设置代理并不会改变 <code class="highlighter-rouge">delegate</code> 中存储的动态代理，只会修改 <code class="highlighter-rouge">realDelegate</code></li>
+</ul>
+
+<p>我们现在有了通过 runtime 实现 block 的 getter/setter，修改原有的 <code class="highlighter-rouge">delegate</code> 属性的方法将对象的代理设置为动态代理，接下来要在子类化动态代理，使用动态代理的子类实现所有的代理方法。</p>
+
+<h4 id="a2dynamicuitextfielddelegate">A2DynamicUITextFieldDelegate</h4>
+
+<p><code class="highlighter-rouge">A2DynamicUITextFieldDelegate</code> 和 <code class="highlighter-rouge">UITextField+BlocksKit</code> 位于统一文件下，它是一个私有类，我们选取其中一个简单的代理方法：</p>
+
+<pre><code class="language-objectivec">- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+	id realDelegate = self.realDelegate;
+	if (realDelegate &amp;&amp; [realDelegate respondsToSelector:@selector(textFieldDidEndEditing:)])
+		[realDelegate textFieldDidEndEditing:textField];
+	void (^block)(UITextField *) = [self blockImplementationForMethod:_cmd];
+	if (block)
+		block(textField);
+}
+</code></pre>
+
+<ol>
+  <li>当 <code class="highlighter-rouge">realDelegate</code> 实现了该代理方法时，首先调用代理的方法</li>
+  <li>当该代理方法对应的 block 存在的话，也会调用该 block</li>
+</ol>
+
+<h4 id="uitextfieldblockskit-分类和-load-方法">UITextField+BlocksKit 分类和 load 方法</h4>
+
+<p>在最后就是对 <code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 分类中方法的调用</p>
+
+<pre><code class="language-objectivec">+ (void)load {
+    [self bk_registerDynamicDelegate];
+    [self bk_linkDelegateMethods: @{
+        @"bk_shouldBeginEditingBlock": @"textFieldShouldBeginEditing:",
+        @"bk_didBeginEditingBlock": @"textFieldDidBeginEditing:",
+        @"bk_shouldEndEditingBlock": @"textFieldShouldEndEditing:",
+        @"bk_didEndEditingBlock" : @"textFieldDidEndEditing:",
+        @"bk_shouldChangeCharactersInRangeWithReplacementStringBlock" : @"textField:shouldChangeCharactersInRange:replacementString:",
+        @"bk_shouldClearBlock" : @"textFieldShouldClear:",
+        @"bk_shouldReturnBlock" : @"textFieldShouldReturn:",
+    }];
+}
+</code></pre>
+
+<p>为什么在 <code class="highlighter-rouge">load</code> 方法中调用这两个方法？原因有两个：</p>
+
+<ul>
+  <li>该方法只会调用一次，减少了调用的次数</li>
+  <li>该方法只会在文件被引用的时候调用，减少了不必要的动态代理注册等一系列步骤</li>
+</ul>
+
+<p>其中的 <code class="highlighter-rouge">autoreleasepool</code> 的作用在上面已经介绍过了，它使得其它地方的代码不会受到这里注册代理，链接代理方法中产生的对象的影响。</p>
+
+<p><code class="highlighter-rouge">UIKit+BlocksKit</code> 这些分类的另一作用就是提供 block 回调接口，声明属性，然后使用 <code class="highlighter-rouge">@dynamic</code> 表明属性是动态生成的。</p>
+
+<pre><code class="language-objectivec">@property (nonatomic，copy，nullable) BOOL(^bk_shouldBeginEditingBlock)(UITextField *textField);
+@property (nonatomic，copy，nullable) void(^bk_didBeginEditingBlock)(UITextField *textField);
+
+...
+
+@dynamic bk_shouldBeginEditingBlock，bk_didBeginEditingBlock ...;
+</code></pre>
+
+<h2 id="end">End</h2>
+
+<p>到这里对于 BlocksKit 的实现机制就基本上已经看完了。我们在来看一下 整个 BlocksKit 的结构图：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-20-blockskit.png" alt="" /></p>
+
+<p>我写这篇文章大约用了七天的时间，如果你对其中的内容有些疑问，可以发邮件或者在下面留言。</p>
+
+<ul>
+  <li><a href="http://draveness.me/blockskit-1/">神奇的 BlocksKit（一）</a></li>
+  <li><a href="http://draveness.me/blockskit-2/">神奇的 BlocksKit（二）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>神奇的 BlocksKit （一）</title>
+	  <link>/reprinted//blockskit-1</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:42:33+00:00</pubDate>
+	  <guid>/reprinted//blockskit-1</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+<p><strong>高能预警：本篇文章非常长，因为 BlocksKit 的实现还是比较复杂和有意的。这篇文章不是为了剖析 iOS 开发中的 block 的实现以及它是如何组成甚至使用的，如果你想通过这篇文章来了解 block 的实现，它并不能帮到你。</strong></p>
+
+<p>Block 到底是什么？这可能是困扰很多 iOS 初学者的一个问题。如果你在 Google 上搜索类似的问题时，可以查找到几十万条结果，block 在 iOS 开发中有着非常重要的地位，而且它的作用也越来越重要。</p>
+
+<hr />
+
+<h2 id="概述">概述</h2>
+
+<p>这篇文章仅对 <a href="https://github.com/zwaldowski/BlocksKit">BlocksKit</a> v2.2.5 的源代码进行分析，从框架的内部理解下面的功能是如何实现的：</p>
+
+<ul>
+  <li>为 <code class="highlighter-rouge">NSArray</code>、 <code class="highlighter-rouge">NSDictionary</code> 和 <code class="highlighter-rouge">NSSet</code> 等集合类型以及对应的可变集合类型 <code class="highlighter-rouge">NSMutableArray</code>、 <code class="highlighter-rouge">NSMutableDictionary</code> 和 <code class="highlighter-rouge">NSMutableSet</code> 添加 <code class="highlighter-rouge">bk_each:</code> 等方法完成对集合中元素的<strong>快速遍历</strong></li>
+  <li>使用 block 对 <code class="highlighter-rouge">NSObject</code> 对象 KVO</li>
+  <li>为 <code class="highlighter-rouge">UIView</code> 对象添加 <code class="highlighter-rouge">bk_whenTapped:</code> 等方法快速添加手势</li>
+  <li>使用 block 替换 <code class="highlighter-rouge">UIKit</code> 中的 <code class="highlighter-rouge">delegate</code> ，涉及到核心模块 <code class="highlighter-rouge">DynamicDelegate</code>。</li>
+</ul>
+
+<p>BlocksKit 框架中包括但不仅限于上述的功能，这篇文章是对 <em>v2.2.5</em> 版本源代码的分析，其它版本的功能不会在本篇文章中具体讨论。</p>
+
+<h2 id="如何提供简洁的遍历方法">如何提供简洁的遍历方法</h2>
+
+<p>BlocksKit 实现的最简单的功能就是为集合类型添加方法遍历集合中的元素。</p>
+
+<pre><code class="language-objectivec">[@[@1,@2,@3] bk_each:^(id obj) {
+    NSLog(@"%@"，obj);
+}];
+</code></pre>
+
+<p>这段代码非常简单，我们可以使用 <code class="highlighter-rouge">enumerateObjectsUsingBlock:</code> 方法替代 <code class="highlighter-rouge">bk_each:</code> 方法：</p>
+
+<pre><code class="language-objectivec">[@[@1,@2,@3] enumerateObjectsUsingBlock:^(id obj，NSUInteger idx，BOOL *stop) {
+    NSLog(@"%@"，obj);
+}];
+
+2016-03-05 16:02:57.295 Draveness[10725:453402] 1
+2016-03-05 16:02:57.296 Draveness[10725:453402] 2
+2016-03-05 16:02:57.297 Draveness[10725:453402] 3
+</code></pre>
+
+<p>这部分代码的实现也没什么难度：</p>
+
+<pre><code class="language-objectivec">- (void)bk_each:(void (^)(id obj))block
+{
+	NSParameterAssert(block != nil);
+
+	[self enumerateObjectsUsingBlock:^(id obj，NSUInteger idx，BOOL *stop) {
+		block(obj);
+	}];
+}
+</code></pre>
+
+<p>它在 block 执行前会判断传进来的 block 是否为空，然后就是调用遍历方法，把数组中的每一个 <code class="highlighter-rouge">obj</code> 传给 block。</p>
+
+<p>BlocksKit 在这些集合类中所添加的一些方法在 Ruby、Haskell 等语言中也同样存在。如果你接触过上面的语言，理解这里方法的功能也就更容易了，不过这不是这篇文章关注的主要内容。</p>
+
+<pre><code class="language-objectivec">// NSArray+BlocksKit.h
+
+- (void)bk_each:(void (^)(id obj))block;
+- (void)bk_apply:(void (^)(id obj))block;
+- (id)bk_match:(BOOL (^)(id obj))block;
+- (NSArray *)bk_select:(BOOL (^)(id obj))block;
+- (NSArray *)bk_reject:(BOOL (^)(id obj))block;
+- (NSArray *)bk_map:(id (^)(id obj))block;
+- (id)bk_reduce:(id)initial withBlock:(id (^)(id sum，id obj))block;
+- (NSInteger)bk_reduceInteger:(NSInteger)initial withBlock:(NSInteger(^)(NSInteger result，id obj))block;
+- (CGFloat)bk_reduceFloat:(CGFloat)inital withBlock:(CGFloat(^)(CGFloat result，id obj))block;
+- (BOOL)bk_any:(BOOL (^)(id obj))block;
+- (BOOL)bk_none:(BOOL (^)(id obj))block;
+- (BOOL)bk_all:(BOOL (^)(id obj))block;
+- (BOOL)bk_corresponds:(NSArray *)list withBlock:(BOOL (^)(id obj1，id obj2))block;
+</code></pre>
+
+<h2 id="nsobject-上的魔法">NSObject 上的魔法</h2>
+
+<blockquote>
+  <p><code class="highlighter-rouge">NSObject</code> 是 iOS 中的『上帝类』。</p>
+</blockquote>
+
+<p>在 <code class="highlighter-rouge">NSObject</code> 上添加的方法几乎会添加到 Cocoa Touch 中的所有类上，关于 <code class="highlighter-rouge">NSObject</code> 的讨论和总共分为以下三部分进行：</p>
+
+<ol>
+  <li>AssociatedObject</li>
+  <li>BlockExecution</li>
+  <li>BlockObservation</li>
+</ol>
+
+<h3 id="添加-associatedobject">添加 AssociatedObject</h3>
+
+<p>经常跟 runtime 打交道的人不可能不知道 <a href="http://nshipster.cn/associated-objects/">AssociatedObject</a> ，当我们想要为一个已经存在的类添加属性时，就需要用到 AssociatedObject 为类添加属性，而  BlocksKit 提供了更简单的方法来实现，不需要新建一个分类。</p>
+
+<pre><code class="language-objectivec">NSObject *test = [[NSObject alloc] init];
+[test bk_associateValue:@"Draveness" withKey:@" name"];
+NSLog(@"%@"，[test bk_associatedValueForKey:@"name"]);
+
+2016-03-05 16:02:25.761 Draveness[10699:452125] Draveness
+</code></pre>
+
+<p>这里我们使用了 <code class="highlighter-rouge">bk_associateValue:withKey:</code> 和 <code class="highlighter-rouge">bk_associatedValueForKey:</code> 两个方法设置和获取 <code class="highlighter-rouge">name</code> 对应的值 <code class="highlighter-rouge">Draveness</code>.</p>
+
+<pre><code class="language-objectivec">- (void)bk_associateValue:(id)value withKey:(const void *)key
+{
+	objc_setAssociatedObject(self，key，value，OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+</code></pre>
+
+<p>这里的 <code class="highlighter-rouge">OBJC_ASSOCIATION_RETAIN_NONATOMIC</code> 表示当前属性为 <code class="highlighter-rouge">retain</code> <code class="highlighter-rouge">nonatomic</code> 的，还有其它的参数如下：</p>
+
+<pre><code class="language-objectivec">/**
+ * Policies related to associative references.
+ * These are options to objc_setAssociatedObject()
+ */
+typedef OBJC_ENUM(uintptr_t，objc_AssociationPolicy) {
+    OBJC_ASSOCIATION_ASSIGN = 0，          /**&lt; Specifies a weak reference to the associated object. */
+    OBJC_ASSOCIATION_RETAIN_NONATOMIC = 1，/**&lt; Specifies a strong reference to the associated object.
+                                            *   The association is not made atomically. */
+    OBJC_ASSOCIATION_COPY_NONATOMIC = 3，  /**&lt; Specifies that the associated object is copied.
+                                            *   The association is not made atomically. */
+    OBJC_ASSOCIATION_RETAIN = 01401，      /**&lt; Specifies a strong reference to the associated object.
+                                            *   The association is made atomically. */
+    OBJC_ASSOCIATION_COPY = 01403          /**&lt; Specifies that the associated object is copied.
+                                            *   The association is made atomically. */
+};
+</code></pre>
+
+<p>上面的这个 NS_ENUM 也没什么好说的，需要注意的是这里没有 <code class="highlighter-rouge">weak</code> 属性。</p>
+
+<p>BlocksKit 通过另一种方式实现了『弱属性』：</p>
+
+<pre><code class="language-objectivec">- (void)bk_weaklyAssociateValue:(__autoreleasing id)value withKey:(const void *)key
+{
+	_BKWeakAssociatedObject *assoc = objc_getAssociatedObject(self，key);
+	if (!assoc) {
+		assoc = [_BKWeakAssociatedObject new];
+		[self bk_associateValue:assoc withKey:key];
+	}
+	assoc.value = value;
+}
+</code></pre>
+
+<p>在这里先获取了一个 <code class="highlighter-rouge">_BKWeakAssociatedObject</code> 对象 <code class="highlighter-rouge">assoc</code>，然后更新这个对象的属性 <code class="highlighter-rouge">value</code>。</p>
+
+<p>因为直接使用 AssociatedObject 不能为对象添加弱属性，所以在这里添加了一个对象，然后让这个对象持有一个弱属性：</p>
+
+<pre><code class="language-objectivec">@interface _BKWeakAssociatedObject : NSObject
+
+@property (nonatomic，weak) id value;
+
+@end
+
+@implementation _BKWeakAssociatedObject
+
+@end
+</code></pre>
+
+<p>这就是 BlocksKit 实现弱属性的方法，我觉得这个实现的方法还是比较简洁的。</p>
+
+<p>getter 方法的实现也非常类似：</p>
+
+<pre><code class="language-objectivec">- (id)bk_associatedValueForKey:(const void *)key
+{
+	id value = objc_getAssociatedObject(self，key);
+	if (value &amp;&amp; [value isKindOfClass:[_BKWeakAssociatedObject class]]) {
+		return [(_BKWeakAssociatedObject *)value value];
+	}
+	return value;
+}
+</code></pre>
+
+<h3 id="在任意对象上执行-block">在任意对象上执行 block</h3>
+
+<p>通过这个类提供的一些接口，可以在任意对象上快速执行线程安全、异步的 block，而且这些 block 也可以在执行之前取消。</p>
+
+<pre><code class="language-objectivec">- (id &lt;NSObject，NSCopying&gt;)bk_performOnQueue:(dispatch_queue_t)queue afterDelay:(NSTimeInterval)delay usingBlock:(void (^)(id obj))block
+{
+    NSParameterAssert(block != nil);
+
+    return BKDispatchCancellableBlock(queue，delay，^{
+        block(self);
+    });
+}
+</code></pre>
+
+<p>判断 block 是否为空在这里都是细枝末节，这个方法中最关键的也就是它返回了一个可以取消的 block，而这个 block 就是用静态函数 <code class="highlighter-rouge">BKDispatchCancellableBlock</code> 生成的。</p>
+
+<pre><code class="language-objectivec">static id &lt;NSObject，NSCopying&gt; BKDispatchCancellableBlock(dispatch_queue_t queue，NSTimeInterval delay，void(^block)(void)) {
+    dispatch_time_t time = BKTimeDelay(delay);
+
+#if DISPATCH_CANCELLATION_SUPPORTED
+    if (BKSupportsDispatchCancellation()) {
+        dispatch_block_t ret = dispatch_block_create(0，block);
+        dispatch_after(time，queue，ret);
+        return ret;
+    }
+#endif
+
+    __block BOOL cancelled = NO;
+    void (^wrapper)(BOOL) = ^(BOOL cancel) {
+        if (cancel) {
+            cancelled = YES;
+            return;
+        }
+        if (!cancelled) block();
+    };
+
+    dispatch_after(time，queue，^{
+        wrapper(NO);
+    });
+
+    return wrapper;
+}
+</code></pre>
+
+<p>这个函数首先会执行 <code class="highlighter-rouge">BKSupportsDispatchCancellation</code> 来判断当前平台和版本是否支持使用 GCD 取消 block，当然一般都是支持的：</p>
+
+<ul>
+  <li>函数返回的是 <code class="highlighter-rouge">YES</code>，那么在 block 被派发到指定队列之后就会返回这个 <code class="highlighter-rouge">dispatch_block_t</code> 类型的 block</li>
+  <li>函数返回的是 <code class="highlighter-rouge">NO</code>，那么就会就会手动包装一个可以取消的 block，具体实现的部分如下：</li>
+</ul>
+
+<pre><code class="language-objectivec">__block BOOL cancelled = NO;
+void (^wrapper)(BOOL) = ^(BOOL cancel) {
+    if (cancel) {
+        cancelled = YES;
+        return;
+    }
+    if (!cancelled) block();
+};
+
+dispatch_after(time，queue，^{
+    wrapper(NO);
+});
+
+return wrapper;
+</code></pre>
+
+<p>上面这部分代码就先创建一个 <code class="highlighter-rouge">wrapper</code> block，然后派发到指定队列，派发到指定队列的这个 block 是一定会执行的，但是怎么取消这个 block 呢？</p>
+
+<p>如果当前 block 没有执行，我们在外面调用一次 <code class="highlighter-rouge">wrapper(YES)</code> 时，block 内部的 <code class="highlighter-rouge">cancelled</code> 变量就会被设置为 <code class="highlighter-rouge">YES</code>，所以 block 就不会执行。</p>
+
+<ol>
+  <li><code class="highlighter-rouge">dispatch_after  --- cancelled = NO</code></li>
+  <li><strong><code class="highlighter-rouge">wrapper(YES) --- cancelled = YES</code></strong></li>
+  <li><code class="highlighter-rouge">wrapper(NO) --- cancelled = YES</code> block 不会执行</li>
+</ol>
+
+<p>这是实现取消的关键部分：</p>
+
+<pre><code class="language-objectivec">+ (void)bk_cancelBlock:(id &lt;NSObject，NSCopying&gt;)block
+{
+    NSParameterAssert(block != nil);
+
+#if DISPATCH_CANCELLATION_SUPPORTED
+    if (BKSupportsDispatchCancellation()) {
+        dispatch_block_cancel((dispatch_block_t)block);
+        return;
+    }
+#endif
+
+    void (^wrapper)(BOOL) = (void(^)(BOOL))block;
+    wrapper(YES);
+}
+</code></pre>
+
+<ul>
+  <li>GCD 支持取消 block，那么直接调用 <code class="highlighter-rouge">dispatch_block_cancel</code> 函数取消 block</li>
+  <li>GCD 不支持取消 block 那么调用一次 <code class="highlighter-rouge">wrapper(YES)</code></li>
+</ul>
+
+<h3 id="使用-block-封装-kvo">使用 Block 封装 KVO</h3>
+
+<p>BlocksKit 对 KVO 的封装由两部分组成：</p>
+
+<ol>
+  <li><code class="highlighter-rouge">NSObject</code> 的分类负责提供便利方法</li>
+  <li>私有类 <code class="highlighter-rouge">_BKObserver</code> 具体实现原生的 KVO 功能</li>
+</ol>
+
+<h4 id="提供接口并在-dealloc-时停止-blockobservation">提供接口并在 <code class="highlighter-rouge">dealloc</code> 时停止 BlockObservation</h4>
+
+<p><code class="highlighter-rouge">NSObject+BKBlockObservation</code> 这个分类中的大部分接口都会调用这个方法:</p>
+
+<pre><code class="language-objectivec">- (void)bk_addObserverForKeyPaths:(NSArray *)keyPaths identifier:(NSString *)identifier options:(NSKeyValueObservingOptions)options context:(BKObserverContext)context task:(id)task
+{
+	#1: 检查参数，省略
+
+	#2: 使用神奇的方法在分类中覆写 dealloc
+
+	NSMutableDictionary *dict;
+	_BKObserver *observer = [[_BKObserver alloc] initWithObservee:self keyPaths:keyPaths context:context task:task];
+	[observer startObservingWithOptions:options];
+
+	#3: 惰性初始化 bk_observerBlocks 也就是下面的 dict，省略
+
+	dict[identifier] = observer;
+}
+</code></pre>
+
+<p>我们不会在这里讨论 <code class="highlighter-rouge">#1</code>、<code class="highlighter-rouge">#3</code> 部分，再详细阅读 <code class="highlighter-rouge">#2</code> 部分代码之前，先来看一下这个省略了绝大部分细节的核心方法。</p>
+
+<p>使用传入方法的参数创建了一个 <code class="highlighter-rouge">_BKObserver</code> 对象，然后调用 <code class="highlighter-rouge">startObservingWithOptions:</code> 方法开始 KVO 观测相应的属性，然后以 <code class="highlighter-rouge">{identifier，obeserver}</code> 的形式存到字典中保存。</p>
+
+<p>这里实在没什么新意，我们在下一小节中会介绍 <code class="highlighter-rouge">startObservingWithOptions:</code> 这一方法。</p>
+
+<h4 id="在分类中调剂-dealloc-方法">在分类中调剂 dealloc 方法</h4>
+
+<p>这个问题我觉得是非常值得讨论的一个问题，也是我最近在写框架时遇到很棘手的一个问题。</p>
+
+<blockquote>
+  <p>当我们在分类中注册一些通知或者使用 KVO 时，很有可能会找不到注销这些通知的时机。</p>
+</blockquote>
+
+<p>因为在<strong>分类中是无法直接实现 <code class="highlighter-rouge">dealloc</code> 方法的</strong>。 在 iOS8 以及之前的版本，如果某个对象被释放了，但是刚对象的注册的通知没有被移除，那么当事件再次发生，就会<em>向已经释放的对象发出通知</em>，整个程序就会崩溃。</p>
+
+<p>这里解决的办法就十分的巧妙:</p>
+
+<pre><code class="language-objectivec">Class classToSwizzle = self.class;
+// 获取所有修改过 dealloc 方法的类
+NSMutableSet *classes = self.class.bk_observedClassesHash;
+
+// 保证互斥避免 classes 出现难以预测的结果
+@synchronized (classes) {
+
+   // 获取当前类名，并判断是否修改过 dealloc 方法以减少这部分代码的调用次数
+   NSString *className = NSStringFromClass(classToSwizzle);
+   if (![classes containsObject:className]) {
+       // 这里的 sel_registerName 方法会返回 dealloc 的 selector，因为 dealloc 已经注册过
+       SEL deallocSelector = sel_registerName("dealloc");
+
+		__block void (*originalDealloc)(__unsafe_unretained id，SEL) = NULL;
+
+       // 实现新的 dealloc 方法
+		id newDealloc = ^(__unsafe_unretained id objSelf) {
+           //在方法 dealloc 之前移除所有 observer
+           [objSelf bk_removeAllBlockObservers];
+
+           if (originalDealloc == NULL) {
+               // 如果原有的 dealloc 方法没有被找到就会查找父类的 dealloc 方法，调用父类的 dealloc 方法
+               struct objc_super superInfo = {
+                   .receiver = objSelf,
+                   .super_class = class_getSuperclass(classToSwizzle)
+               };
+
+               void (*msgSend)(struct objc_super *，SEL) = (__typeof__(msgSend))objc_msgSendSuper;
+               msgSend(&amp;superInfo，deallocSelector);
+           } else {
+               // 如果 dealloc 方法被找到就会直接调用该方法，并传入参数
+               originalDealloc(objSelf，deallocSelector);
+           }
+       };
+
+       // 构建选择子实现 IMP
+       IMP newDeallocIMP = imp_implementationWithBlock(newDealloc);
+
+       // 向当前类添加方法，但是多半不会成功，因为类已经有 dealloc 方法
+       if (!class_addMethod(classToSwizzle，deallocSelector，newDeallocIMP，"v@:")) {
+           // 获取原有 dealloc 实例方法
+           Method deallocMethod = class_getInstanceMethod(classToSwizzle，deallocSelector);
+
+           // 存储 dealloc 方法实现防止在 set 的过程中调用该方法
+           originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_getImplementation(deallocMethod);
+
+           // 重新设置 dealloc 方法的实现，并存储到 originalDealloc 防止方法实现改变
+           originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_setImplementation(deallocMethod，newDeallocIMP);
+       }
+
+       // 将当前类名添加到已经改变的类的集合中
+       [classes addObject:className];
+   }
+}
+</code></pre>
+
+<p>这部分代码的执行顺序如下:</p>
+
+<ol>
+  <li>首先调用 <code class="highlighter-rouge">bk_observedClassesHash</code> 类方法获取所有修改过 <code class="highlighter-rouge">dealloc</code> 方法的类的集合 <code class="highlighter-rouge">classes</code></li>
+  <li>使用 <code class="highlighter-rouge">@synchronized (classes)</code> 保证互斥，避免同时修改 <code class="highlighter-rouge">classes</code> 集合的类过多出现意料之外的结果</li>
+  <li>判断即将调剂方法的类 <code class="highlighter-rouge">classToSwizzle</code> 是否调剂过 <code class="highlighter-rouge">dealloc</code> 方法</li>
+  <li>如果 <code class="highlighter-rouge">dealloc</code> 方法没有调剂过，就会通过 <code class="highlighter-rouge">sel_registerName("dealloc")</code> 方法获取选择子，这行代码并不会真正注册 <code class="highlighter-rouge">dealloc</code> 选择子而是会获取 <code class="highlighter-rouge">dealloc</code> 的选择子，具体原因可以看这个方法的实现 <a href="https://developer.apple.com/library/prerelease/ios/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/sel_registerName">sel_registerName</a></li>
+  <li>
+    <p>在新的 <code class="highlighter-rouge">dealloc</code> 中<strong>添加移除 Observer 的方法</strong>， 再调用原有的 <code class="highlighter-rouge">dealloc</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> id newDealloc = ^(__unsafe_unretained id objSelf) {
+ 	[objSelf bk_removeAllBlockObservers];
+
+    if (originalDealloc == NULL) {
+     	struct objc_super superInfo = {
+      		.receiver = objSelf,
+     		.super_class = class_getSuperclass(classToSwizzle)
+     	};
+         void (*msgSend)(struct objc_super *，SEL) = (__typeof__(msgSend))objc_msgSendSuper;
+         msgSend(&amp;superInfo，deallocSelector);
+     } else {
+         originalDealloc(objSelf，deallocSelector);
+     }
+ };
+ IMP newDeallocIMP = imp_implementationWithBlock(newDealloc);
+</code></pre></div>    </div>
+
+    <ol>
+      <li>调用 <code class="highlighter-rouge">bk_removeAllBlockObservers</code> 方法移除所有观察者，也就是这段代码的最终目的</li>
+      <li>根据 <code class="highlighter-rouge">originalDealloc</code> 是否为空，决定是向父类发送消息，还是直接调用 <code class="highlighter-rouge">originalDealloc</code> 并传入 <code class="highlighter-rouge">objSelf，deallocSelector</code> 作为参数</li>
+    </ol>
+  </li>
+  <li>
+    <p>在我们获得了新 <code class="highlighter-rouge">dealloc</code> 方法的选择子和 <code class="highlighter-rouge">IMP</code> 时，就要改变原有的 <code class="highlighter-rouge">dealloc</code> 的实现了</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (!class_addMethod(classToSwizzle，deallocSelector，newDeallocIMP，"v@:")) {
+     // The class already contains a method implementation.
+     Method deallocMethod = class_getInstanceMethod(classToSwizzle，deallocSelector);
+
+    // We need to store original implementation before setting new implementation
+     // in case method is called at the time of setting.
+     originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_getImplementation(deallocMethod);
+
+    // We need to store original implementation again，in case it just changed.
+     originalDealloc = (void(*)(__unsafe_unretained id，SEL))method_setImplementation(deallocMethod，newDeallocIMP);
+ }
+</code></pre></div>    </div>
+
+    <ol>
+      <li>调用 <code class="highlighter-rouge">class_addMethod</code> 方法为当前类添加选择子为 <code class="highlighter-rouge">dealloc</code> 的方法（当然 99.99% 的可能不会成功）</li>
+      <li>获取原有的 <code class="highlighter-rouge">dealloc</code> 实例方法</li>
+      <li>将原有的实现保存到 <code class="highlighter-rouge">originalDealloc</code> 中，防止使用 <code class="highlighter-rouge">method_setImplementation</code> 重新设置该方法的过程中调用 <code class="highlighter-rouge">dealloc</code> 导致无方法可用</li>
+      <li>重新设置 <code class="highlighter-rouge">dealloc</code> 方法的实现。同样，将实现存储到 <code class="highlighter-rouge">originalDealloc</code> 中防止实现改变</li>
+    </ol>
+  </li>
+</ol>
+
+<p>关于在分类中调剂 <code class="highlighter-rouge">dealloc</code> 方法的这部分到这里就结束了，下一节将继续分析私有类 <code class="highlighter-rouge">_BKObserver</code>。</p>
+
+<h4 id="私有类-_bkobserver">私有类 <code class="highlighter-rouge">_BKObserver</code></h4>
+
+<p><code class="highlighter-rouge">_BKObserver</code> 是用来观测属性的对象，它在接口中定义了 4 个属性：</p>
+
+<pre><code class="language-objectivec">@property (nonatomic，readonly，unsafe_unretained) id observee;
+@property (nonatomic，readonly) NSMutableArray *keyPaths;
+@property (nonatomic，readonly) id task;
+@property (nonatomic，readonly) BKObserverContext context;
+</code></pre>
+
+<p>上面四个属性的具体作用在这里不说了，上面的 <code class="highlighter-rouge">bk_addObserverForKeyPaths:identifier:options:context:</code> 方法中调用 <code class="highlighter-rouge">_BKObserver</code> 的初始化方法 <code class="highlighter-rouge">initWithObservee:keyPaths:context:task:</code> 太简单了也不说了。</p>
+
+<pre><code class="language-objectivec">_BKObserver *observer = [[_BKObserver alloc] initWithObservee:self keyPaths:keyPaths context:context task:task];
+[observer startObservingWithOptions:options];
+</code></pre>
+
+<p>上面的第一行代码生成一个 <code class="highlighter-rouge">observer</code> 实例之后立刻调用了 <code class="highlighter-rouge">startObservingWithOptions:</code> 方法开始观测对应的 <code class="highlighter-rouge">keyPath</code>：</p>
+
+<pre><code class="language-objectivec">- (void)startObservingWithOptions:(NSKeyValueObservingOptions)options
+{
+	@synchronized(self) {
+		if (_isObserving) return;
+
+		#1：遍历 keyPaths 实现 KVO
+
+		_isObserving = YES;
+	}
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">startObservingWithOptions:</code> 方法最重要的就是第 <code class="highlighter-rouge">#1</code> 部分：</p>
+
+<pre><code class="language-objectivec">[self.keyPaths bk_each:^(NSString *keyPath) {
+	[self.observee addObserver:self forKeyPath:keyPath options:options context:BKBlockObservationContext];
+}];
+</code></pre>
+
+<p>遍历自己的 <code class="highlighter-rouge">keyPaths</code> 然后让 <code class="highlighter-rouge">_BKObserver</code> 作观察者观察自己，然后传入对应的 <code class="highlighter-rouge">keyPath</code>。</p>
+
+<p>关于 <code class="highlighter-rouge">_stopObservingLocked</code> 方法的实现也十分的相似，这里就不说了。</p>
+
+<pre><code class="language-objectivec">[keyPaths bk_each:^(NSString *keyPath) {
+	[observee removeObserver:self forKeyPath:keyPath context:BKBlockObservationContext];
+}];
+</code></pre>
+
+<p>到目前为止，我们还没有看到实现 KVO 所必须的方法 <code class="highlighter-rouge">observeValueForKeyPath:ofObject:change:context</code>，这个方法就是每次属性改变之后的回调：</p>
+
+<pre><code class="language-objectivec">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if (context != BKBlockObservationContext) return;
+
+	@synchronized(self) {
+		switch (self.context) {
+			case BKObserverContextKey: {
+				void (^task)(id) = self.task;
+				task(object);
+				break;
+			}
+			case BKObserverContextKeyWithChange: {
+				void (^task)(id，NSDictionary *) = self.task;
+				task(object，change);
+				break;
+			}
+			case BKObserverContextManyKeys: {
+				void (^task)(id，NSString *) = self.task;
+				task(object，keyPath);
+				break;
+			}
+			case BKObserverContextManyKeysWithChange: {
+				void (^task)(id，NSString *，NSDictionary *) = self.task;
+				task(object，keyPath，change);
+				break;
+			}
+		}
+	}
+}
+</code></pre>
+
+<p>这个方法的实现也很简单，根据传入的 <code class="highlighter-rouge">context</code> 值，对 <code class="highlighter-rouge">task</code> 类型转换，并传入具体的值。</p>
+
+<p>这个模块倒着就介绍完了，在下一节会介绍 BlocksKit 对 UIKit 组件一些简单的改造。</p>
+
+<h2 id="改造-uikit">改造 UIKit</h2>
+
+<p>在这个小结会具体介绍 BlocksKit 是如何对一些简单的控件进行改造的，本节大约有两部分内容：</p>
+
+<ul>
+  <li>UIGestureRecongizer + UIBarButtonItem + UIControl</li>
+  <li>UIView</li>
+</ul>
+
+<h3 id="改造-uigesturerecongizeruibarbuttonitem-和-uicontrol">改造 UIGestureRecongizer，UIBarButtonItem 和 UIControl</h3>
+
+<p>先来看一个 <code class="highlighter-rouge">UITapGestureRecognizer</code> 使用的例子</p>
+
+<pre><code class="language-objectivec"> UITapGestureRecognizer *singleTap = [UITapGestureRecognizer bk_recognizerWithHandler:^(id sender) {
+     NSLog(@"Single tap.");
+ } delay:0.18];
+ [self addGestureRecognizer:singleTap];
+</code></pre>
+
+<p>代码中的 <code class="highlighter-rouge">bk_recognizerWithHandler:delay:</code> 方法在最后都会调用初始化方法 <code class="highlighter-rouge">bk_initWithHandler:delay:</code> 生成一个 <code class="highlighter-rouge">UIGestureRecongizer</code> 的实例</p>
+
+<pre><code class="language-objectivec">- (instancetype)bk_initWithHandler:(void (^)(UIGestureRecognizer *sender，UIGestureRecognizerState state，CGPoint location))block delay:(NSTimeInterval)delay
+{
+	self = [self initWithTarget:self action:@selector(bk_handleAction:)];
+	if (!self) return nil;
+
+	self.bk_handler = block;
+	self.bk_handlerDelay = delay;
+
+	return self;
+}
+</code></pre>
+
+<p>它会在这个方法中传入 <code class="highlighter-rouge">target</code> 和 <code class="highlighter-rouge">selector</code>。 其中 <code class="highlighter-rouge">target</code> 就是 <code class="highlighter-rouge">self</code>，而 <code class="highlighter-rouge">selector</code> 也会在这个分类中实现：</p>
+
+<pre><code class="language-objectivec">- (void)bk_handleAction:(UIGestureRecognizer *)recognizer
+{
+	void (^handler)(UIGestureRecognizer *sender，UIGestureRecognizerState state，CGPoint location) = recognizer.bk_handler;
+	if (!handler) return;
+
+	NSTimeInterval delay = self.bk_handlerDelay;
+
+	#1: 封装 block 并控制 block 是否可以执行
+
+	self.bk_shouldHandleAction = YES;
+
+    [NSObject bk_performAfterDelay:delay usingBlock:block];
+}
+</code></pre>
+
+<p>因为在初始化方法 <code class="highlighter-rouge">bk_initWithHandler:delay:</code> 中保存了当前手势的 <code class="highlighter-rouge">bk_handler</code>，所以直接调用在 Block Execution 一节中提到过的 <code class="highlighter-rouge">bk_performAfterDelay:usingBlock:</code> 方法，将 block 派发到指定的队列中，最终完成对 block 的调用。</p>
+
+<h4 id="封装-block-并控制-block-是否可以执行">封装 block 并控制 block 是否可以执行</h4>
+
+<p>这部分代码和前面的部分有些相似，因为这里也用到了一个属性 <code class="highlighter-rouge">bk_shouldHandleAction</code> 来控制 block 是否会被执行：</p>
+
+<pre><code class="language-objectivec">CGPoint location = [self locationInView:self.view];
+void (^block)(void) = ^{
+	if (!self.bk_shouldHandleAction) return;
+	handler(self，self.state，location);
+};
+</code></pre>
+
+<p>====</p>
+
+<p>同样 <code class="highlighter-rouge">UIBarButtonItem</code> 和 <code class="highlighter-rouge">UIControl</code> 也是用了几乎相同的机制，把 <code class="highlighter-rouge">target</code> 设置为 <code class="highlighter-rouge">self</code>，让后在分类的方法中调用指定的 block。</p>
+
+<h4 id="uicontrolwrapper">UIControlWrapper</h4>
+
+<p>稍微有些不同的是 <code class="highlighter-rouge">UIControl</code>。因为 <code class="highlighter-rouge">UIControl</code> 有多种 <code class="highlighter-rouge">UIControlEvents</code>，所以使用另一个类 <code class="highlighter-rouge">BKControlWrapper</code> 来封装 <code class="highlighter-rouge">handler</code> 和 <code class="highlighter-rouge">controlEvents</code></p>
+
+<pre><code class="language-objectivec">@property (nonatomic) UIControlEvents controlEvents;
+@property (nonatomic，copy) void (^handler)(id sender);
+</code></pre>
+
+<p>其中 <code class="highlighter-rouge">UIControlWrapper</code> 对象以 <code class="highlighter-rouge">{controlEvents，wrapper}</code> 的形式作为 <code class="highlighter-rouge">UIControl</code> 的属性存入字典。</p>
+
+<h3 id="改造-uiview">改造 UIView</h3>
+
+<p>因为在上面已经改造过了 <code class="highlighter-rouge">UIGestureRecognizer</code>，在这里改造 <code class="highlighter-rouge">UIView</code> 就变得很容易了：</p>
+
+<pre><code class="language-objectivec">- (void)bk_whenTouches:(NSUInteger)numberOfTouches tapped:(NSUInteger)numberOfTaps handler:(void (^)(void))block
+{
+	if (!block) return;
+
+	UITapGestureRecognizer *gesture = [UITapGestureRecognizer bk_recognizerWithHandler:^(UIGestureRecognizer *sender，UIGestureRecognizerState state，CGPoint location) {
+		if (state == UIGestureRecognizerStateRecognized) block();
+	}];
+
+	gesture.numberOfTouchesRequired = numberOfTouches;
+	gesture.numberOfTapsRequired = numberOfTaps;
+
+	[self.gestureRecognizers enumerateObjectsUsingBlock:^(id obj，NSUInteger idx，BOOL *stop) {
+		if (![obj isKindOfClass:[UITapGestureRecognizer class]]) return;
+
+		UITapGestureRecognizer *tap = obj;
+		BOOL rightTouches = (tap.numberOfTouchesRequired == numberOfTouches);
+		BOOL rightTaps = (tap.numberOfTapsRequired == numberOfTaps);
+		if (rightTouches &amp;&amp; rightTaps) {
+			[gesture requireGestureRecognizerToFail:tap];
+		}
+	}];
+
+	[self addGestureRecognizer:gesture];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">UIView</code> 分类只有这一个核心方法，其它的方法都是向这个方法传入不同的参数，这里需要注意的就是。它会遍历所有的 <code class="highlighter-rouge">gestureRecognizers</code>，然后把对所有有冲突的手势调用 <code class="highlighter-rouge">requireGestureRecognizerToFail:</code> 方法，保证添加的手势能够正常的执行。</p>
+
+<p>由于这篇文章中的内容较多，所以内容分成了两个部分，下一部分介绍的是 BlocksKit 中的最重要的部分动态代理：</p>
+
+<ul>
+  <li><a href="http://draveness.me/blockskit-1/">神奇的 BlocksKit（一）</a></li>
+  <li><a href="http://draveness.me/blockskit-2/">神奇的 BlocksKit（二）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>iOS 开发中的重构</title>
+	  <link>/reprinted//ios-kai-fa-zhong-de-zhong-gou</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:42:11+00:00</pubDate>
+	  <guid>/reprinted//ios-kai-fa-zhong-de-zhong-gou</guid>
+	  <description><![CDATA[
+	     <p>随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 <code class="highlighter-rouge">DRY</code> 的原则, 使得项目难以维护.</p>
+
+<h2 id="为什么要重构">为什么要重构</h2>
+
+<p>为什么要重构, 重构其实是一件持续性的工作, 工程师在进行开发的过程中难免会有无法考虑周全的地方, 而目前的很多 iOS, Android 项目其实都是业务驱动的, 而业务和需求的更改导致原来模块的设计不再适用于当前的状况.</p>
+
+<p>而大多数工程师是懒惰的. 因为没有足够的推动力去修改当前模块的设计, 所以通过打补丁的方式实现需求, 最终可能会导致整个项目代码的失控, 陷入焦油坑.</p>
+
+<p>重构, 在我看来就是改变原有的设计, 减少项目中冗余的代码的过程. 重构应该伴随着项目的开发进行, 而不是在整个项目要失控时, 才去做这件事情.</p>
+
+<blockquote>
+  <p>早重构, 及时重构</p>
+</blockquote>
+
+<h2 id="如何在-ios-开发中完成项目的重构">如何在 iOS 开发中完成项目的重构</h2>
+
+<p>因为在 iOS 开发中 <code class="highlighter-rouge">viewController</code> 非常不便于测试, 所以绝大多数 iOS 的工程中都是没有单元测试, 同时也是没有单元测试这个意识的, 集成测试什么的就更不必多说了. 如果我们的工程项目是用 Ruby 或者 Python 写的, 那么补齐所有的单元测试是重构之前最好要做额事情, 不过对于后端代码的重构, 我由于没有太多的经验只能说这么多了.</p>
+
+<p>在 iOS 项目中, 既然没有单元测试, 如何能保证重构前后的模块效果完全一样呢. 这是一个非常麻烦的问题, 因为没有各种自动化测试工具或者代码, 我们真的无法保证重构前后的功能 100% 的相同, 只能通过”人肉测试”的方式来检验重构的正确性.</p>
+
+<p>重构一个模块之前我们要首先了解什么样的模块是需要重构的, 我想需要重构的最常见的场景就是<strong>违反了 DRY 原则</strong>.</p>
+
+<blockquote>
+  <p>当一个项目中很多代码都是复制粘贴的, 那么这个项目就是有问题的了, 就要考虑复制粘贴的这部分代码是否需要抽象成一个可复用的模块.</p>
+</blockquote>
+
+<p>而我遇到的这种情况就是违反了 <code class="highlighter-rouge">DRY</code> 原则, 大量复制粘贴的代码遍布整个工程的每一个角落, 使得整个项目难以维护.</p>
+
+<h3 id="设计模块">设计模块</h3>
+
+<p>在重构之前我们不仅要熟悉需要重构的这部分代码的业务逻辑, 而且更有对于重构后的模块有着什么样的功能有着清晰而且明确的定义.</p>
+
+<h3 id="分步重构">分步重构</h3>
+
+<p>如果需要重构的模块过于庞大, 你可以通过重构后的代码, 一部分一部分的代替原有的代码, 并删除掉废弃的功能和逻辑.</p>
+
+<p>有的模块可能同时包含 <code class="highlighter-rouge">UI</code> 和逻辑, 那么我们可以选择先重构其中的 <code class="highlighter-rouge">UI</code> 部分代码, 将 <code class="highlighter-rouge">UI</code> 从原有的模块中剥离出来, 改变原有的设计. 再删除原有模块中的代码.</p>
+
+<h2 id="总结">总结</h2>
+
+<p>重构其实是一个非常庞大的话题, 如果没有亲自重构一个模块和项目很难去理解如何去重构一个项目和重构的作用.</p>
+
+<p>往往有的人会想重写整个项目的代码, 然而在大多数情况下, 原有的逻辑可能由于历史原因已经不知道该如何重写, 而且目前的项目代码并不是完全不可用. 重写项目相对于重构也往往更加容易, 但是需要的周期确实太长, 所以说是要重写还是重构是一个需要权衡的问题.</p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>iOS 源代码分析 ---- Alamofire</title>
+	  <link>/reprinted//ios-yuan-dai-ma-fen-xi-alamofire</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:41:36+00:00</pubDate>
+	  <guid>/reprinted//ios-yuan-dai-ma-fen-xi-alamofire</guid>
+	  <description><![CDATA[
+	     <p>已经有几个月没有阅读著名开源项目的源代码了, 最近才有时间来做这件事情.</p>
+
+<p>下面是 Github 主页上对 <a href="https://github.com/Alamofire/Alamofire">Alamofire</a> 的描述</p>
+
+<blockquote>
+  <p>Elegant HTTP Networking in Swift</p>
+</blockquote>
+
+<p>为什么这次我选择阅读 Alamofire 的源代码而不是 AFNetworking 呢, 其实有两点原因.</p>
+
+<ol>
+  <li>AFNetworking 作为一个有着很多年的历史的框架, 它虽然有着强大的社区, 不过因为时间太久了, 可能有一些历史上的包袱. 而 Alamofire 是在 Swift 诞生之后才开始出现的, 到现在为止也并没有多长时间, 它的源代码都是<strong>新鲜</strong>的.</li>
+  <li>由于最近在写 Swift 的项目, 所以没有选择 AFNetworking.</li>
+</ol>
+
+<p>在阅读 Alamofire 的源代码之前, 我先粗略的查看了一下 Alamofire 实现的代码行数:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>find Source <span class="nt">-name</span> <span class="s2">"*.swift"</span> | xargs <span class="nb">cat</span> |wc <span class="nt">-l</span>
+<span class="o">&gt;</span> 3363
+</code></pre></div></div>
+
+<p>也就是说 Alamofire 在包含注释以及空行的情况下, 只使用了 3000 多行代码就实现了一个用于处理 HTTP 请求的框架.</p>
+
+<p>所以它描述中的 <code class="highlighter-rouge">Elegant</code> 也可以说是名副其实.</p>
+
+<h2 id="目录结构">目录结构</h2>
+
+<p>首先, 我们来看一下 Alamofire 中的目录结构, 来了解一下它是如何组织各个文件的.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- Source
+	- Alamore.swift
+	- Core
+		- Manager.swift
+		- ParameterEncoding.swift
+		- Request.swift
+	- Features
+		- Download.swift
+		- MultipartFromData.swift
+		- ResponseSeriallization.swift
+		- Upload.swift
+		- Validation.swift
+</code></pre></div></div>
+
+<p>框架中最核心并且我们最值得关注的就是 <code class="highlighter-rouge">Alamore.swift</code> <code class="highlighter-rouge">Manager.swift</code> 和 <code class="highlighter-rouge">Request.swift</code> 这三个文件. 也是在这篇 post 中主要介绍的三个文件.</p>
+
+<h3 id="alamofire">Alamofire</h3>
+
+<p>在 Alamofire 中并没有找到 <code class="highlighter-rouge">Alamofire</code> 这个类, 相反这仅仅是一个命名空间, 在 <code class="highlighter-rouge">Alamofire.swift</code> 这个文件中不存在 <code class="highlighter-rouge">class Alamofire</code> 这种关键字, 这只是为了使得方法名更简洁的一种手段.</p>
+
+<p>我们在使用 Alamofire 时, 往往都会采用这种方式:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">Alamofire</span><span class="o">.</span><span class="nf">request</span><span class="p">(</span><span class="o">.</span><span class="kt">GET</span><span class="p">,</span> <span class="s">"http://httpbin.org/get"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>有了 Alamofire 作为命名空间, 就不用担心 <code class="highlighter-rouge">request</code> 方法与其他同名方法的冲突了.</p>
+
+<p>在 <code class="highlighter-rouge">Alamofire.swift</code>  文件中为我们提供了三类方法:</p>
+
+<ul>
+  <li>request</li>
+  <li>upload</li>
+  <li>download</li>
+</ul>
+
+<p>这三种方法都是通过调用 <code class="highlighter-rouge">Manager</code> 对应的操作来完成请求, 上传和下载的操作, 并返回一个 <code class="highlighter-rouge">Request</code> 的实例.</p>
+
+<p>下面是 <code class="highlighter-rouge">request</code> 方法的一个实现:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="nv">method</span><span class="p">:</span> <span class="kt">Method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">:</span> <span class="kt">URLStringConvertible</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">AnyObject</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="kt">ParameterEncoding</span> <span class="o">=</span> <span class="o">.</span><span class="kt">URL</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Request</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">Manager</span><span class="o">.</span><span class="n">sharedInstance</span><span class="o">.</span><span class="nf">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="n">parameters</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="n">encoding</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="n">headers</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这也就是 <code class="highlighter-rouge">Alamofire.request(.GET, "http://httpbin.org/get")</code> 所调用的方法. 而这个方法实际上就是通过这些参数调用 <code class="highlighter-rouge">Manager</code> 的具体方法, 我们所使用的 <code class="highlighter-rouge">request</code> 也好 <code class="highlighter-rouge">download</code> 也好, 都是对 <code class="highlighter-rouge">Manager</code> 方法的一个包装罢了.</p>
+
+<h3 id="manager">Manager</h3>
+
+<p>Alamofire 中的几乎所有操作都是通过 <code class="highlighter-rouge">Manager</code> 来控制, 而 <code class="highlighter-rouge">Manager</code> 也可以说是 Alamofire 的核心部分, 它负责与 <code class="highlighter-rouge">Request</code> 交互完成网络操作:</p>
+
+<blockquote>
+  <p>Responsible for creating and managing <code class="highlighter-rouge">Request</code> objects, as well as their underlying <code class="highlighter-rouge">NSURLSession</code>.</p>
+</blockquote>
+
+<h4 id="managersharedinstance">Manager.sharedInstance</h4>
+
+<p><code class="highlighter-rouge">Manager</code> 在 Alamofire 中有着极其重要的地位, 而在 <code class="highlighter-rouge">Manager</code> 方法的设计中, 一般也使用 <code class="highlighter-rouge">sharedInstance</code> 来获取 <code class="highlighter-rouge">Manager</code> 的单例:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">sharedInstance</span><span class="p">:</span> <span class="kt">Manager</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">configuration</span> <span class="o">=</span> <span class="kt">NSURLSessionConfiguration</span><span class="o">.</span><span class="nf">defaultSessionConfiguration</span><span class="p">()</span>
+    <span class="n">configuration</span><span class="o">.</span><span class="kt">HTTPAdditionalHeaders</span> <span class="o">=</span> <span class="kt">Manager</span><span class="o">.</span><span class="n">defaultHTTPHeaders</span>
+
+    <span class="k">return</span> <span class="kt">Manager</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="n">configuration</span><span class="p">)</span>
+<span class="p">}()</span>
+</code></pre></div></div>
+
+<p>对于其中 <code class="highlighter-rouge">defaultHTTPHeaders</code> 和 <code class="highlighter-rouge">Manager</code> 的初始化方法, 在这里就不多提了, 但是在这里有必要说明一下 <code class="highlighter-rouge">SessionDelegate</code> 这个类, 在 <code class="highlighter-rouge">Manager</code> 的初始化方法中, 调用了 <code class="highlighter-rouge">SessionDelegate</code> 的初始化方法, 返回了一个它的实例.</p>
+
+<h4 id="sessiondelegate">SessionDelegate</h4>
+
+<blockquote>
+  <p>Responsible for handling all delegate callbacks for the underlying session.</p>
+</blockquote>
+
+<p>这个类的主要作用就是处理对应 session 的所有代理回调, 它持有两个属性:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="k">var</span> <span class="nv">subdelegates</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">:</span> <span class="kt">Request</span><span class="o">.</span><span class="kt">TaskDelegate</span><span class="p">]</span> <span class="o">=</span> <span class="p">[:]</span>
+<span class="kd">private</span> <span class="k">let</span> <span class="nv">subdelegateQueue</span> <span class="o">=</span> <span class="nf">dispatch_queue_create</span><span class="p">(</span><span class="kc">nil</span><span class="p">,</span> <span class="kt">DISPATCH_QUEUE_CONCURRENT</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">subdelegates</code> 以 task 标识符为键, 存储了所有的回调. <code class="highlighter-rouge">subdelegateQueue</code> 是一个异步的队列, 用于处理任务的回调.</p>
+
+<h4 id="managersharedinstacerequest">Manager.sharedInstace.request</h4>
+
+<p><code class="highlighter-rouge">Manager</code> 有两个返回 <code class="highlighter-rouge">Request</code> 实例的 <code class="highlighter-rouge">request</code> 方法:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">public func request(method: Method, _ URLString: URLStringConvertible, parameters: [String: AnyObject]? = nil, encoding: ParameterEncoding = .URL, headers: [String: String]? = nil) -&gt; Request</code></li>
+  <li><code class="highlighter-rouge">public func request(URLRequest: URLRequestConvertible) -&gt; Request</code></li>
+</ul>
+
+<p>第一个方法的实现非常的简单:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="nv">method</span><span class="p">:</span> <span class="kt">Method</span><span class="p">,</span> <span class="n">_</span> <span class="kt">URLString</span><span class="p">:</span> <span class="kt">URLStringConvertible</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">AnyObject</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="kt">ParameterEncoding</span> <span class="o">=</span> <span class="o">.</span><span class="kt">URL</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Request</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">mutableURLRequest</span> <span class="o">=</span> <span class="kt">URLRequest</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="n">headers</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">encodedURLRequest</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">mutableURLRequest</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="mi">0</span>
+    <span class="k">return</span> <span class="nf">request</span><span class="p">(</span><span class="n">encodedURLRequest</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>方法中首先调用了 <code class="highlighter-rouge">URLRequest</code> 方法:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="kt">URLRequest</span><span class="p">(</span><span class="nv">method</span><span class="p">:</span> <span class="kt">Method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">:</span> <span class="kt">URLStringConvertible</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">NSMutableURLRequest</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">mutableURLRequest</span> <span class="o">=</span> <span class="kt">NSMutableURLRequest</span><span class="p">(</span><span class="kt">URL</span><span class="p">:</span> <span class="kt">NSURL</span><span class="p">(</span><span class="nv">string</span><span class="p">:</span> <span class="kt">URLString</span><span class="o">.</span><span class="kt">URLString</span><span class="p">)</span><span class="o">!</span><span class="p">)</span>
+    <span class="n">mutableURLRequest</span><span class="o">.</span><span class="kt">HTTPMethod</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">rawValue</span>
+
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">headers</span> <span class="o">=</span> <span class="n">headers</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">headerField</span><span class="p">,</span> <span class="n">headerValue</span><span class="p">)</span> <span class="k">in</span> <span class="n">headers</span> <span class="p">{</span>
+        <span class="n">mutableURLRequest</span><span class="o">.</span><span class="nf">setValue</span><span class="p">(</span><span class="n">headerValue</span><span class="p">,</span> <span class="nv">forHTTPHeaderField</span><span class="p">:</span> <span class="n">headerField</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">mutableURLRequest</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>首先创建一个 <code class="highlighter-rouge">NSMutableURLRequest</code> 设置它的 HTTP 请求方法和 HTTP header, 然后返回这个请求.</p>
+
+<p>在请求被返回之后, 就进入了下一个环节 <code class="highlighter-rouge">encode</code>.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">encodedURLRequest</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">mutableURLRequest</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="mi">0</span>
+</code></pre></div></div>
+
+<h4 id="parameterencodingencoding">ParameterEncoding.encoding</h4>
+
+<p><code class="highlighter-rouge">ParameterEncoding</code> 是一个用来处理一系列的参数是如何被”添加”到 URL 请求上的.</p>
+
+<blockquote>
+  <p>Used to specify the way in which a set of parameters are applied to a URL request.</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">ParameterEncoding</code> 类型中有四种不同的编码方法:</p>
+
+<ul>
+  <li>URL</li>
+  <li>JSON</li>
+  <li>PropertyList</li>
+  <li>Custom</li>
+</ul>
+
+<p>其中 <code class="highlighter-rouge">encode</code> 方法就根据 <code class="highlighter-rouge">ParameterEncoding</code> 类型的不同返回不同的 <code class="highlighter-rouge">NSMutableURLRequest</code></p>
+
+<p>如果 <code class="highlighter-rouge">PatameterEncoding</code> 的类型为 <code class="highlighter-rouge">URL</code>, 那么就会把这次请求的参数以下面这种形式添加到请求的 <code class="highlighter-rouge">URL</code> 上</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>foo[]=1&amp;foo[]=2
+</code></pre></div></div>
+
+<p>在完成对参数的编码之后, 就会调用另一个同名的 <code class="highlighter-rouge">request</code> 方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">request</span><span class="p">(</span><span class="n">encodedURLRequest</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="managersharedinstacerequesturlrequestconvertible">Manager.sharedInstace.request(URLRequestConvertible)</h4>
+
+<p><code class="highlighter-rouge">request</code> 方法根据指定的 URL 请求返回一个 <code class="highlighter-rouge">Request</code></p>
+
+<blockquote>
+  <p>Creates a request for the specified URL request.</p>
+</blockquote>
+
+<p>它使用 <code class="highlighter-rouge">dispatch_sync</code> 把一个 <code class="highlighter-rouge">NSURLRequest</code> 请求同步加到一个串行队列中, 返回一个 <code class="highlighter-rouge">NSURLSessionDataTask</code>. 并通过 <code class="highlighter-rouge">session</code> 和 <code class="highlighter-rouge">dataTask</code> 生成一个 <code class="highlighter-rouge">Request</code> 的实例.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="kt">URLRequest</span><span class="p">:</span> <span class="kt">URLRequestConvertible</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Request</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">dataTask</span><span class="p">:</span> <span class="kt">NSURLSessionDataTask</span><span class="o">!</span>
+
+    <span class="nf">dispatch_sync</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">dataTask</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="nf">dataTaskWithRequest</span><span class="p">(</span><span class="kt">URLRequest</span><span class="o">.</span><span class="kt">URLRequest</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="nv">request</span> <span class="o">=</span> <span class="kt">Request</span><span class="p">(</span><span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">,</span> <span class="nv">task</span><span class="p">:</span> <span class="n">dataTask</span><span class="p">)</span>
+    <span class="n">delegate</span><span class="p">[</span><span class="n">request</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">task</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">delegate</span>
+
+    <span class="k">if</span> <span class="n">startRequestsImmediately</span> <span class="p">{</span>
+        <span class="n">request</span><span class="o">.</span><span class="nf">resume</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">request</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这段代码还是很直观的, 它的主要作用就是创建 <code class="highlighter-rouge">Request</code> 实例, 并发送请求.</p>
+
+<h4 id="requestinit">Request.init</h4>
+
+<p><code class="highlighter-rouge">Request</code> 这个类的 <code class="highlighter-rouge">init</code> 方法根据传入的 <code class="highlighter-rouge">task</code> 类型的不同, 生成了不用类型的 <code class="highlighter-rouge">TaskDelegate</code>, 可以说是 Swift 中对于反射的运用:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">init</span><span class="p">(</span><span class="nv">session</span><span class="p">:</span> <span class="kt">NSURLSession</span><span class="p">,</span> <span class="nv">task</span><span class="p">:</span> <span class="kt">NSURLSessionTask</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+
+    <span class="k">switch</span> <span class="n">task</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="k">is</span> <span class="kt">NSURLSessionUploadTask</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">UploadTaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="k">case</span> <span class="k">is</span> <span class="kt">NSURLSessionDataTask</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">DataTaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="k">case</span> <span class="k">is</span> <span class="kt">NSURLSessionDownloadTask</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">DownloadTaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">TaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在 <code class="highlighter-rouge">UploadTaskDelegate</code> <code class="highlighter-rouge">DataTaskDelegate</code> <code class="highlighter-rouge">DownloadTaskDelegate</code> 和 <code class="highlighter-rouge">TaskDelegate</code> 几个类的作用是处理对应任务的回调, 在 <code class="highlighter-rouge">Request</code> 实例初始化之后, 会把对应的 <code class="highlighter-rouge">delegate</code> 添加到 <code class="highlighter-rouge">manager</code> 持有的 <code class="highlighter-rouge">delegate</code> 数组中, 方便之后在对应的时间节点通知代理事件的发生.</p>
+
+<p>在最后返回 <code class="highlighter-rouge">request</code>, 到这里一次网络请求就基本完成了.</p>
+
+<h3 id="responseserialization">ResponseSerialization</h3>
+
+<p><code class="highlighter-rouge">ResponseSerialization</code> 是用来对 <code class="highlighter-rouge">Reponse</code> 返回的值进行序列化显示的一个 extension.</p>
+
+<p>它的设计非常的巧妙, 同时可以处理 <code class="highlighter-rouge">Data</code> <code class="highlighter-rouge">String</code> 和 <code class="highlighter-rouge">JSON</code> 格式的数据,</p>
+
+<h4 id="responseserializer-协议">ResponseSerializer 协议</h4>
+
+<p>Alamofire 在这个文件的开头定义了一个所有 responseSerializer 都必须遵循的 <code class="highlighter-rouge">protocol</code>, 这个 protocol 的内容十分简单, 其中最重要的就是:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">serializeResponse</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">NSData</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">SerializedObject</span><span class="o">&gt;</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>所有的 responseSerializer 都必须包含 <code class="highlighter-rouge">serializeResponse</code> 这个闭包, 它的作用就是处理 response.</p>
+
+<h4 id="genericresponseserializer">GenericResponseSerializer</h4>
+
+<p>为了同时处理不同类型的数据, Alamofire 使用泛型创建了 <code class="highlighter-rouge">GenericResponseSerializer&lt;T&gt;</code>, 这个结构体为处理 <code class="highlighter-rouge">JSON</code> <code class="highlighter-rouge">XML</code> 和 <code class="highlighter-rouge">NSData</code> 等数据的 responseSerializer 提供了一个骨架.</p>
+
+<p>它在结构体中遵循了 <code class="highlighter-rouge">ResponseSerializer</code> 协议, 然后提供了一个 <code class="highlighter-rouge">init</code> 方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">serializeResponse</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">NSData</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">SerializedObject</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">serializeResponse</span> <span class="o">=</span> <span class="n">serializeResponse</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="response-方法">response 方法</h4>
+
+<p>在 Alamofire 中, 如果我们调用了 reponse 方法, 就会在 request 结束时, 添加一个处理器来处理服务器的 reponse.</p>
+
+<p>这个方法有两个版本, 第一个版本是不对返回的数据进行处理:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">response</span><span class="p">(</span>
+    <span class="n">queue</span> <span class="nv">queue</span><span class="p">:</span> <span class="n">dispatch_queue_t</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">NSData</span><span class="p">?,</span> <span class="kt">NSError</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span>
+<span class="p">{</span>
+    <span class="n">delegate</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">addOperationWithBlock</span> <span class="p">{</span>
+        <span class="nf">dispatch_async</span><span class="p">(</span><span class="n">queue</span> <span class="p">??</span> <span class="nf">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">completionHandler</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="k">self</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>该方法的实现将一个 block 追加到 request 所在的队列中, 其它的部分过于简单, 在这里就不多说了.</p>
+
+<p>另一个版本的 response 的作用就是处理多种类型的数据.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">response</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span> <span class="kt">ResponseSerializer</span><span class="p">,</span> <span class="kt">V</span> <span class="k">where</span> <span class="kt">T</span><span class="o">.</span><span class="kt">SerializedObject</span> <span class="o">==</span> <span class="kt">V</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">queue</span> <span class="nv">queue</span><span class="p">:</span> <span class="n">dispatch_queue_t</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">responseSerializer</span><span class="p">:</span> <span class="kt">T</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span>
+<span class="p">{</span>
+    <span class="n">delegate</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">addOperationWithBlock</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">responseSerializer</span><span class="o">.</span><span class="nf">serializeResponse</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="o">.</span><span class="kt">Failure</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="nf">dispatch_async</span><span class="p">(</span><span class="n">queue</span> <span class="p">??</span> <span class="nf">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">completionHandler</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="k">self</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>它会直接调用参数中 <code class="highlighter-rouge">responseSerializer</code> 所持有的闭包 <code class="highlighter-rouge">serializeResponse</code>, 然后返回对应的数据.</p>
+
+<h4 id="多种类型的-response-数据">多种类型的 response 数据</h4>
+
+<p>有了高级的抽象方法 <code class="highlighter-rouge">response</code>, 我们现在就可以直接向这个方法中传入不同的 <code class="highlighter-rouge">responseSerializer</code> 来产生不同数据类型的 <code class="highlighter-rouge">handler</code></p>
+
+<p>比如说 <code class="highlighter-rouge">NSData</code></p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">dataResponseSerializer</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">GenericResponseSerializer</span><span class="o">&lt;</span><span class="kt">NSData</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">GenericResponseSerializer</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">data</span> <span class="k">in</span>
+        <span class="k">guard</span> <span class="k">let</span> <span class="nv">validData</span> <span class="o">=</span> <span class="n">data</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">failureReason</span> <span class="o">=</span> <span class="s">"Data could not be serialized. Input data was nil."</span>
+            <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="kt">Error</span><span class="o">.</span><span class="nf">errorWithCode</span><span class="p">(</span><span class="o">.</span><span class="kt">DataSerializationFailed</span><span class="p">,</span> <span class="nv">failureReason</span><span class="p">:</span> <span class="n">failureReason</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">.</span><span class="kt">Failure</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="o">.</span><span class="kt">Success</span><span class="p">(</span><span class="n">validData</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">responseData</span><span class="p">(</span><span class="nv">completionHandler</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">NSData</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nf">response</span><span class="p">(</span><span class="nv">responseSerializer</span><span class="p">:</span> <span class="kt">Request</span><span class="o">.</span><span class="nf">dataResponseSerializer</span><span class="p">(),</span> <span class="nv">completionHandler</span><span class="p">:</span> <span class="n">completionHandler</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在 <code class="highlighter-rouge">ResponseSerialization.swift</code> 这个文件中, 你还可以看到其中对于 <code class="highlighter-rouge">String</code> <code class="highlighter-rouge">JSON</code> <code class="highlighter-rouge">propertyList</code> 数据处理的 <code class="highlighter-rouge">responseSerializer</code>.</p>
+
+<h3 id="urlstringconvertible">URLStringConvertible</h3>
+
+<p>在 ALamofire 的实现中还有一些我们可以学习的地方. 因为 Alamofire 是一个 Swift 的框架, 而且 Swift 是静态语言, 所以有一些坑是必须要解决的, 比如说 <code class="highlighter-rouge">NSURL</code> 和 <code class="highlighter-rouge">String</code> 之间的相互转换. 在 Alamofire 中用了一种非常优雅的解决方案, 我相信能够给很多人带来一定的启发.</p>
+
+<p>首先我们先定义了一个 <code class="highlighter-rouge">protocol</code> <code class="highlighter-rouge">URLStringConvertible</code> (注释部分已经省略) :</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个 <code class="highlighter-rouge">protocol</code> 只定义了一个 <code class="highlighter-rouge">var</code>, 遵循这个协议的类必须实现 <code class="highlighter-rouge">URLString</code> 返回 <code class="highlighter-rouge">String</code> 的这个<strong>功能</strong>.</p>
+
+<p>接下来让所有可以转化为 <code class="highlighter-rouge">String</code> 的类全部遵循这个协议, 这个方法虽然我以前知道, 不过我还是第一次见到在实际中的使用, 真的非常的优雅:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">extension</span> <span class="kt">String</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">self</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSURL</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">absoluteString</span><span class="o">!</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSURLComponents</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">URL</span><span class="o">!.</span><span class="kt">URLString</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSURLRequest</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">URL</span><span class="o">!.</span><span class="kt">URLString</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样 <code class="highlighter-rouge">String</code> <code class="highlighter-rouge">NSURL</code> <code class="highlighter-rouge">NSURLComponents</code> 和 <code class="highlighter-rouge">NSURLRequest</code> 都可以调用 <code class="highlighter-rouge">URLString</code> 方法了. 我们也就可以<strong>直接在方法的签名中使用 <code class="highlighter-rouge">URLStringConvertible</code> 类型</strong>.</p>
+
+<h2 id="end">End</h2>
+
+<p>到目前为止关于 Alamofire 这个框架就大致介绍完了, 框架的实现还是非常简洁和优雅的, 这篇 post 从开始写到现在也过去了好久, 写的也不是十分的详细具体. 如果你对这个框架的实现有兴趣, 那么看一看这个框架的源代码也未尝不可.</p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>iOS 源代码分析 ---- MBProgressHUD</title>
+	  <link>/reprinted//ios-yuan-dai-ma-fen-xi-mbprogresshud</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:40:48+00:00</pubDate>
+	  <guid>/reprinted//ios-yuan-dai-ma-fen-xi-mbprogresshud</guid>
+	  <description><![CDATA[
+	     <p><a href="">MBProgressHUD</a> 是一个为 iOS app 添加透明浮层 HUD 的第三方框架. 作为一个 UI 层面的框架, 它的实现很简单, 但是其中也有一些非常有意思的代码.</p>
+
+<h2 id="mbprogresshud">MBProgressHUD</h2>
+
+<p><code class="highlighter-rouge">MBProgressHUD</code> 是一个 <code class="highlighter-rouge">UIView</code> 的子类, 它提供了一系列的创建 <code class="highlighter-rouge">HUD</code> 的方法. 我们在这里会主要介绍三种使用 <code class="highlighter-rouge">HUD</code> 的方法.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">+ showHUDAddedTo:animated:</code></li>
+  <li><code class="highlighter-rouge">- showAnimated:whileExecutingBlock:onQueue:completionBlock:</code></li>
+  <li><code class="highlighter-rouge">- showWhileExecuting:onTarget:withObject:</code></li>
+</ul>
+
+<h2 id="-showhudaddedtoanimated"><code class="highlighter-rouge">+ showHUDAddedTo:animated:</code></h2>
+
+<p><code class="highlighter-rouge">MBProgressHUD</code> 提供了一对类方法 <code class="highlighter-rouge">+ showHUDAddedTo:animated:</code> 和 <code class="highlighter-rouge">+ hideHUDForView:animated:</code> 来创建和隐藏 <code class="highlighter-rouge">HUD</code>, 这是创建和隐藏 <code class="highlighter-rouge">HUD</code> 最简单的一组方法</p>
+
+<pre><code class="language-objectivec">+ (MB_INSTANCETYPE)showHUDAddedTo:(UIView *)view animated:(BOOL)animated {
+	MBProgressHUD *hud = [[self alloc] initWithView:view];
+	hud.removeFromSuperViewOnHide = YES;
+	[view addSubview:hud];
+	[hud show:animated];
+	return MB_AUTORELEASE(hud);
+}
+</code></pre>
+
+<h3 id="--initwithview"><code class="highlighter-rouge">- initWithView:</code></h3>
+
+<p>首先调用 <code class="highlighter-rouge">+ alloc</code> <code class="highlighter-rouge">- initWithView:</code> 方法返回一个 <code class="highlighter-rouge">MBProgressHUD</code> 的实例, <code class="highlighter-rouge">- initWithView:</code> 方法会调用当前类的 <code class="highlighter-rouge">- initWithFrame:</code> 方法.</p>
+
+<p>通过 <code class="highlighter-rouge">- initWithFrame:</code> 方法的执行, 会为 <code class="highlighter-rouge">MBProgressHUD</code> 的一些属性设置一系列的默认值.</p>
+
+<pre><code class="language-objectivec">- (id)initWithFrame:(CGRect)frame {
+	self = [super initWithFrame:frame];
+	if (self) {
+		// Set default values for properties
+		self.animationType = MBProgressHUDAnimationFade;
+		self.mode = MBProgressHUDModeIndeterminate;
+		...
+		// Make it invisible for now
+		self.alpha = 0.0f;
+
+		[self registerForKVO];
+		...
+	}
+	return self;
+}
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">MBProgressHUD</code> 初始化的过程中, 有一个需要注意的方法 <code class="highlighter-rouge">- registerForKVO</code>, 我们会在之后查看该方法的实现.</p>
+
+<h3 id="--show"><code class="highlighter-rouge">- show:</code></h3>
+
+<p>在初始化一个 <code class="highlighter-rouge">HUD</code> 并添加到 <code class="highlighter-rouge">view</code> 上之后, 这时 <code class="highlighter-rouge">HUD</code> 并没有显示出来, 因为在初始化时, <code class="highlighter-rouge">view.alpha</code> 被设置为 0. 所以我们接下来会调用 <code class="highlighter-rouge">- show:</code> 方法使 <code class="highlighter-rouge">HUD</code> 显示到屏幕上.</p>
+
+<pre><code class="language-objectivec">- (void)show:(BOOL)animated {
+    NSAssert([NSThread isMainThread], @"MBProgressHUD needs to be accessed on the main thread.");
+	useAnimation = animated;
+	// If the grace time is set postpone the HUD display
+	if (self.graceTime &gt; 0.0) {
+        NSTimer *newGraceTimer = [NSTimer timerWithTimeInterval:self.graceTime target:self selector:@selector(handleGraceTimer:) userInfo:nil repeats:NO];
+        [[NSRunLoop currentRunLoop] addTimer:newGraceTimer forMode:NSRunLoopCommonModes];
+        self.graceTimer = newGraceTimer;
+	}
+	// ... otherwise show the HUD imediately
+	else {
+		[self showUsingAnimation:useAnimation];
+	}
+}
+</code></pre>
+
+<p>因为在 iOS 开发中, 对于 <code class="highlighter-rouge">UIView</code> 的处理必须在主线程中, 所以在这里我们要先用 <code class="highlighter-rouge">[NSThread isMainThread]</code> 来确认当前前程为主线程.</p>
+
+<p>如果 <code class="highlighter-rouge">graceTime</code> 为 <code class="highlighter-rouge">0</code>, 那么直接调用 <code class="highlighter-rouge">- showUsingAnimation:</code> 方法, 否则会创建一个 <code class="highlighter-rouge">newGraceTimer</code> 当然这个 <code class="highlighter-rouge">timer</code> 对应的 <code class="highlighter-rouge">selector</code> 最终调用的也是 <code class="highlighter-rouge">- showUsingAnimation:</code> 方法.</p>
+
+<h3 id="--showusinganimation"><code class="highlighter-rouge">- showUsingAnimation:</code></h3>
+
+<pre><code class="language-objectivec">- (void)showUsingAnimation:(BOOL)animated {
+    // Cancel any scheduled hideDelayed: calls
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    [self setNeedsDisplay];
+
+	if (animated &amp;&amp; animationType == MBProgressHUDAnimationZoomIn) {
+		self.transform = CGAffineTransformConcat(rotationTransform, CGAffineTransformMakeScale(0.5f, 0.5f));
+	} else if (animated &amp;&amp; animationType == MBProgressHUDAnimationZoomOut) {
+		self.transform = CGAffineTransformConcat(rotationTransform, CGAffineTransformMakeScale(1.5f, 1.5f));
+	}
+	self.showStarted = [NSDate date];
+	// Fade in
+	if (animated) {
+		[UIView beginAnimations:nil context:NULL];
+		[UIView setAnimationDuration:0.30];
+		self.alpha = 1.0f;
+		if (animationType == MBProgressHUDAnimationZoomIn || animationType == MBProgressHUDAnimationZoomOut) {
+			self.transform = rotationTransform;
+		}
+		[UIView commitAnimations];
+	}
+	else {
+		self.alpha = 1.0f;
+	}
+}
+</code></pre>
+
+<p>这个方法的核心功能就是根据 <code class="highlighter-rouge">animationType</code> 为 <code class="highlighter-rouge">HUD</code> 的出现添加合适的动画.</p>
+
+<pre><code class="language-objectivec">typedef NS_ENUM(NSInteger, MBProgressHUDAnimation) {
+	/** Opacity animation */
+	MBProgressHUDAnimationFade,
+	/** Opacity + scale animation */
+	MBProgressHUDAnimationZoom,
+	MBProgressHUDAnimationZoomOut = MBProgressHUDAnimationZoom,
+	MBProgressHUDAnimationZoomIn
+};
+</code></pre>
+
+<p>它在方法刚调用时会通过 <code class="highlighter-rouge">- cancelPreviousPerformRequestsWithTarget:</code> 移除附加在 <code class="highlighter-rouge">HUD</code> 上的所有 <code class="highlighter-rouge">selector</code>, 这样可以保证该方法不会多次调用.</p>
+
+<p>同时也会保存 <code class="highlighter-rouge">HUD</code> 的出现时间.</p>
+
+<pre><code class="language-objectivec">self.showStarted = [NSDate date]
+</code></pre>
+
+<h3 id="-hidehudforviewanimated"><code class="highlighter-rouge">+ hideHUDForView:animated:</code></h3>
+
+<pre><code class="language-objectivec">+ (BOOL)hideHUDForView:(UIView *)view animated:(BOOL)animated {
+	MBProgressHUD *hud = [self HUDForView:view];
+	if (hud != nil) {
+		hud.removeFromSuperViewOnHide = YES;
+		[hud hide:animated];
+		return YES;
+	}
+	return NO;
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">+ hideHUDForView:animated:</code> 方法的实现和 <code class="highlighter-rouge">+ showHUDAddedTo:animated:</code> 差不多, <code class="highlighter-rouge">+ HUDForView:</code> 方法会返回对应 <code class="highlighter-rouge">view</code> 最上层的 <code class="highlighter-rouge">MBProgressHUD</code> 的实例.</p>
+
+<pre><code class="language-objectivec">+ (MB_INSTANCETYPE)HUDForView:(UIView *)view {
+	NSEnumerator *subviewsEnum = [view.subviews reverseObjectEnumerator];
+	for (UIView *subview in subviewsEnum) {
+		if ([subview isKindOfClass:self]) {
+			return (MBProgressHUD *)subview;
+		}
+	}
+	return nil;
+}
+</code></pre>
+
+<p>然后调用的 <code class="highlighter-rouge">- hide:</code> 方法和 <code class="highlighter-rouge">- hideUsingAnimation:</code> 方法也没有什么特别的, 只有在 <code class="highlighter-rouge">HUD</code> 隐藏之后 <code class="highlighter-rouge">- done</code> 负责隐藏执行 <code class="highlighter-rouge">completionBlock</code> 和 <code class="highlighter-rouge">delegate</code> 回调.</p>
+
+<pre><code class="language-objectivec">- (void)done {
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
+	isFinished = YES;
+	self.alpha = 0.0f;
+	if (removeFromSuperViewOnHide) {
+		[self removeFromSuperview];
+	}
+#if NS_BLOCKS_AVAILABLE
+	if (self.completionBlock) {
+		self.completionBlock();
+		self.completionBlock = NULL;
+	}
+#endif
+	if ([delegate respondsToSelector:@selector(hudWasHidden:)]) {
+		[delegate performSelector:@selector(hudWasHidden:) withObject:self];
+	}
+}
+</code></pre>
+
+<h3 id="--showanimatedwhileexecutingblockonqueuecompletionblock"><code class="highlighter-rouge">- showAnimated:whileExecutingBlock:onQueue:completionBlock:</code></h3>
+
+<blockquote>
+  <p>当 <code class="highlighter-rouge">block</code> 指定的队列执行时, 显示 <code class="highlighter-rouge">HUD</code>, 并在 <code class="highlighter-rouge">HUD</code> 消失时, 调用 <code class="highlighter-rouge">completion</code>.</p>
+</blockquote>
+
+<p>同时 <code class="highlighter-rouge">MBProgressHUD</code> 也提供一些其他的便利方法实现这一功能:</p>
+
+<pre><code class="language-objectivec">- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block;
+- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block completionBlock:(MBProgressHUDCompletionBlock)completion;
+- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block onQueue:(dispatch_queue_t)queue;
+</code></pre>
+
+<p>该方法会<strong>异步</strong>在指定 <code class="highlighter-rouge">queue</code> 上运行 <code class="highlighter-rouge">block</code> 并在 <code class="highlighter-rouge">block</code> 执行结束调用 <code class="highlighter-rouge">- cleanUp</code>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block onQueue:(dispatch_queue_t)queue
+	 completionBlock:(MBProgressHUDCompletionBlock)completion {
+	self.taskInProgress = YES;
+	self.completionBlock = completion;
+	dispatch_async(queue, ^(void) {
+		block();
+		dispatch_async(dispatch_get_main_queue(), ^(void) {
+			[self cleanUp];
+		});
+	});
+	[self show:animated];
+}
+</code></pre></div></div>
+
+<p>关于 <code class="highlighter-rouge">- cleanUp</code> 我们会在下一段中介绍.</p>
+
+<h3 id="--showwhileexecutingontargetwithobject"><code class="highlighter-rouge">- showWhileExecuting:onTarget:withObject:</code></h3>
+
+<blockquote>
+  <p>当一个后台任务在新线程中执行时, 显示 <code class="highlighter-rouge">HUD</code>.</p>
+</blockquote>
+
+<pre><code class="language-objectivec">- (void)showWhileExecuting:(SEL)method onTarget:(id)target withObject:(id)object animated:(BOOL)animated {
+	methodForExecution = method;
+	targetForExecution = MB_RETAIN(target);
+	objectForExecution = MB_RETAIN(object);
+	// Launch execution in new thread
+	self.taskInProgress = YES;
+	[NSThread detachNewThreadSelector:@selector(launchExecution) toTarget:self withObject:nil];
+	// Show HUD view
+	[self show:animated];
+}
+</code></pre>
+
+<p>在保存 <code class="highlighter-rouge">methodForExecution</code> <code class="highlighter-rouge">targetForExecution</code> 和 <code class="highlighter-rouge">objectForExecution</code> 之后, 会在新的线程中调用方法.</p>
+
+<pre><code class="language-objectivec">- (void)launchExecution {
+	@autoreleasepool {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+		// Start executing the requested task
+		[targetForExecution performSelector:methodForExecution withObject:objectForExecution];
+#pragma clang diagnostic pop
+		// Task completed, update view in main thread (note: view operations should
+		// be done only in the main thread)
+		[self performSelectorOnMainThread:@selector(cleanUp) withObject:nil waitUntilDone:NO];
+	}
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">- launchExecution</code> 会创建一个自动释放池, 然后再这个自动释放池中调用方法, 并在方法调用结束之后在主线程执行 <code class="highlighter-rouge">- cleanUp</code>.</p>
+
+<h2 id="trick">Trick</h2>
+
+<p>在 <code class="highlighter-rouge">MBProgressHUD</code> 中有很多神奇的魔法来解决一些常见的问题.</p>
+
+<h3 id="arc">ARC</h3>
+
+<p><code class="highlighter-rouge">MBProgressHUD</code> 使用了一系列神奇的宏定义来兼容 <code class="highlighter-rouge">MRC</code>.</p>
+
+<pre><code class="language-objectivec">#ifndef MB_INSTANCETYPE
+#if __has_feature(objc_instancetype)
+	#define MB_INSTANCETYPE instancetype
+#else
+	#define MB_INSTANCETYPE id
+#endif
+#endif
+
+#ifndef MB_STRONG
+#if __has_feature(objc_arc)
+	#define MB_STRONG strong
+#else
+	#define MB_STRONG retain
+#endif
+#endif
+
+#ifndef MB_WEAK
+#if __has_feature(objc_arc_weak)
+	#define MB_WEAK weak
+#elif __has_feature(objc_arc)
+	#define MB_WEAK unsafe_unretained
+#else
+	#define MB_WEAK assign
+#endif
+#endif
+</code></pre>
+
+<p>通过宏定义 <code class="highlighter-rouge">__has_feature</code> 来判断当前环境是否启用了 ARC, 使得不同环境下宏不会出错.</p>
+
+<h3 id="kvo">KVO</h3>
+
+<p><code class="highlighter-rouge">MBProgressHUD</code> 通过 <code class="highlighter-rouge"><span class="k">@property</span></code> 生成了一系列的属性.</p>
+
+<pre><code class="language-objectivec">- (NSArray *)observableKeypaths {
+	return [NSArray arrayWithObjects:@"mode", @"customView", @"labelText", @"labelFont", @"labelColor",
+			@"detailsLabelText", @"detailsLabelFont", @"detailsLabelColor", @"progress", @"activityIndicatorColor", nil];
+}
+</code></pre>
+
+<p>这些属性在改变的时候不会, 重新渲染整个 <code class="highlighter-rouge">view</code>,  我们在一般情况下覆写 <code class="highlighter-rouge">setter</code> 方法, 然后再 <code class="highlighter-rouge">setter</code> 方法中刷新对应的属性, 在 <code class="highlighter-rouge">MBProgressHUD</code> 中使用 KVO 来解决这个问题.</p>
+
+<pre><code class="language-objectivec">- (void)registerForKVO {
+	for (NSString *keyPath in [self observableKeypaths]) {
+		[self addObserver:self forKeyPath:keyPath options:NSKeyValueObservingOptionNew context:NULL];
+	}
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(updateUIForKeypath:) withObject:keyPath waitUntilDone:NO];
+	} else {
+		[self updateUIForKeypath:keyPath];
+	}
+}
+
+- (void)updateUIForKeypath:(NSString *)keyPath {
+	if ([keyPath isEqualToString:@"mode"] || [keyPath isEqualToString:@"customView"] ||
+		[keyPath isEqualToString:@"activityIndicatorColor"]) {
+		[self updateIndicators];
+	} else if ([keyPath isEqualToString:@"labelText"]) {
+		label.text = self.labelText;
+	} else if ([keyPath isEqualToString:@"labelFont"]) {
+		label.font = self.labelFont;
+	} else if ([keyPath isEqualToString:@"labelColor"]) {
+		label.textColor = self.labelColor;
+	} else if ([keyPath isEqualToString:@"detailsLabelText"]) {
+		detailsLabel.text = self.detailsLabelText;
+	} else if ([keyPath isEqualToString:@"detailsLabelFont"]) {
+		detailsLabel.font = self.detailsLabelFont;
+	} else if ([keyPath isEqualToString:@"detailsLabelColor"]) {
+		detailsLabel.textColor = self.detailsLabelColor;
+	} else if ([keyPath isEqualToString:@"progress"]) {
+		if ([indicator respondsToSelector:@selector(setProgress:)]) {
+			[(id)indicator setValue:@(progress) forKey:@"progress"];
+		}
+		return;
+	}
+	[self setNeedsLayout];
+	[self setNeedsDisplay];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">- observeValueForKeyPath:ofObject:change:context:</code> 方法中的代码是为了保证 UI 的更新一定是在主线程中, 而 <code class="highlighter-rouge">- updateUIForKeypath:</code> 方法负责 UI 的更新.</p>
+
+<h2 id="end">End</h2>
+
+<p><code class="highlighter-rouge">MBProgressHUD</code> 由于是一个 UI 的第三方库, 所以它的实现还是挺简单的.</p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>Ouroboros 的实现 ---- 提供神奇的滚动效果</title>
+	  <link>/reprinted//ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:40:28+00:00</pubDate>
+	  <guid>/reprinted//ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo</guid>
+	  <description><![CDATA[
+	     <p><a href="https://github.com/Draveness/Ouroboros">Ouroboros</a> 是一个根据 <code class="highlighter-rouge">scrollView</code> 滚动的距离完成动画的一个仓库. 灵感来源于 <code class="highlighter-rouge">javascript</code> 的第三方框架 <a href="https://github.com/janpaepke/ScrollMagic">scrollMagic</a>.</p>
+
+<p><img src="https://raw.githubusercontent.com/Draveness/Ouroboros/master/demo.gif" alt="" /></p>
+
+<p>我在使用 <code class="highlighter-rouge">scrollMagic</code> 的过程中, 觉得这种根据当前滚动距离改变视图状态的方式非常的优雅, 而且这种动画是可以<strong>回退</strong>的, 在我看来, 这种动画的方式完全适合于在 iOS App 中完成引导界面的动画.</p>
+
+<p>在以往的开发经验中, 经常需要根据 <code class="highlighter-rouge">scrollView</code> 的滚动距离完成一些相应的动画, 而 <code class="highlighter-rouge">Ouroboros</code> 就是 iOS 中用于解决这一类问题的框架.</p>
+
+<h2 id="动画">动画?</h2>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 与其说是为视图添加动画, 不如说是改变视图当前的状态. 当动画根据 <code class="highlighter-rouge">scrollView</code> 的滚动距离而进行时, 所谓的 <code class="highlighter-rouge">duration</code> 就失去了意义. 我们不会知道动画<strong>什么时候开始, 什么时候结束</strong>, “动画” 的状态完全取决于位置. 而这也是这些动画可以<strong>后退</strong>的最重要原因.</p>
+
+<blockquote>
+  <p>为视图添加的其实并不是通常意义的动画, 而是根据当前的 <code class="highlighter-rouge">scrollView</code> 的滚动位置, 计算出当前视图的状态, 然后再更新视图的这样一组动作.</p>
+</blockquote>
+
+<h2 id="实现">实现</h2>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 的组成还是非常的简单, 总共分为以下几部分</p>
+
+<ul>
+  <li><code class="highlighter-rouge">UIScrollView</code> 的分类, 提供当前位置</li>
+  <li><code class="highlighter-rouge">Ouroboros</code>, 聚合一组动画属性相同的 <code class="highlighter-rouge">Scale</code></li>
+  <li><code class="highlighter-rouge">Scale</code>, 用于计算当前状态</li>
+  <li><code class="highlighter-rouge">UIView</code> 的分类, 为添加动画提供便利的方法, 并负责更新视图的状态</li>
+</ul>
+
+<h3 id="uiscrollviewouroboros">UIScrollView+Ouroboros</h3>
+
+<p><code class="highlighter-rouge">UIScrollView+Ouroboros</code> 这个分类的主要作用就是为整个 <code class="highlighter-rouge">Ouroboros</code> 提供数据支持, 也就是导致视图状态改变的原数据, <code class="highlighter-rouge">contentOffset</code>.</p>
+
+<p>根据 <code class="highlighter-rouge">UIScrollView</code> 的滚动方向不同, 而 <code class="highlighter-rouge">UIScrollView</code> 的属性 <code class="highlighter-rouge">ou_scrollDirection</code> 决定了是根据 <code class="highlighter-rouge">contentOffset.x</code> 还是 <code class="highlighter-rouge">contentOffset.y</code> 来改变视图的状态.</p>
+
+<p>我在 <code class="highlighter-rouge">UIScrollView</code> 中通过 method swizillzing 动态地改变了原有的 <code class="highlighter-rouge">-setContentOffset:</code> 方法的实现.</p>
+
+<pre><code class="language-objectivec">- (void)ou_setContentOffset:(CGPoint)contentOffset {
+    [self ou_setContentOffset:contentOffset];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OURScrollViewUpdateContentOffset
+                                                        object:nil
+                                                      userInfo:@{@"contentOffset": [NSValue valueWithCGPoint:contentOffset],
+                                                                 @"direction":@(self.ou_scrollDirection)}];
+}
+</code></pre>
+
+<p>当 <code class="highlighter-rouge">UIScrollView</code> 滚动时, 它的 <code class="highlighter-rouge">contentOffset</code> 会不断发生改变, 而我们就可以通过方法调剂改变原有方法的实现, 在 <code class="highlighter-rouge">contentOffset</code> 改变时发出通知, 来通知 <code class="highlighter-rouge">Ouroboros</code> 中的其他模块根据 <code class="highlighter-rouge">contentOffset</code> 和  <code class="highlighter-rouge">ou_scrollDirection</code> 来对视图的状态进行更新.</p>
+
+<h3 id="uiviewouroboros">UIView+Ouroboros</h3>
+
+<p><code class="highlighter-rouge">UIView+Ouroboros</code> 这个分类与大多数框架中的分类的作用一样, 为 <code class="highlighter-rouge">UIView</code> 提供”开箱即用”的方法, 其核心方法为 <code class="highlighter-rouge">-our_animateWithProperty:configureBlock:</code>, :</p>
+
+<pre><code class="language-objectivec">- (void)our_animateWithProperty:(OURAnimationProperty)property
+                 configureBlock:(ScaleAnimationBlock)configureBlock {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateState:) name:OURScrollViewUpdateContentOffset object:nil];
+    Ouroboros *ouroboros = [self ouroborosWithProperty:property];
+    Scale *scale = [[Scale alloc] init];
+    configureBlock(scale);
+    NSMutableArray&lt;Scale *&gt; *scales = [ouroboros mutableArrayValueForKey:@"scales"];
+    [scales addObject:scale];
+}
+</code></pre>
+
+<p>当这个方法被调用时:</p>
+
+<ol>
+  <li>首先会注册 <code class="highlighter-rouge">OURScrollViewUpdateContentOffset</code> 通知, 当 <code class="highlighter-rouge">contentOffset</code> 改变时调用 <code class="highlighter-rouge">-updateState:</code> 方法.</li>
+  <li>然后会根据方法传入的 <code class="highlighter-rouge">property</code>, 获取一个对应的 <code class="highlighter-rouge">Ouroboros</code> 的对象, 这个对象的作用就是为了管理一组 <code class="highlighter-rouge">Scale</code>.</li>
+  <li>而在获取 <code class="highlighter-rouge">ouroboros</code> 之后, 会实例化一个 <code class="highlighter-rouge">scale</code></li>
+  <li>使用传入的 <code class="highlighter-rouge">block</code> 配置这个 <code class="highlighter-rouge">scale</code></li>
+  <li>存入 <code class="highlighter-rouge">ouroboros</code> 持有的 <code class="highlighter-rouge">scales</code> 数组中</li>
+</ol>
+
+<p>在这里有这样几个问题, <strong>每一个视图对应的一组 <code class="highlighter-rouge">property</code> 相同的动画, 都由相同的 <code class="highlighter-rouge">ouroboros</code> 对象来处理</strong>, 这样做的主要原因是防止在同一区间中改变视图的同一属性多次的问题.</p>
+
+<pre><code class="language-objectivec">[yellowView our_animateWithProperty:OURAnimationPropertyViewHeight configureBlock:^(Scale * _Nonnull scale) {
+    scale.toValue = @(200);
+    scale.trigger = 0;
+    scale.offset = 320 * 2;
+}];
+[yellowView our_animateWithProperty:OURAnimationPropertyViewHeight configureBlock:^(Scale * _Nonnull scale) {
+    scale.toValue = @(400);
+    scale.trigger = 320;
+    scale.offset = 320 * 0.5;
+}];
+</code></pre>
+
+<p>在这里当我们第一次调用 <code class="highlighter-rouge">-our_animateWithProperty:configureBlock:</code> 方法时, 在 <code class="highlighter-rouge">[0, 640]</code> 之间改变了视图的高度, 而在我们第二次为视图高度添加动画时, 在 <code class="highlighter-rouge">[320, 480]</code> 之间改变了视图的高度, 而这时就造成了冲突. 而这就是 <code class="highlighter-rouge">ouroboros</code> 要解决的一个问题.</p>
+
+<p>当 <code class="highlighter-rouge">UIScrollView</code> 滚动并且发出通知告知视图需要更新状态时, 就会调用在该分类中另一个比较重要的方法 <code class="highlighter-rouge">-updateState:</code></p>
+
+<ol>
+  <li>这个方法首先会从 <code class="highlighter-rouge">notification</code> 对象中取出 <code class="highlighter-rouge">contentOffset</code> 和 <code class="highlighter-rouge">ou_scrollDirection</code> 的值</li>
+  <li>然后遍历视图自己持有的 <code class="highlighter-rouge">ouroboroses</code> 数组</li>
+  <li>通过其中的每一个 <code class="highlighter-rouge">ouroboros</code> 获取当前位置下的值, 根据 <code class="highlighter-rouge">ouroboros.property</code> 更新视图的状态.</li>
+</ol>
+
+<pre><code class="language-objectivec">- (void)updateState:(NSNotification *)notification {
+    CGPoint contentOffset = [[notification userInfo][@"contentOffset"] CGPointValue];
+    OURScrollDirection direction = [[notification userInfo][@"direction"] integerValue];
+    for (Ouroboros *ouroboros in self.ouroboroses) {
+        CGFloat currentPosition = 0;
+        if (direction == OURScrollDirectionHorizontal) {
+            currentPosition = contentOffset.x;
+        } else {
+            currentPosition = contentOffset.y;
+        }
+
+        id value = [ouroboros getCurrentValueWithPosition:currentPosition];
+        OURAnimationProperty property = ouroboros.property;
+
+        switch (property) {
+            case OURAnimationPropertyViewBackgroundColor: {
+                self.backgroundColor = value;
+            }
+                break;
+            ...
+        }
+    }
+}
+</code></pre>
+
+<p>其中的 <code class="highlighter-rouge">-getCurrentValueWithPosition:</code> 方法会在下面介绍.</p>
+
+<h3 id="ouroboros">Ouroboros</h3>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 作为这个框架的核心类, 它为视图的更新提供数据支持, 并且负责管理器持有的 <code class="highlighter-rouge">Scale</code> 对象, 发现其中的可能的动画冲突,
+在这个类中也提供了几个创建 <code class="highlighter-rouge">CGRect</code> <code class="highlighter-rouge">CGSize</code> 和 <code class="highlighter-rouge">CGPoint</code> 的方法.</p>
+
+<pre><code class="language-objectivec">NSValue *NSValueFromCGRectParameters(CGFloat x, CGFloat y, CGFloat width, CGFloat height);
+NSValue *NSValueFromCGPointParameters(CGFloat x, CGFloat y);
+NSValue *NSValueFromCGSizeParameters(CGFloat width, CGFloat height);
+</code></pre>
+
+<p>当 <code class="highlighter-rouge">UIView</code> 调用 <code class="highlighter-rouge">-updateState:</code> 方法更新视图时, 调用了 <code class="highlighter-rouge">-getCurrentValueWithPosition:</code> 方法, 该方法根据当前的状态获取了视图该 <code class="highlighter-rouge">property</code> 对应的值.</p>
+
+<pre><code class="language-objectivec">- (id)getCurrentValueWithPosition:(CGFloat)position {
+    Scale *previousScale = nil;
+    Scale *afterScale = nil;
+    for (Scale *scale in self.scales) {
+        if ([scale isCurrentPositionOnScale:position]) {
+            CGFloat percent = (position - scale.trigger) / scale.offset;
+            return [scale calculateInternalValueWithPercent:percent];
+        } else if (scale.trigger &gt; position &amp;&amp; (!afterScale || afterScale.trigger &gt; scale.trigger)) {
+            afterScale = scale;
+        } else if (scale.stop &lt; position &amp;&amp; (!previousScale || previousScale.stop &lt; scale.stop)) {
+            previousScale = scale;
+        }
+    }
+    if (previousScale) {
+        return previousScale.toValue;
+    } else if (afterScale) {
+        return afterScale.fromValue;
+    }
+    NSAssert(NO, @"FATAL ERROR, Unknown current value for property %@", @(self.property));
+    return [[NSObject alloc] init];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 对象会遍历持有的 <code class="highlighter-rouge">scales</code> 数组, 这时可能会发生三种情况:</p>
+
+<ol>
+  <li>如果当前位置, 在某一个 <code class="highlighter-rouge">scale</code> 的区间中, 就会直接通过 <code class="highlighter-rouge">-calculateInternalValueWithPercent:</code> 方法, 返回当前位置的数值.</li>
+  <li>否则, 当前位置不在某一个 <code class="highlighter-rouge">scale</code> 上, 但是存在 <code class="highlighter-rouge">previousScale</code> 就会返回 <code class="highlighter-rouge">previousScale.toValue</code>, 也就是 <code class="highlighter-rouge">previousScale</code> 结束时的值.</li>
+  <li>如果不存在 <code class="highlighter-rouge">previousScale</code>, 但是存在 <code class="highlighter-rouge">afterScale</code> 那么就会返回 <code class="highlighter-rouge">afterScale.fromValue</code>, 也就是 <code class="highlighter-rouge">afterScale</code> 的初始值.</li>
+</ol>
+
+<blockquote>
+  <p>而当该方法调用时, 一定会存在至少一个 <code class="highlighter-rouge">scale</code>, 所以 <code class="highlighter-rouge">- getCurrentValueWithPosition:</code> 方法总会返回正确的值.</p>
+</blockquote>
+
+<p>比如说, 存在以下两个 <code class="highlighter-rouge">scales</code></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[100, 200] [400, 500]
+</code></pre></div></div>
+
+<ol>
+  <li>如果当前位置在 <code class="highlighter-rouge">[100, 200]</code> 或者 <code class="highlighter-rouge">[400, 500]</code> 之间, 那么直接通过这两个 <code class="highlighter-rouge">scale</code> 计算就能获得当前位置的值.</li>
+  <li>如果在 <code class="highlighter-rouge">[-Inf, 100]</code> 之间, 就会返回 <code class="highlighter-rouge">100</code> 处的值.</li>
+  <li>如果在 <code class="highlighter-rouge">[200, 400]</code> 之间, 就会返回 <code class="highlighter-rouge">200</code> 处的值</li>
+  <li>如果在 <code class="highlighter-rouge">[500, +Inf]</code> 之间, 就会返回 <code class="highlighter-rouge">500</code> 处的值</li>
+</ol>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 这个类的另一个作用就是发现 <code class="highlighter-rouge">scale</code> 之间的覆盖, 而这个是通过 <code class="highlighter-rouge">Objective-C</code> 语言中的 <code class="highlighter-rouge">KVO</code> 完成的, 实现这个功能主要调用了三个方法:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">-mutableArrayValueForKey:</code></li>
+  <li><code class="highlighter-rouge">-insertObject:in&lt;Key&gt;AtIndex:</code></li>
+  <li><code class="highlighter-rouge">-removeObjectFrom&lt;Key&gt;AtIndex:</code></li>
+</ul>
+
+<p><code class="highlighter-rouge">Objective-C</code> 中对数组的 <code class="highlighter-rouge">KVO</code> 主要由这三个方法实现, 首先需要通过 <code class="highlighter-rouge">-mutableArrayValueForKey:</code> 方法获取需要 observe 的可变数组</p>
+
+<pre><code class="language-objectivec">NSMutableArray&lt;Scale *&gt; *scales = [ouroboros mutableArrayValueForKey:@"scales"];
+</code></pre>
+
+<p>然后在操作这个数组, 例如 <code class="highlighter-rouge">-addObject:</code> 等方法时, 就会调用 <code class="highlighter-rouge">-insertObject:in&lt;Key&gt;AtIndex:</code>, <code class="highlighter-rouge">-removeObjectFrom&lt;Key&gt;AtIndex:</code> 方法, 而我们在只要在 <code class="highlighter-rouge">ouroboros</code> 覆写这两个方法就可以了.</p>
+
+<pre><code class="language-objectivec">- (void)insertObject:(Scale *)currentScale inScalesAtIndex:(NSUInteger)index {
+    Scale *previousScale = nil;
+    Scale *afterScale = nil;
+    for (Scale *scale in self.scales) {
+        if ([scale isSeparateWithScale:currentScale]) {
+            if (scale.trigger &gt;= currentScale.stop &amp;&amp; (!afterScale || afterScale.trigger &gt;= scale.stop)) {
+                afterScale = scale;
+            } else if (scale.stop &lt;= currentScale.trigger &amp;&amp; (!previousScale || previousScale.stop &lt;= scale.trigger)) {
+                previousScale = scale;
+            }
+        } else {
+            NSAssert(NO, @"Can not added an overlapping scales to the same ouroboros.");
+        }
+    }
+
+    if (previousScale) {
+        currentScale.fromValue = previousScale.toValue;
+    } else {
+        currentScale.fromValue = self.startValue;
+    }
+    if (afterScale) {
+        afterScale.fromValue = currentScale.toValue;
+    }
+    [self.scales insertObject:currentScale atIndex:index];
+}
+
+- (void)removeObjectFromScalesAtIndex:(NSUInteger)index {
+    [self.scales removeObjectAtIndex:index];
+}
+</code></pre>
+
+<p>在这里 <code class="highlighter-rouge">-removeObjectFromScalesAtIndex:</code> 方法的实现并不重要, 我们需要关注的是 <code class="highlighter-rouge">-insertObject:inScalesAtIndex:</code> 方法. 这个方法在最开始会先将即将插入的 <code class="highlighter-rouge">scale</code> 与其它所有的 <code class="highlighter-rouge">scale</code> 进行比较, 查看是否有 overlapping, 并找出最近的 <code class="highlighter-rouge">previousScale</code> 和 <code class="highlighter-rouge">afterScale</code>. 重新设置 <code class="highlighter-rouge">currentScale</code> 和 <code class="highlighter-rouge">afterScale</code> 的初始值. 我相信由于上面也有类似的代码, 这里的逻辑也很好解释.</p>
+
+<h3 id="scale">Scale</h3>
+
+<p><code class="highlighter-rouge">Scale</code> 作为 <code class="highlighter-rouge">Ouroboros</code> 的一部分, 它的核心作用就是保存一个 <code class="highlighter-rouge">Ouroboros</code> 动画的状态</p>
+
+<ul>
+  <li>toValue</li>
+  <li>trigger</li>
+  <li>offset</li>
+  <li>function</li>
+</ul>
+
+<p>然后根据这些状态和 <code class="highlighter-rouge">percent</code> 计算视图的状态, 也就是 <code class="highlighter-rouge">-calculateInternalValueWithPercent:</code> 方法.</p>
+
+<p>这个方法的实现非常长, 我们在这里只截取其中的一部分</p>
+
+<pre><code class="language-objectivec">- (id)calculateInternalValueWithPercent:(CGFloat)percent {
+    percent = [self justifyPercent:percent];
+
+    CGFloat value = self.functionBlock(self.offset * percent * 1000, 0, 1, self.offset * 1000);
+
+    id result = [[NSValue alloc] init];
+    if ([self.fromValue isKindOfClass:[NSNumber class]]) {
+        CGFloat fromValue = [self.fromValue floatValue];
+        CGFloat toValue = [self.toValue floatValue];
+
+        CGFloat resultValue = fromValue + (toValue - fromValue) * value;
+        result = @(resultValue);
+    }
+    ...
+
+    return result;
+}
+</code></pre>
+
+<p>当 <code class="highlighter-rouge">percent</code> 传进来之后, 要调用 <code class="highlighter-rouge">-justifyPercent:</code> 方法保证当前 <code class="highlighter-rouge">percent</code> 值的范围在 <code class="highlighter-rouge">[0, 1]</code> 之间, 然后通过 <code class="highlighter-rouge">functionBlock</code> 根据不同的函数曲线偏移当前的 <code class="highlighter-rouge">offset</code> 值, 默认的函数曲线为线性的, 也就是不会改变 <code class="highlighter-rouge">percent</code> 值. 在这之后, 由于 <code class="highlighter-rouge">fromValue</code> 和 <code class="highlighter-rouge">toValue</code> 的值有不同的类型, 要根据值类型的不同, 计算出不同的 <code class="highlighter-rouge">resultValue</code>. 公式差不多都是这样的:</p>
+
+<blockquote>
+  <p>fromValue + (toValue - fromValue) * value</p>
+</blockquote>
+
+<p>如果是 <code class="highlighter-rouge">UIColor</code> 就会分别计算 <code class="highlighter-rouge">red</code> <code class="highlighter-rouge">green</code> <code class="highlighter-rouge">blue</code> <code class="highlighter-rouge">alpha</code> 四部分, 然后重新组成 <code class="highlighter-rouge">UIColor</code>, 如果是 <code class="highlighter-rouge">CGRect</code> 等其他值也会分别计算各个组成部分, 最后再重新组合成对应的值的类型.</p>
+
+<h2 id="总结">总结</h2>
+
+<p>到这里, 整个 <code class="highlighter-rouge">Ouroboros</code> 框架的实现就已经基本介绍完了, 整个框架的实现还是比较简单的. 如果你有更好的想法或者有新的建议, 可以在 github 上开一个 issue 或者 PR.</p>
+
+<iframe src="https://ghbtns.com/github-btn.html?user=Draveness&amp;repo=Ouroboros&amp;type=star&amp;size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>NSUserDefaults 的默认值</title>
+	  <link>/reprinted//nsuserdefaults</link>
+	  <author></author>
+	  <pubDate>2016-03-10T09:39:45+00:00</pubDate>
+	  <guid>/reprinted//nsuserdefaults</guid>
+	  <description><![CDATA[
+	     <p><code class="highlighter-rouge">NSUserDefaults</code> 提供了一个与默认设置交互的接口. 这些默认设置允许一个 App 为每一个单独的用户的设置提供定制化的行为.</p>
+
+<h2 id="数据的同步">数据的同步</h2>
+
+<p>我们可以通过 <code class="highlighter-rouge">NSUserDefaults</code> 对象在运行时从数据库读取用户的数据, 并添加到缓存中. 在我们正常获取或者设置 <code class="highlighter-rouge">NSUserDefaults</code> 的值时, 数据库和缓存中的数据其实并没有同步更新, 因为这样会影响效率. <code class="highlighter-rouge">NSUserDefaults</code> 在需要同步时会<strong>自动调用</strong> <code class="highlighter-rouge">synchronize</code> 方法更新数据库数据.
+我们也可以手动调用 <code class="highlighter-rouge">synchronize</code> 来同步数据.</p>
+
+<h2 id="不可变">不可变</h2>
+
+<p>从 <code class="highlighter-rouge">NSUserDefaults</code> 中返回的值都是不可变的, 也就是 <code class="highlighter-rouge">NSString</code> <code class="highlighter-rouge">NSArray</code> <code class="highlighter-rouge">NSDictionary</code>. 如果你想要改变这些值, 你需要调用 <code class="highlighter-rouge">mutableCopy</code>, 获取不可变的版本, 改变它的值之后再设置 <code class="highlighter-rouge">NSUserDefaults</code> 中对应的键.</p>
+
+<h2 id="bool">Bool</h2>
+
+<p>在 <code class="highlighter-rouge">NSUserDefaults</code> 中设置 <code class="highlighter-rouge">BOOL</code> 类型的值总会有一个非常麻烦的问题. 如果我们要在 <code class="highlighter-rouge">NSUserDefaults</code> 中存储一个 <code class="highlighter-rouge">BOOL</code> 类型的值, 当我们使用 <code class="highlighter-rouge">boolForKey:</code> 取出它的值时, 它的默认值总是 <code class="highlighter-rouge">NO</code>.</p>
+
+<p>因为在你没有为一个 key 单独设置值时, 它的默认值总是 <code class="highlighter-rouge">nil</code>. 所以在我们使用 <code class="highlighter-rouge">NSUserDefaults</code> 设置一个 <code class="highlighter-rouge">BOOL</code> 值时, 总会把这个 <code class="highlighter-rouge">BOOL</code> 值的<strong>语义设置为相反</strong>的.</p>
+
+<p>但是当我们需要把 <code class="highlighter-rouge">BOOL</code> 值的默认值设置为 <code class="highlighter-rouge">YES</code> 时, 其实也是有办法的.</p>
+
+<h3 id="设置-bool-值的默认值">设置 BOOL 值的默认值</h3>
+
+<p>假如我们要为我们的 App 添加一个 <code class="highlighter-rouge">isLatestVersion</code> 的 <code class="highlighter-rouge">BOOL</code> 值, 而它的默认值是 <code class="highlighter-rouge">YES</code>.</p>
+
+<pre><code class="language-objectivec">static NSString *isLatestVersion = @"isLatestVersion";
+</code></pre>
+
+<p>当我们使用 <code class="highlighter-rouge">boolForKey:</code> 获取 <code class="highlighter-rouge">isLatestVersion</code> 的值时:</p>
+
+<pre><code class="language-objectivec">[[NSUserDefaults standUserDefaults] boolForKey:isLatestVersion];
+</code></pre>
+
+<p>如果我们在之前没有设置它的值, 它的值总是 <code class="highlighter-rouge">NO</code>.</p>
+
+<p>但是当我们用 <code class="highlighter-rouge">objectForKey:</code> 去获取它的值时:</p>
+
+<pre><code class="language-objectivec">[[NSUserDefaults standUserDefaults] objectForKey:isLatestVersion];
+</code></pre>
+
+<p>它返回的值是 <code class="highlighter-rouge">nil</code>. 哪怕在我们先通过 <code class="highlighter-rouge">boolForKey:</code> 获取 <code class="highlighter-rouge">isLatestVersion</code> 之后, 再调用  <code class="highlighter-rouge">objectForKey:</code> 返回的值依然是 <code class="highlighter-rouge">nil</code>. <code class="highlighter-rouge">boolForKey:</code> 也没有改变它的行为.</p>
+
+<p>也就是说当我们没有设置一个 <code class="highlighter-rouge">BOOL</code> 类型的 <code class="highlighter-rouge">NSUserDefaults</code> 值时, 它的默认值都是 <code class="highlighter-rouge">nil</code>, 这样我们就可以通过下面的代码将一个 <code class="highlighter-rouge">BOOL</code> 类型的默认值设置为 <code class="highlighter-rouge">YES</code> 了.</p>
+
+<pre><code class="language-objectivec">if ([[NSUserDefaults standUserDefaults] objectForKey:isLatestVersion] == nil) {
+    [[NSUserDefaults standUserDefaults] setBool:YES forKey:isLatestVersion];
+}
+</code></pre>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>StackOverflow 黑魔法系列 <2></title>
+	  <link>/reprinted//stackoverflow-hei-mo-fa-xi-lie-2</link>
+	  <author></author>
+	  <pubDate>2015-08-03T03:08:19+00:00</pubDate>
+	  <guid>/reprinted//stackoverflow-hei-mo-fa-xi-lie-2</guid>
+	  <description><![CDATA[
+	     <p>距离上一次的 StackOverflow 黑魔法系列的 post 已经很久了, 自己也很久没有写技术博客了, 虽然这次带来的又是一篇水文. 但是好久没有写了, 写写水文也好试试手.</p>
+
+<h2 id="autoreleasepool">AutoReleasePool</h2>
+
+<p>iOS 中的 run loop 等待一些事件的发生并且响应这些实践. 这个事件可能包括用户触摸屏幕等等.</p>
+
+<p>处理每一个 iOS 中的事件时, 一个新的 autorelease pool 都会在开始时被创建, 然后在事件响应结束后被 <code class="highlighter-rouge">drain</code>. 从理论上来说, 自动释放池的嵌套可以使无数的, 但是你需要知道的最主要的自动释放池是 <strong>Event Loop</strong>.</p>
+
+<p>下面是应用程序生命周期的图:</p>
+
+<p><img src="/content/images/2015/08/nBjxr.jpg" alt="" /></p>
+
+<p>可以用下面的代码来表示</p>
+
+<pre><code class="language-objectivec">int UIApplicationMain(...) {
+    while (!shouldQuitApplication) {
+        Event *someEvent = // wait for next event;
+        NSAutoreleasePool *myPool = [[NSAutoreleasePool alloc] init];
+        // handle event
+        [myPool release];
+    }
+}
+</code></pre>
+
+<p>在 iOS 中有三种事件的类型.</p>
+
+<pre><code class="language-objectivec">UIEventTypeTouches,
+UIEventTypeMotion,
+UIEventTypeRemoteControl,
+</code></pre>
+
+<p>所以在每一次触摸, 运动和远程控制的事件结束之后, 自动释放池都会被排干.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/5766839/end-of-run-loop-autorelease-pool-recovery">End of run loop — autorelease pool recovery</a></p>
+
+<h2 id="gcd-nsthread-和-nsoperationqueue-之间有什么区别">GCD, NSThread 和 NSOperationQueue 之间有什么区别?</h2>
+
+<ol>
+  <li>当你需要<strong>直接控制你所创建的线程</strong>时, 使用 <code class="highlighter-rouge">NSThread</code>. e.g.
+    <ul>
+      <li>当你需要对控制线程的优先级有细颗粒度的控制或者与其他直接消耗线程对象的子系统直接交互并且需要停留在同一页上时, 就需要使用 <code class="highlighter-rouge">NSThread</code> 但是这种情况是及其罕见的, 但是它们确实发生, 特别是在实时应用中.</li>
+    </ul>
+  </li>
+  <li>当你的任务是简单的并行时, 使用 <code class="highlighter-rouge">GCD</code>. e.g.
+    <ul>
+      <li>你想要将一些工作简单的抛到后台去执行</li>
+      <li>串行化的获取某些数据结构</li>
+      <li>有一些可以使用 <code class="highlighter-rouge">dispatch_apply</code> 能够很好的串行化的 <code class="highlighter-rouge">for</code> 循环</li>
+      <li>有一些数据源或者计时器, <code class="highlighter-rouge">GCD</code> 的 <code class="highlighter-rouge">API</code> 能够让你非常容易的使它们工作在后台</li>
+    </ul>
+  </li>
+  <li>当你在处理 Cocoa API 层级并且有一些更复杂的操作需要并行时, 使用 <code class="highlighter-rouge">NSOperation</code>. <code class="highlighter-rouge">NSOperation</code> 允许子类化, 复杂的依赖图, 撤销并且支持一些其他更高层级的语法糖. <code class="highlighter-rouge">NSOperation</code> 是对 <code class="highlighter-rouge">GCD</code> 的封装, 所以它有点类似有多核, 多线程的能力的 <code class="highlighter-rouge">GCD</code>. 如果你直接在 POSIX 层级进行工作时, 你应该更希望使用 <code class="highlighter-rouge">GCD</code>.</li>
+</ol>
+
+<p>链接: <a href="http://stackoverflow.com/questions/12995344/which-is-the-best-of-gcd-nsthread-or-nsoperationqueue">Which is the best of GCD, NSThread or NSOperationQueue?</a></p>
+
+<h2 id="nsoperation-与-grand-central-dispatch-对比">NSOperation 与 Grand Central Dispatch 对比</h2>
+
+<p><code class="highlighter-rouge">GCD</code> 是一个底层级的以 C 语言为基础的 API, 可以用于以任务为基础的并行模型. <code class="highlighter-rouge">NSOperation</code> 和 <code class="highlighter-rouge">NSOperationQueue</code> 是 Objective-C 中用于完成相应工作的类. <code class="highlighter-rouge">NSOperation</code> 在 iOS 4 和 OS X 10.6 中被首次介绍, <code class="highlighter-rouge">NSOperationQueue</code> 和其它一些队列是使用 <code class="highlighter-rouge">GCD</code> 实现的.</p>
+
+<p>从总体上来说, 你应该使用满足需要的最高层级的抽象. 这意味着你需要使用 <code class="highlighter-rouge">NSOperationQueue</code> 来代替 <code class="highlighter-rouge">GCD</code>, 除非你需要完成一些事情, 但是 <code class="highlighter-rouge">NSOperationQueue</code> 无法支持.</p>
+
+<p>事实上, 有许多可以使用 <code class="highlighter-rouge">NSOperationQueue</code> 可以非常简单完成的工作, 但是使用 <code class="highlighter-rouge">GCD</code> 时需要很多的工作. 苹果公司借助 GCD 创建了拥有对象友好型的 API 的 <code class="highlighter-rouge">NSOperation</code>.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/10373331/nsoperation-vs-grand-central-dispatch">NSOperation vs Grand Central Dispatch</a></p>
+
+<h2 id="uitableviewcell-子视图在被点击时消失">UITableViewCell 子视图在被点击时消失</h2>
+
+<p>当 UITableViewCell 被点击时, 在 cell 的 <code class="highlighter-rouge">contentView</code> 上面的视图的颜色全部都会改变, 你可以通过子类化 <code class="highlighter-rouge">UIView</code> 来改变颜色或者使用 <code class="highlighter-rouge">UIImageView</code> 并使用 1x1 像素的拉伸图片来解决这个问题.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/6745919/uitableviewcell-subview-disappears-when-cell-is-selected">UITableViewCell subview disappears when cell is selected</a></p>
+
+<h2 id="判断-iphone-上的晃动手势">判断 iPhone 上的晃动手势</h2>
+
+<p>判断 iPhone 上面晃动手势的最简单办法是, 你需要有一些 UIView 来作为第一响应者来接收晃动实践. 这里有一写使用 UIView 获取晃动事件的代码.</p>
+
+<pre><code class="language-objectivec">@implementation ShakingView
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if ( event.subtype == UIEventSubtypeMotionShake ){
+        // Put in code here to handle shake
+    }
+
+    if ( [super respondsToSelector:@selector(motionEnded:withEvent:)] )
+        [super motionEnded:motion withEvent:event];
+}
+
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
+
+@end
+</code></pre>
+
+<p>你可以通过子类化任意一个 <code class="highlighter-rouge">UIView</code> 并覆写这些方法完成对晃动手势的监听.</p>
+
+<p>在视图控制器中, 你需要设置这个视图变成第一响应者:</p>
+
+<pre><code class="language-objectivec">- (void) viewWillAppear:(BOOL)animated {
+    [shakeView becomeFirstResponder];
+    [super viewWillAppear:animated];
+}
+- (void) viewWillDisappear:(BOOL)animated {
+    [shakeView resignFirstResponder];
+    [super viewWillDisappear:animated];
+}
+</code></pre>
+
+<p>如果有其他的视图变成了第一响应者, 那么在其他视图响应结束后, 恢复当前视图的第一响应者身份.</p>
+
+<p>链接: <a href="http://stackoverflow.com/questions/150446/how-do-i-detect-when-someone-shakes-an-iphone">How do I detect when someone shakes an iPhone?</a></p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>MagicMove 在 iOS 中的实现</title>
+	  <link>/reprinted//swift-de-na-xie-keng</link>
+	  <author></author>
+	  <pubDate>2015-06-07T13:33:57+00:00</pubDate>
+	  <guid>/reprinted//swift-de-na-xie-keng</guid>
+	  <description><![CDATA[
+	     <p>最近由于去武汉参加 hackday, 十多天没有更新博客了. 今天就来说一说, 我在 hackday 上使用 swift 开发 App 遇到的哪些问题吧.</p>
+
+<h2 id="神奇移动">神奇移动</h2>
+
+<p>我曾经在很多的 App 中都实现了类似 Keynote 中的神奇移动的效果, 也就是指定当前帧和下一帧中的视图, 当 Keynote 从当前帧切换到下一帧时, 就会根据当前的这两帧中视图的位置添加动画, 达到神奇的效果.</p>
+
+<p>而我在 iOS 开发中的实现其实有以下几个步骤.</p>
+
+<ul>
+  <li>使下一帧的视图控制器获取视图的引用, 以及视图的位置以便返回时使视图归位.</li>
+  <li>push 或者 present 时, 在下一帧的视图控制器中重新绘制视图.</li>
+  <li>将视图移动到目标位置.</li>
+  <li>将视图移回原位置之后 pop 或者 dismiss</li>
+</ul>
+
+<p>当我在 Swift 中实现的时候却遇到了几个问题.</p>
+
+<h2 id="值类型">值类型</h2>
+
+<p>在 Swift 中类型分为值类型和引用类型两种, 值类型在传递和赋值时将进行复制, 引用类型就只会保留一个指向对象的引用, 就像 C 语言中的指针.</p>
+
+<p>因为在这一次动画的实现中, 我需要实现多个视图的神奇移动效果, 所以我把 <code class="highlighter-rouge">[UIView]</code> 数组传到下一个视图中, 而在 Swift 中, 数组是值类型的, 在传递的过程中会自动 copy. 也就是说, 下一个视图中的 <code class="highlighter-rouge">[UIView]</code> 和当前视图中的 <code class="highlighter-rouge">[UIView]</code> 并没有什么太多的关系.</p>
+
+<p>但是在 Swift 中传递单独的 <code class="highlighter-rouge">UIView</code> 的时候, 由于 UIView 等 Objective-C 对象都是<strong>引用类型</strong>的, 所以在传递的过程中都是传递的引用, 也就是指针. 所以在下一个视图改变 UIView 之后, 原视图也会发生对应的变化. 但是由于, 我不想改变原有的视图, 所以需要对视图进行深拷贝, 就是是调用 <code class="highlighter-rouge">copy()</code> 方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">copy</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="nf">copy</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>在调用 <code class="highlighter-rouge">copy()</code> 方法时需要实现 <code class="highlighter-rouge">copyWithZone</code> 方法以及 <code class="highlighter-rouge">NSCopying</code> 协议. 但是所有的 Objective-C 对象都是默认没有实现这个方法, 所以需要我们手动实现.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">copyWithZone</span><span class="p">(</span><span class="nv">zone</span><span class="p">:</span> <span class="kt">NSZone</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AnyObject</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">copy</span> <span class="o">=</span> <span class="kt">CRMainCollectionViewCell</span><span class="p">(</span><span class="nv">frame</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span>
+    <span class="n">copy</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">copy</span><span class="o">.</span><span class="n">avatarImageView</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">avatarImageView</span><span class="o">.</span><span class="n">image</span>
+    <span class="n">copy</span><span class="o">.</span><span class="n">customizeImageView</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">customizeImageView</span><span class="o">.</span><span class="n">image</span>
+    <span class="n">copy</span><span class="o">.</span><span class="n">nameLabel</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">nameLabel</span><span class="o">.</span><span class="n">text</span>
+    <span class="n">copy</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">return</span> <span class="n">copy</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这就是我所实现的 <code class="highlighter-rouge">copyWithZone</code> 方法, 你可以视情况实现你的 <code class="highlighter-rouge">copyWithZone</code> 方法.</p>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>链式语法与 Objective-C</title>
+	  <link>/reprinted//lian-shi-yu-fa-yu-objective-c</link>
+	  <author></author>
+	  <pubDate>2015-05-27T07:44:22+00:00</pubDate>
+	  <guid>/reprinted//lian-shi-yu-fa-yu-objective-c</guid>
+	  <description><![CDATA[
+	     <p>作为一个 Objective-C 语言的使用者已经有近两年的时间了. 在逐渐熟悉手中的工具, Objective-C 语言的同时, 我也开始从更高的角度来观察这一门语言.</p>
+
+<p>虽然至今我也不敢说我精通 Objective-C 和 Cocoa Touch, 但是我对它们也有了一些自己的见解.</p>
+
+<h2 id="objective-c">Objective-C</h2>
+
+<p>Objective-C 语言的语法使得我感觉到这门语言是如此的<strong>优雅</strong>. 在别人看来啰嗦的 label, 其实更是为了增加语言的可读性, 使 Objective-C 更像一门自然语言而做出的努力.</p>
+
+<p>大多数的方法都不需要去查看文档, 只凭借方法的签名就能获得这个方法的作用, 这点使我们 iOS 开发者在编码的过程中更容易的达到<strong>代码即注释</strong>.</p>
+
+<pre><code class="language-objectivec">- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre>
+
+<p>然而凡事都是有双面性, Objective-C 中一些重要框架的使用, 往往让人诟病.</p>
+
+<h2 id="core-data">Core Data</h2>
+
+<p>作为一名 iOS 开发者就会不可避免的接触到 Core Data 这个框架, 但是它的使用却一直被开发者吐槽, 主要是它的使用实在太过于复杂, 麻烦.</p>
+
+<p>但是你有时却不得不使用它.</p>
+
+<p>当然, 我在我所开发的应用中并没有过多的使用 Core Data, 而是使用了 levelDB 来代替, 这种 Key-Value 存储的数据库更适合于大部分的应用.</p>
+
+<h2 id="autolayout">AutoLayout</h2>
+
+<p>在 AutoLayout 刚刚出现的时候, 许多的开发者都觉得 AutoLayout 必将快速将原来 iOS 开发中使用 frame 布局转变到使用 constraint 布局.</p>
+
+<p>但是知道真正使用的时候才发现原来 AutoLayout 的使用方法是如此的繁琐.</p>
+
+<pre><code class="language-objectivec">[superview addConstraints:@[
+
+    //view1 constraints
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeTop
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeTop
+                                multiplier:1.0
+                                  constant:padding.top],
+
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeLeft
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeLeft
+                                multiplier:1.0
+                                  constant:padding.left],
+
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeBottom
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeBottom
+                                multiplier:1.0
+                                  constant:-padding.bottom],
+
+    [NSLayoutConstraint constraintWithItem:view1
+                                 attribute:NSLayoutAttributeRight
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:superview
+                                 attribute:NSLayoutAttributeRight
+                                multiplier:1
+                                  constant:-padding.right],
+
+ ]];
+</code></pre>
+
+<p>使用这种方式来构建布局简直就是一种折磨, 这也是为什么在 AutoLayout 刚刚出现的时候, 并没有什么人去使用它. 反而, 真正使 AutoLayout 被开发者广泛使用的是另一个 DSL, 也就是大名鼎鼎的 <a href="https://github.com/SnapKit/Masonry">Masonry</a>.</p>
+
+<p>它使用一种非常非常简洁的方式来实现自动布局.</p>
+
+<pre><code class="language-objectivec">[view1 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(superview.mas_top).with.offset(padding.top); //with is an optional semantic filler
+    make.left.equalTo(superview.mas_left).with.offset(padding.left);
+    make.bottom.equalTo(superview.mas_bottom).with.offset(-padding.bottom);
+    make.right.equalTo(superview.mas_right).with.offset(-padding.right);
+}];
+</code></pre>
+
+<p>其中最关键的一点就是使用了<strong>链式语法</strong>.</p>
+
+<pre><code class="language-objectivec">make.top.equalTo(superview.mas_top).with.offset(padding.top);
+</code></pre>
+
+<h2 id="animation">Animation</h2>
+
+<p>在 Masonry 之后, 也就是前一段时间, 又有开发者为动画实现了同样简洁优雅的链式语法, 也就是 <a href="https://github.com/jhurray/JHChainableAnimations">JHChainableAnimations</a>.</p>
+
+<p>在 JHChainableAnimations 作者的同意下, 我也同样将它移植到了 Swift 上 <a href="https://github.com/Draveness/DKChainableAnimationKit">DKChainableAnimationKit</a>.</p>
+
+<p>这是使用 Objective-C 原有的方法实现的动画, 虽然它非常的易读, 并且符合 Objective-C 一贯的风格.</p>
+
+<pre><code class="language-objectivec">[UIView animateWithDuration:1.0
+                      delay:0.0
+     usingSpringWithDamping:0.8
+      initialSpringVelocity:1.0
+                    options:0 animations:^{
+                       CGPoint newPosition = self.myView.frame.origin;
+                       newPosition.x += 50;
+                       self.myView.frame.origin = newPosition;
+} completion:^(BOOL finished) {
+   [UIView animateWithDuration:0.5
+                         delay:0.0
+                       options:UIViewAnimationOptionCurveEaseIn
+                    animations:^{
+       self.myView.backgroundColor = [UIColor purpleColor];
+   } completion:nil];
+}];
+</code></pre>
+
+<p>但是这段代码与下面的<strong>链式语法</strong>比起来就显得冗长与罗嗦了.</p>
+
+<pre><code class="language-objectivec">self.myView.moveX(50).spring.thenAfter(1.0).makeBackground([UIColor purpleColor]).easeIn.animate(0.5);
+</code></pre>
+
+<p>虽然有人说, 这是<strong>对属性的误用</strong>, 不过在我看来<strong>与它带来的便捷, 优雅与易读相比, 属性的误用又算什么呢</strong>?</p>
+
+<p>链式的语法能够极大的改变原有 Objective-C Swift 的使用, 而在这两者的启发下, 我也开始了各种各样的尝试.</p>
+
+<h2 id="uikit">UIKit</h2>
+
+<p>首先, 我在 UIKit 中进行了尝试, 希望能对原有的语法进行改造. 使用链式语法取代原有的语法. 这也就有了 <a href="https://github.com/Draveness/ChainableKit">ChainableKit</a> 使用链式语法配置 UIKit 组件的第三方库.</p>
+
+<pre><code class="language-objectivec">UIColor *red = [UIColor redColor];
+UILabel.make
+    .backgroundColor(red)
+    .textAlignment(NSTextAlignmentCenter)
+</code></pre>
+
+<p>但是, 当这一框架刚刚诞生并且我尝试写出之后, 我却感到有些怪异, 这好像并不符合我们的直觉, 因为这些属性并没有顺序上的关系. 但是却不失为一种尝试.</p>
+
+<p>不过, 它也确实能够极大的减少代码的行数, <strong>将配置 UILabel 的全部代码聚合在一起</strong>.</p>
+
+<h2 id="attributedstring">AttributedString</h2>
+
+<p>由于 <a href="https://github.com/fazibear/colorize">colorize</a> 的启发, 我又在 AttributedString 中尝试使用链式语法来解决创建配置<strong>属性字符串</strong>的问题. <a href="https://github.com/Draveness/Typeset">Typeset</a></p>
+
+<pre><code class="language-objectivec">@"Hello".typeset.match(@"He").red.string;
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p>这就是我对链式语法在 Objective-C 中使用的总结和体会. 虽然并没有得出什么重要的结论, 不过我还是相信<strong>简洁与优雅的方法最终总会被开发者采纳</strong>.</p>
+
+
+	  ]]></description>
+	</item>
+
+
+</channel>
+</rss>

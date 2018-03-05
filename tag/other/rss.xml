@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+   
+      <title>brightphone.github.io/reprinted/</title>
+   
+   <link></link>
+   <description></description>
+   <language>en-uk</language>
+   <managingEditor> </managingEditor>
+   <atom:link href="rss" rel="self" type="application/rss+xml" />
+   
+	<item>
+	  <title>程序员修炼之道 Tips</title>
+	  <link>/reprinted//cheng-xu-yuan-xiu-lian-zhi-dao-tips</link>
+	  <author></author>
+	  <pubDate>2015-05-02T07:42:21+00:00</pubDate>
+	  <guid>/reprinted//cheng-xu-yuan-xiu-lian-zhi-dao-tips</guid>
+	  <description><![CDATA[
+	     <p>这一篇文章其实就是记录<a href="http://www.amazon.cn/%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%AE%E7%82%BC%E4%B9%8B%E9%81%93-%E4%BB%8E%E5%B0%8F%E5%B7%A5%E5%88%B0%E4%B8%93%E5%AE%B6-%E4%BA%A8%E7%89%B9/dp/B004GV08CY/ref=sr_1_1?ie=UTF8&amp;qid=1430723088&amp;sr=8-1&amp;keywords=%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%AE%E7%82%BC%E4%B9%8B%E9%81%93">程序员修炼之道</a>中的所有 Tips, 我讲会在之后的每周实践两个 Tip, 并对这两个 Tips 进行补充和说明自己的体会, 最终成为书中所说的<strong>卓有成效</strong>的程序员.</p>
+
+<h3 id="tip-1">Tip 1:</h3>
+
+<blockquote>
+  <p>Care About Your Craft</p>
+</blockquote>
+
+<blockquote>
+  <p>关心你的技艺</p>
+</blockquote>
+
+<p>我其实一直没有想明白这句话是什么意思. 我的理解是, 我们现在所学所掌握的技艺最后可能是要过时的, 要时刻关心最新的技术并尝试去学习. 不过虽然这么说, 但是如何做就是见仁见智了, 我在最近可能看了看 shell 编程, 学了学 Node.js, 还看了两眼 Golang, 最终我真正吸收的还是 Node.js, 对于 shell 和 Golang 看的我实在提不起兴趣. 不过我也没有强求, 毕竟不是靠这个吃饭的, 而且自己也没有什么兴趣, 索性就放弃了. 不过对于 Node 我还是巨有兴趣的. 这个月我都在为 SportJoin 编写 Node API.</p>
+
+<h3 id="tip-2">Tip 2:</h3>
+
+<blockquote>
+  <p>Think! About Your Work</p>
+</blockquote>
+
+<blockquote>
+  <p>思考! 你的工作</p>
+</blockquote>
+
+<h3 id="tip-3">Tip 3:</h3>
+
+<blockquote>
+  <p>Provide Options, Don’t Make Lame Excuses</p>
+</blockquote>
+
+<blockquote>
+  <p>提供这种选择, 不要找蹩脚的借口</p>
+</blockquote>
+
+<h3 id="tip-4">Tip 4:</h3>
+
+<blockquote>
+  <p>Don’t Live with Brokwn Windows</p>
+</blockquote>
+
+<blockquote>
+  <p>不要容忍破窗户</p>
+</blockquote>
+
+<h3 id="tip-5">Tip 5:</h3>
+
+<blockquote>
+  <p>Be a Catalyst for Change</p>
+</blockquote>
+
+<blockquote>
+  <p>做变化的催化剂</p>
+</blockquote>
+
+<h3 id="tip-6">Tip 6:</h3>
+
+<blockquote>
+  <p>Remember the Big Picture</p>
+</blockquote>
+
+<blockquote>
+  <p>记住大图景</p>
+</blockquote>
+
+<h3 id="tip-7">Tip 7:</h3>
+
+<blockquote>
+  <p>Make Quality a Requirements Issue</p>
+</blockquote>
+
+<blockquote>
+  <p>使质量成为需求问题</p>
+</blockquote>
+
+<h3 id="tip-8">Tip 8:</h3>
+
+<blockquote>
+  <p>Invert Regularly inYour Knowledge Portfolio</p>
+</blockquote>
+
+<blockquote>
+  <p>定期为你的知识资产投资</p>
+</blockquote>
+
+<h3 id="tip-9">Tip 9:</h3>
+
+<blockquote>
+  <p>Critically Analyze What You Read and Hear</p>
+</blockquote>
+
+<blockquote>
+  <p>批判地分析你读到的和听到的</p>
+</blockquote>
+
+<h3 id="tip-10">Tip 10:</h3>
+
+<blockquote>
+  <p>It’s Both What You Say and the Way You Say it</p>
+</blockquote>
+
+<blockquote>
+  <p>你说什么和你怎么说同样重要</p>
+</blockquote>
+
+<h3 id="tip-11">Tip 11:</h3>
+
+<blockquote>
+  <p><em>DRY</em> — Don’t Repeat Yourself</p>
+</blockquote>
+
+<blockquote>
+  <p>不要重复你自己</p>
+</blockquote>
+
+<h3 id="tip-12">Tip 12:</h3>
+
+<blockquote>
+  <p>Make It Easy to Reuse</p>
+</blockquote>
+
+<blockquote>
+  <p>让复用变得更容易</p>
+</blockquote>
+
+<h3 id="tip-13">Tip 13:</h3>
+
+<blockquote>
+  <p>Eliminate Effects Between Unrelated Things</p>
+</blockquote>
+
+<blockquote>
+  <p>消除无关事物之间的影响</p>
+</blockquote>
+
+<h3 id="tip-14">Tip 14:</h3>
+
+<blockquote>
+  <p>There Are No Final Decisions</p>
+</blockquote>
+
+<blockquote>
+  <p>不存在最终决策</p>
+</blockquote>
+
+<h3 id="tip-15">Tip 15:</h3>
+
+<blockquote>
+  <p>Use Tracer Bullets to Find the Target</p>
+</blockquote>
+
+<blockquote>
+  <p>用曳光弹找到目标</p>
+</blockquote>
+
+<h3 id="tip-16">Tip 16:</h3>
+
+<blockquote>
+  <p>Prototyle to Learn</p>
+</blockquote>
+
+<blockquote>
+  <p>为了学习而制作模型</p>
+</blockquote>
+
+<h3 id="tip-17">Tip 17:</h3>
+
+<blockquote>
+  <p>Program Close to the Problem domain</p>
+</blockquote>
+
+<blockquote>
+  <p>靠近问题领域编程</p>
+</blockquote>
+
+<h3 id="tip-18">Tip 18:</h3>
+
+<blockquote>
+  <p>Estimate to Avoid Surprises</p>
+</blockquote>
+
+<blockquote>
+  <p>估算, 以避免发生意外</p>
+</blockquote>
+
+<h3 id="tip-19">Tip 19:</h3>
+
+<blockquote>
+  <p>Iterate the Schedule with the Code</p>
+</blockquote>
+
+<blockquote>
+  <p>通过代码对进度表进行迭代</p>
+</blockquote>
+
+<h3 id="tip-20">Tip 20:</h3>
+
+<blockquote>
+  <p>Keep Knowledge in Plain Text</p>
+</blockquote>
+
+<blockquote>
+  <p>用纯文本来保存知识</p>
+</blockquote>
+
+<h3 id="tip-21">Tip 21:</h3>
+
+<blockquote>
+  <p>Use the Power of Command Shells</p>
+</blockquote>
+
+<blockquote>
+  <p>利用命令 shell 的力量</p>
+</blockquote>
+
+<h3 id="tip-22">Tip 22:</h3>
+
+<blockquote>
+  <p>Use a Single Editor Well</p>
+</blockquote>
+
+<blockquote>
+  <p>用好一种编辑器</p>
+</blockquote>
+
+<h3 id="tip-23">Tip 23:</h3>
+
+<blockquote>
+  <p>Always Use Source Code Control</p>
+</blockquote>
+
+<blockquote>
+  <p>总是使用源码控制</p>
+</blockquote>
+
+<h3 id="tip-24">Tip 24:</h3>
+
+<blockquote>
+  <p>Fix the Problem, Not the Blame</p>
+</blockquote>
+
+<blockquote>
+  <p>要修正问题, 而不是发出指责</p>
+</blockquote>
+
+<h3 id="tip-25">Tip 25:</h3>
+
+<blockquote>
+  <p>Don’t Panic</p>
+</blockquote>
+
+<blockquote>
+  <p>不要恐慌</p>
+</blockquote>
+
+<h3 id="tip-26">Tip 26:</h3>
+
+<blockquote>
+  <p>“Select” Isn’t Broken</p>
+</blockquote>
+
+<blockquote>
+  <p>“Select” 没有问题</p>
+</blockquote>
+
+<h3 id="tip-27">Tip 27:</h3>
+
+<blockquote>
+  <p>Don’t Assume it — Prove It</p>
+</blockquote>
+
+<blockquote>
+  <p>不要假定, 要证明</p>
+</blockquote>
+
+<h3 id="tip-28">Tip 28:</h3>
+
+<blockquote>
+  <p>Learn a Text Manipulation Language</p>
+</blockquote>
+
+<blockquote>
+  <p>学习一种文本操纵语言</p>
+</blockquote>
+
+<h3 id="tip-29">Tip 29:</h3>
+
+<blockquote>
+  <p>Write Code That Writes Code</p>
+</blockquote>
+
+<blockquote>
+  <p>编写能编写代码的代码</p>
+</blockquote>
+
+<h3 id="tip-30">Tip 30:</h3>
+
+<blockquote>
+  <p>You Can’t Write Perfect Software</p>
+</blockquote>
+
+<blockquote>
+  <p>你不可能写出完美的软件</p>
+</blockquote>
+
+<h3 id="tip-31">Tip 31:</h3>
+
+<blockquote>
+  <p>Design with Contracts</p>
+</blockquote>
+
+<blockquote>
+  <p>通过合约进行设计</p>
+</blockquote>
+
+<h3 id="tip-32">Tip 32:</h3>
+
+<blockquote>
+  <p>Crash Early</p>
+</blockquote>
+
+<blockquote>
+  <p>早崩溃</p>
+</blockquote>
+
+<h3 id="tip-33">Tip 33:</h3>
+
+<blockquote>
+  <p>If It Can’t Happen, Use Assertions to Ensure That It Won’t</p>
+</blockquote>
+
+<blockquote>
+  <p>如果它不可能发生, 用断言确保它不会发生</p>
+</blockquote>
+
+<h3 id="tip-34">Tip 34:</h3>
+
+<blockquote>
+  <p>Use Exceptions for Exceptional Problems</p>
+</blockquote>
+
+<blockquote>
+  <p>将异常用于异常的问题</p>
+</blockquote>
+
+<h3 id="tip-35">Tip 35:</h3>
+
+<blockquote>
+  <p>Finish What You Start</p>
+</blockquote>
+
+<blockquote>
+  <p>要有始有终</p>
+</blockquote>
+
+<h3 id="tip-36">Tip 36:</h3>
+
+<blockquote>
+  <p>Minimize Coupling Between Modules</p>
+</blockquote>
+
+<blockquote>
+  <p>使模块的之间的耦合减少</p>
+</blockquote>
+
+<h3 id="tip-37">Tip 37:</h3>
+
+<blockquote>
+  <p>Configure, Don’t Integrate</p>
+</blockquote>
+
+<blockquote>
+  <p>要配置, 不要集成</p>
+</blockquote>
+
+<h3 id="tip-38">Tip 38:</h3>
+
+<blockquote>
+  <p>Put Abstractions in Code, Details in Metadata</p>
+</blockquote>
+
+<blockquote>
+  <p>将抽象放进代码, 细节放进元数据</p>
+</blockquote>
+
+<h3 id="tip-39">Tip 39:</h3>
+
+<blockquote>
+  <p>Analyze Workflow to Improve Concurrency</p>
+</blockquote>
+
+<blockquote>
+  <p>分析工作流, 以改善并发性</p>
+</blockquote>
+
+<h3 id="tip-40">Tip 40:</h3>
+
+<blockquote>
+  <p>Design Using Services</p>
+</blockquote>
+
+<blockquote>
+  <p>用服务进行设计</p>
+</blockquote>
+
+<h3 id="tip-41">Tip 41:</h3>
+
+<blockquote>
+  <p>Always Design for Concurrency</p>
+</blockquote>
+
+<blockquote>
+  <p>总是为并发设计</p>
+</blockquote>
+
+<h3 id="tip-42">Tip 42:</h3>
+
+<blockquote>
+  <p>Separate Views from Models</p>
+</blockquote>
+
+<blockquote>
+  <p>使视图与模型分离</p>
+</blockquote>
+
+<h3 id="tip-43">Tip 43:</h3>
+
+<blockquote>
+  <p>Use Blackboards to Coordinate Workflow</p>
+</blockquote>
+
+<blockquote>
+  <p>用黑板协调工作流</p>
+</blockquote>
+
+<h3 id="tip-44">Tip 44:</h3>
+
+<blockquote>
+  <p>Don’t Program by Coincidence</p>
+</blockquote>
+
+<blockquote>
+  <p>不要靠巧合编程</p>
+</blockquote>
+
+<h3 id="tip-45">Tip 45:</h3>
+
+<blockquote>
+  <p>Estimate the Order of Your Algorithms</p>
+</blockquote>
+
+<blockquote>
+  <p>估算你算法的阶</p>
+</blockquote>
+
+<h3 id="tip-46">Tip 46:</h3>
+
+<blockquote>
+  <p>Test Your Estimates</p>
+</blockquote>
+
+<blockquote>
+  <p>测试你的估算</p>
+</blockquote>
+
+<h3 id="tip-47">Tip 47:</h3>
+
+<blockquote>
+  <p>Refactor Early, Refactor Often</p>
+</blockquote>
+
+<blockquote>
+  <p>早重构, 常重构</p>
+</blockquote>
+
+<h3 id="tip-48">Tip 48:</h3>
+
+<blockquote>
+  <p>Design to Test</p>
+</blockquote>
+
+<blockquote>
+  <p>为测试而设计</p>
+</blockquote>
+
+<h3 id="tip-49">Tip 49:</h3>
+
+<blockquote>
+  <p>Test Your Software, or Your Users Will</p>
+</blockquote>
+
+<blockquote>
+  <p>测试你的软件, 否则你的用户就得测试</p>
+</blockquote>
+
+<h3 id="tip-50">Tip 50:</h3>
+
+<blockquote>
+  <p>Don’t Use Wizard Code You Don’t Understand</p>
+</blockquote>
+
+<blockquote>
+  <p>不要使用你不理解的向导代码</p>
+</blockquote>
+
+<h3 id="tip-51">Tip 51:</h3>
+
+<blockquote>
+  <p>Don’t Gather Requirements — Dig for Them</p>
+</blockquote>
+
+<blockquote>
+  <p>不要搜集需求 — 挖掘它们</p>
+</blockquote>
+
+<h3 id="tip-52">Tip 52:</h3>
+
+<blockquote>
+  <p>Work with a User to Think Like a User</p>
+</blockquote>
+
+<blockquote>
+  <p>与用户一同工作, 以像用户一样思考</p>
+</blockquote>
+
+<h3 id="tip-53">Tip 53:</h3>
+
+<blockquote>
+  <p>Abstractions Live Longer than Details</p>
+</blockquote>
+
+<blockquote>
+  <p>抽象比细节活得更长久</p>
+</blockquote>
+
+<h3 id="tip-54">Tip 54:</h3>
+
+<blockquote>
+  <p>Use a Project Glossary</p>
+</blockquote>
+
+<blockquote>
+  <p>使用一个项目词汇表</p>
+</blockquote>
+
+<h3 id="tip-55">Tip 55:</h3>
+
+<blockquote>
+  <p>Don’t Think Outside the Box — Find the Box</p>
+</blockquote>
+
+<blockquote>
+  <p>不要在盒子外面思考 — 要找到盒子</p>
+</blockquote>
+
+<h3 id="tip-56">Tip 56:</h3>
+
+<blockquote>
+  <p>Listen to Nagging Doubts — Start When You’re Ready</p>
+</blockquote>
+
+<blockquote>
+  <p>倾听反复出现的疑虑 — 等你准备好再开始</p>
+</blockquote>
+
+<h3 id="tip-57">Tip 57:</h3>
+
+<blockquote>
+  <p>Some Things Are Better Done than Described</p>
+</blockquote>
+
+<blockquote>
+  <p>对有些事情”做”胜于”描述”</p>
+</blockquote>
+
+<h3 id="tip-58">Tip 58:</h3>
+
+<blockquote>
+  <p>Don’t Be a Slave to Formal Methods</p>
+</blockquote>
+
+<blockquote>
+  <p>不要做形式的奴隶</p>
+</blockquote>
+
+<h3 id="tip-59">Tip 59:</h3>
+
+<blockquote>
+  <p>Expensive Tools Do Not Produce Better Designs</p>
+</blockquote>
+
+<blockquote>
+  <p>昂贵的工具不一定能制作出更好的设计</p>
+</blockquote>
+
+<h3 id="tip-60">Tip 60:</h3>
+
+<blockquote>
+  <p>Organize Around Functionality, Not Job Functions</p>
+</blockquote>
+
+<blockquote>
+  <p>围绕功能, 而不是工作职务进行组织</p>
+</blockquote>
+
+<h3 id="tip-61">Tip 61:</h3>
+
+<blockquote>
+  <p>Don’t Use Manual Procedures</p>
+</blockquote>
+
+<blockquote>
+  <p>不要使用手工流程</p>
+</blockquote>
+
+<h3 id="tip-62">Tip 62:</h3>
+
+<blockquote>
+  <p>Test Early. Test Often. Test Automatically.</p>
+</blockquote>
+
+<blockquote>
+  <p>早测试, 常测试, 自动测试.</p>
+</blockquote>
+
+<h3 id="tip-63">Tip 63:</h3>
+
+<blockquote>
+  <p>Coding Ain’t Done ‘Til All the Tests Run</p>
+</blockquote>
+
+<blockquote>
+  <p>要到通过全部的测试, 编码才算完成</p>
+</blockquote>
+
+<h3 id="tip-64">Tip 64:</h3>
+
+<blockquote>
+  <p>Use Saboteurs to Test Your Testing</p>
+</blockquote>
+
+<blockquote>
+  <p>通过”蓄意破坏”测试你的测试</p>
+</blockquote>
+
+<h3 id="tip-65">Tip 65:</h3>
+
+<blockquote>
+  <p>Test State Coverage, Not Code Coverage</p>
+</blockquote>
+
+<blockquote>
+  <p>测试状态覆盖, 而不是代码覆盖</p>
+</blockquote>
+
+<h3 id="tip-66">Tip 66:</h3>
+
+<blockquote>
+  <p>Find Bugs Once</p>
+</blockquote>
+
+<blockquote>
+  <p>一个 bug 只抓一次</p>
+</blockquote>
+
+<h3 id="tip-67">Tip 67:</h3>
+
+<blockquote>
+  <p>Treat English as Just Another Programming Language</p>
+</blockquote>
+
+<blockquote>
+  <p>把英语当作又一种编程语言</p>
+</blockquote>
+
+<h3 id="tip-68">Tip 68:</h3>
+
+<blockquote>
+  <p>Build Documentation In, Don’t Bolt It On</p>
+</blockquote>
+
+<blockquote>
+  <p>把文档建在里面, 不要栓在外面</p>
+</blockquote>
+
+<h3 id="tip-69">Tip 69:</h3>
+
+<blockquote>
+  <p>Gently Exceed Your User’s Expectations</p>
+</blockquote>
+
+<blockquote>
+  <p>温和地超过用户的期望</p>
+</blockquote>
+
+<h3 id="tip-70">Tip 70:</h3>
+
+<blockquote>
+  <p>Sign Your Work</p>
+</blockquote>
+
+<blockquote>
+  <p>在你的作品上签名</p>
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+
+</channel>
+</rss>

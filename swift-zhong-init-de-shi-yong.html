@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>Swift 类构造器的使用</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//swift-zhong-init-de-shi-yong" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Swift 类构造器的使用" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//swift-zhong-init-de-shi-yong" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Swift 类构造器的使用" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//swift-zhong-init-de-shi-yong" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "Swift 类构造器的使用",
+    "url": "/reprinted//swift-zhong-init-de-shi-yong",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift  nav-current" role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">Swift 类构造器的使用</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2015-04-22">22 Apr 2015</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>这几天在使用 Swift 重写原来的一个运动社交应用 SportJoin.</p>
+
+<p>为什么要重写呢? 首先因为实在找不到设计师给我作图; 其次, <del>原来写的代码太烂了</del>我也闲不下来, 想找一些项目做, 所以只好将原来的代码重写了.</p>
+
+<p>原来的代码大约是一年半以前写的, 我现在真的不想吐槽当时写的代码有多烂, 有一句话怎么说来着:</p>
+
+<blockquote>
+  <p><del>程序员连自己写的源代码都不想读, 怎么可能看别人写的源代码!</del> 每半年获得的知识相当于之前获得的全部知识的总和.</p>
+</blockquote>
+
+<p>个人觉得这句话还是蛮有道理的. 反正对于我来说, 每过一段的时间回过头来看自己写的代码都感觉有很大的重构空间, 很多地方写的不够 <strong>PERFECT</strong>, 虽然我不是一个<strong>处女座</strong>, 但是对于代码的健壮和整洁还是很注意的.</p>
+
+<p>接下来, 我来<del>扯一扯</del>谈一谈最近写 Swift 遇到的那些~~坑~~问题吧.</p>
+
+<h2 id="感受">感受</h2>
+
+<p>首先说下 Swift 给我带来的感受吧, Swift 的刚开始使用的时候感觉还是<del>太特么难用了</del>可以的.</p>
+
+<p>不过 Xcode 在 Swift 上的<strong>补全极其慢</strong>, 因为 Swift 所有的属性方法都是<strong>默认公开</strong>的, 所以可能是因为每次都要搜索全局的符号导致自动补全非常缓慢, 严重影响了工作效率, 有同样的问题的请戳<a href="http://stackoverflow.com/questions/25948024/xcode-6-with-swift-super-slow-typing-and-autocompletion">这里</a>. 当然也不排除我电脑配置的影响, 不过重写的过程还是蛮顺利的, 没有遇到太多的问题, 而且使用了很多 Swift 的高级特性来缩减原来冗长的 ObjC 代码.</p>
+
+<h2 id="构造器-init">构造器 init</h2>
+
+<p><del>好了</del>然后, 谈一下我在这两天中写 Swift 时遇到的最大问题 —- 构造器 <code class="highlighter-rouge">init</code> 的使用.</p>
+
+<p>注: 我们在这篇博客中提到的构造器都为<strong>类构造器</strong>, 在这里不提及值构造器的使用，详见文档.</p>
+
+<p>刚刚使用这个构造器的时候我感觉到很困惑啊, 不就是个 <code class="highlighter-rouge">init</code>, 你给我搞这么多事情干什么? <del>我只想安安静静地初始化</del></p>
+
+<h3 id="开始使用-init">开始使用 init</h3>
+
+<p>当我遵从以前写 ObjC 的习惯, 在 Swift 中键入 <code class="highlighter-rouge">init</code> 之后, 编译器提醒我:</p>
+
+<p><img src="/content/images/2015/04/6D760453-E328-4CA6-BAD8-04DA1831E3E5.png" alt="" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>'required' initialize 'init(coder:)' must be provided by subclass of 'UITableViewCell'
+</code></pre></div></div>
+
+<p>这是什么意思(,,#ﾟДﾟ), 好吧, 这个错误竟然可以点. 于是开心地双击, 然后呢, Xcode 在我们的屏幕中自动生成了这些东西:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>随后, 我就如在 ObjC 中一样在 <code class="highlighter-rouge">init</code> 方法中调用了 <code class="highlighter-rouge">super.init()</code>, (/= _ =)/~┴┴  怎么还有错误?</p>
+
+<p><img src="/content/images/2015/04/D441FBD5-CB3C-4034-AD7E-2B32A9753ADF.png" alt="" /></p>
+
+<p>这是啥意思?</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Must call a designated initializer of the superclass 'UITableViewCell'
+</code></pre></div></div>
+
+<p>必须调用一个 <code class="highlighter-rouge">UITableViewCell</code> 的指定构造器. 算了先不管了, 继续写好了. 于是又出现呢了下面的提示:</p>
+
+<p><img src="/content/images/2015/04/8381E08C-BA7B-4E4B-8363-6358EEAE8C5F.png" alt="" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Convenience initializer for 'TableViewCell' must delegate (with 'self.init') rather than chaining to a superclass initializer (with 'super.init')
+</code></pre></div></div>
+
+<p>既然说 convenience 构造器不能调用 <code class="highlighter-rouge">super.init</code>, 那么按照错误提示改成 <code class="highlighter-rouge">self.init</code> 应该就好了.</p>
+
+<p><img src="/content/images/2015/04/650D9072-EF4A-49BB-BB4E-018759813171.png" alt="" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Could not find member 'Default'
+</code></pre></div></div>
+
+<p>既然报了这个错误, 那么如果加上 <code class="highlighter-rouge">UITableViewCellStyle</code> 呢</p>
+
+<p><img src="/content/images/2015/04/F48408EA-ABC6-4F67-A2BC-E593EFB728FE.png" alt="" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Could not fond an overload for 'init' that accepts the supplied arguments
+</code></pre></div></div>
+
+<p>找不到 init 方法接收所提供参数的重载.</p>
+
+<p>最后一个常见的错误大概是这样的</p>
+
+<p><img src="/content/images/2015/04/4D7B47B7-D87E-4F7B-BDE2-125EF89B90CE.png" alt="" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Property 'self.label' not initialized at super.init call
+</code></pre></div></div>
+
+<p>Orz, 到这里我已经放弃了自己通过尝试来解决这些问题了. 于是我求助于 Google, 最后怒看苹果的官网文档并找到了以上错误的全部答案.</p>
+
+<h3 id="使用-init-方法的正确姿势">使用 init 方法的正确姿势</h3>
+
+<p>苹果的官方文档关于构造器的部分请戳<a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Initialization.html">这里</a></p>
+
+<p>在 Swift 中, 类的初始化有两种方式, 分别是</p>
+
+<ol>
+  <li>Designated Initializer</li>
+  <li>Convenience Initializer</li>
+</ol>
+
+<p>Designated Initializer 在本篇博客中译为指定构造器, 而 Convenience Initializer 译为便利构造器.</p>
+
+<p><strong>指定构造器在一个类中必须至少有一个</strong>, 而便利构造器的数量没有限制.</p>
+
+<h4 id="指定构造器designated-initializer">指定构造器(Designated Initializer)</h4>
+
+<blockquote>
+  <p>Designated initializers are the primary initializers for a class. A designated initializer fully initializes all properties introduced by that class and calls an appropriate superclass initializer to continue the initialization process up the superclass chain.</p>
+</blockquote>
+
+<p><strong>指定构造器是类的主要构造器, 要在指定构造器中初始化所有的属性, 并且要在调用父类合适的指定构造器.</strong></p>
+
+<p>每个类应该只有少量的指定构造器, 大多数类只有<strong>一个</strong>指定构造器, 我们使用 Swift 做 iOS 开发时就会用到很多 UIKit 框架类的指定构造器, 比如说:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">init</span><span class="p">()</span>
+<span class="nf">init</span><span class="p">(</span><span class="nv">frame</span><span class="p">:</span> <span class="kt">CGRect</span><span class="p">)</span>
+<span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="kt">UITableViewCellStyle</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span>
+</code></pre></div></div>
+
+<p>这些都是类指定构造器, 并且这些方法的前面是没有任何的关键字的(包括 <code class="highlighter-rouge">override</code>).</p>
+
+<p>当定义一个指定构造器的时候, 必须调用父类的某一个指定构造器:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">init</span><span class="p">(</span><span class="nv">imageName</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">prompt</span><span class="p">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">""</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+	<span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在这里我们的指定构造器调用了父类的指定构造器 <code class="highlighter-rouge">super.init(style: .Default, reuseIdentifier: nil)</code>.</p>
+
+<h4 id="便利构造器convenience-initializer">便利构造器(Convenience Initializer)</h4>
+
+<blockquote>
+  <p>Convenience initializers are secondary, supporting initializers for a class. You can define a convenience initializer to call a designated initializer from the same class as the convenience initializer with some of the designated initializer’s parameters set to default values. You can also define a convenience initializer to create an instance of that class for a specific use case or input value type.</p>
+</blockquote>
+
+<p><strong>便利构造器是类的次要构造器, 你需要让便利构造器调用同一个类中的指定构造器, 并将这个指定构造器中的参数填上你想要的默认参数.</strong></p>
+
+<p>如果你的类不需要便利构造器的话, 那么你就不必定义便利构造器, 便利构造器前面必须加上 <code class="highlighter-rouge">convenience</code> 关键字.</p>
+
+<p>在这里我们就不举例了, 但是我们要提一下便利构造器的语法:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">convenience</span> <span class="nf">init</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">statements</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="init-规则">init 规则</h3>
+
+<p>定义 init 方法必须遵循三条规则</p>
+
+<ol>
+  <li><strong>指定构造器必须调用它直接父类的指定构造器方法.</strong></li>
+  <li><strong>便利构造器必须调用同一个类中定义的其它初始化方法.</strong></li>
+  <li><strong>便利构造器在最后必须调用一个指定构造器.</strong></li>
+</ol>
+
+<p>如下图所示:</p>
+
+<p><img src="/content/images/2015/04/initializerDelegation02_2x.png" alt="" /></p>
+
+<p>在图中, 只有指定构造器才可以调用父类的指定构造器, 而便利构造器是不可以的, 这也遵循了我们之前所说的三条规则.</p>
+
+<p>只要 init 方法遵循这三个规则就不会有任何问题.</p>
+
+<ul>
+  <li>不过为什么要遵循这三条规则呢?</li>
+  <li><code class="highlighter-rouge">init</code> 的方法的调用机制是什么呢?</li>
+</ul>
+
+<h3 id="init-机制">init 机制</h3>
+
+<p>在 Swift 中一个实例的初始化是分为两个阶段的</p>
+
+<ol>
+  <li>第一阶段是实例的所有属性被初始化.</li>
+  <li>第二阶段是实例的所有属性可以再次的调整以备之后的使用.</li>
+</ol>
+
+<p>而这与 ObjC 的区别主要在于第一部分, 因为在 ObjC 中所有的属性如果不赋值都会默认被初始化为 <code class="highlighter-rouge">nil</code> 或者 <code class="highlighter-rouge">0</code>. 而在 Swift 中可以所有属性的值由开发者来指定.</p>
+
+<p>Swift 的编译器会对初始化的方法进行安全地检查已保证实例的初始化可以被<strong>安全正确</strong>的执行:</p>
+
+<ol>
+  <li><strong>指定构造器必须要确保所有被类中提到的属性在代理向上调用父类的指定构造器前被初始化, 之后才能将其它构造任务代理给父类中的构造器.</strong></li>
+  <li><strong>指定构造器必须先向上代理调用父类中的构造器, 然后才能为任意属性赋值.</strong></li>
+  <li><strong>便利构造器必须先代理调用同一个类中的其他构造器, 然后再为属性赋值.</strong></li>
+  <li><strong>构造器在第一阶段构造完成之前, 不能调用任何实例方法, 不能读取任何实例属性的值，<code class="highlighter-rouge">self</code> 不能被引用.</strong></li>
+</ol>
+
+<p>接下来我们来说明一下类构造的两个阶段:</p>
+
+<h4 id="阶段-1">阶段 1</h4>
+
+<ul>
+  <li>某个指定构造器或便利构造器被调用.</li>
+  <li>完成新的实例内存的分配, 但此时内存还没有被初始化.</li>
+  <li>指定构造器确保其所在类引入的<strong>所有存储型属性</strong>都已赋值. 存储型属性所属的内存完成初始化.</li>
+  <li>指定构造器将调用父类的构造器, 完成父类属性的初始化.</li>
+  <li>这个调用父类构造器的过程<strong>沿着构造器链一直往上执行</strong>, 直到到达构造器链的最顶部.</li>
+  <li>当到达了构造器链最顶部, 且已<strong>确保所有实例包含的存储型属性都已经赋值</strong>，这个实例的内存被认为已经完全初始化。此时 <code class="highlighter-rouge">阶段 1</code> 完成.</li>
+</ul>
+
+<p><img src="/content/images/2015/04/twoPhaseInitialization01_2x.png" alt="" /></p>
+
+<ol>
+  <li>子类的便利构造器首先会被调用, 这时便利构造器无法修改子类的任何属性.</li>
+  <li>便利构造器会调用子类中的指定构造器, 指定构造器(子类)要确保所有的属性都已赋值, 完成所属内存的初始化,</li>
+  <li>接着会指定构造器(子类)会调用父类中的指定构造器, 完成父类属性所属内存的初始化, 直到达到构造器链的最顶部. 所有的属性以及内存被完全初始化, 然后进入第 <code class="highlighter-rouge">阶段 2</code>.</li>
+</ol>
+
+<h4 id="阶段-2">阶段 2</h4>
+
+<ul>
+  <li>从顶部构造器链一直向下, 每个构造器链中类的指定构造器都有机会进一步定制实例. 构造器此时可以访问 <code class="highlighter-rouge">self</code>, 修改它的属性并调用实例方法等等。</li>
+  <li>最终, 任意构造器链中的便利构造器可以有机会定制实例和使用 <code class="highlighter-rouge">self</code></li>
+</ul>
+
+<p><img src="/content/images/2015/04/twoPhaseInitialization02_2x.png" alt="" /></p>
+
+<ol>
+  <li>父类中的指定构造器定制实例的属性(可能).</li>
+  <li>子类中的指定构造器定制实例的属性.</li>
+  <li>子类中的便利构造器定制实例的属性.</li>
+</ol>
+
+<h3 id="init-的继承和重载">init 的继承和重载</h3>
+
+<blockquote>
+  <p>Unlike subclasses in Objective-C, Swift subclasses do not inherit their superclass initializers by default. Swift’s approach prevents a situation in which a simple initializer from a superclass is inherited by a more specialized subclass and is used to create a new instance of the subclass that is not fully or correctly initialized.</p>
+</blockquote>
+
+<p>跟 ObjC 不同, Swift 中的<strong>子类默认不会继承来自父类的所有构造器</strong>. 这样可以<strong>防止错误的继承并使用父类的构造器生成错误的实例</strong>(可能导致子类中的属性没有被赋值而正确初始化). 与方法不同的一点是, 在重载构造器的时候, 你不需要添加 <code class="highlighter-rouge">override</code> 关键字.</p>
+
+<p>虽然子类不会默认继承来自父类的构造器, 但是我们也可以通过别的方法来自动继承来自父类的构造器, 构造器的继承就遵循以下的规则:</p>
+
+<ol>
+  <li><strong>如果子类没有定义任何的指定构造器, 那么会默认继承所有来自父类的指定构造器.</strong></li>
+  <li><strong>如果子类提供了所有父类指定构造器的实现, 不管是通过 <code class="highlighter-rouge">规则 1</code> 继承过来的, 还是通过自定义实现的, 它将自动继承所有父类的便利构造器.</strong></li>
+</ol>
+
+<h2 id="错误分析">错误分析</h2>
+
+<p>我们到目前为止已经基本介绍了所有的构造器使用的注意事项, 接下来我们分析一下最开始错误的原因.</p>
+
+<h3 id="错误-1">错误 1</h3>
+
+<p>第一个错误是因为, 我们一开始虽然没有为指定构造器提供实现, 不过, 因为重载了指定构造器, 所以来自父类的指定构造器并不会被继承.</p>
+
+<blockquote>
+  <p>如果子类没有定义任何的指定构造器, 那么会默认继承所有来自父类的指定构造器.</p>
+</blockquote>
+
+<p>而 <code class="highlighter-rouge">init(coder aDecoder: NSCoder)</code> 方法是来自父类的指定构造器, 因为这个构造器是 <code class="highlighter-rouge">required</code>, 必须要实现. 但是因为我们已经重载了 <code class="highlighter-rouge">init()</code>, 定义了一个指定构造器, 所以这个方法不会被继承, 要手动覆写, 这就是第一个错误的原因.</p>
+
+<h3 id="错误-2">错误 2</h3>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="p">}</span>
+
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>我们已经手动覆写了这个方法, 然后, 因为 <code class="highlighter-rouge">init()</code> 方法虽然被重载了, 但是并没有调用父类的指定构造器:</p>
+
+<blockquote>
+  <p>指定构造器必须调用它最近父类的指定构造器.</p>
+</blockquote>
+
+<p>所以我们让这个指定构造器调用 <code class="highlighter-rouge">super.init(style: UITableViewCellStyle, reuseIdentifier: String?)</code>, 解决了这个问题.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="错误-3">错误 3</h3>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="n">convenience</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">错误 3</code> 跟前面的两个错误没有直接的联系. 这里的构造器是一个便利构造器(注意前面的 <code class="highlighter-rouge">convenience</code> 关键字), 而这里的错误违反了这一条规则:</p>
+
+<blockquote>
+  <p>便利构造器必须调用同一个类中定义的其它构造器(指定或便利).</p>
+</blockquote>
+
+<p>所以我们让这个便利构造器调用同一个类的 <code class="highlighter-rouge">self.init(style: UITableViewCellStyle, reuseIdentifier: String?)</code> 的指定构造器.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="n">convenience</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>而这段代码目前还是有问题的, 而这就是 <code class="highlighter-rouge">错误 4</code> 的代码.</p>
+
+<h3 id="错误-4">错误 4</h3>
+
+<p><code class="highlighter-rouge">错误 4</code> 的主要原因就是重载了父类的 <code class="highlighter-rouge">init(coder aDecoder: NSCoder)</code> 指定构造器, 导致父类的指定构造器 <code class="highlighter-rouge">init(style: .Default, reuseIdentifier: nil)</code> 并没有被当前类 <code class="highlighter-rouge">TableViewCell</code> 继承, 所以当前类中是没有 <code class="highlighter-rouge">init(style: .Default, reuseIdentifier: nil)</code> 指定构造器.</p>
+
+<blockquote>
+  <p>如果子类没有定义任何的指定构造器, 那么会默认继承所有来自父类的指定构造器.</p>
+</blockquote>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="n">convenience</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>只需要删掉这个 <code class="highlighter-rouge">init(coder aDecoder: NSCoder)</code> 方法就可以解决这个错误了.</p>
+
+<h3 id="错误-5">错误 5</h3>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="k">let</span> <span class="nv">label</span> <span class="p">:</span> <span class="kt">UILabel</span>
+
+    <span class="nf">init</span><span class="p">(</span><span class="nv">imageName</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">错误 5</code> 的主要原因是违反了这一条规则, 它在调用 <code class="highlighter-rouge">super.init(style: .Default, reuseIdentifier: nil)</code> 之前并没有初始化自己的所有属性.</p>
+
+<blockquote>
+  <p>指定构造器必须要确保所有被类中提到的属性在代理向上调用父类的指定构造器前被初始化, 之后才能将其它构造任务代理给父类中的构造器.</p>
+</blockquote>
+
+<p>因为 <code class="highlighter-rouge">label</code> 属性不是 <code class="highlighter-rouge">optional</code> 的, 所以这个属性就必须初始化.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">init</span><span class="p">(</span><span class="nv">imageName</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kt">UILabel</span><span class="p">()</span>
+    <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这是第一个解决的办法, 不过我一般使用另一种, 在属性定义的时候就为他说初始化一个值.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">TableViewCell</span><span class="p">:</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+
+    <span class="k">let</span> <span class="nv">label</span> <span class="o">=</span> <span class="kt">UILabel</span><span class="p">()</span>
+
+    <span class="nf">init</span><span class="p">(</span><span class="nv">imageName</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">style</span><span class="p">:</span> <span class="o">.</span><span class="kt">Default</span><span class="p">,</span> <span class="nv">reuseIdentifier</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">required</span> <span class="nf">init</span><span class="p">(</span><span class="n">coder</span> <span class="nv">aDecoder</span><span class="p">:</span> <span class="kt">NSCoder</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">fatalError</span><span class="p">(</span><span class="s">"init(coder:) has not been implemented"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这些就是我在使用 swift 的构造其中遇到的全部错误了.</p>
+
+<h2 id="总结">总结</h2>
+
+<p>Swift 中构造器需要遵循的规则还是很多的, 总结一下, 有以下规则:</p>
+
+<ul>
+  <li>调用相关
+    <ul>
+      <li>指定构造器必须调用它直接父类的指定构造器方法.</li>
+      <li>便利构造器必须调用同一个类中定义的其它初始化方法.</li>
+      <li>便利构造器在最后必须调用一个指定构造器.</li>
+    </ul>
+  </li>
+  <li>属性相关
+    <ul>
+      <li>指定构造器必须要确保所有被类中提到的属性在代理向上调用父类的指定构造器前被初始化, 之后才能将其它构造任务代理给父类中的构造器.</li>
+      <li>指定构造器必须先向上代理调用父类中的构造器, 然后才能为任意属性赋值.</li>
+      <li>便利构造器必须先代理调用同一个类中的其他构造器, 然后再为属性赋值.</li>
+      <li>构造器在第一阶段构造完成之前, 不能调用任何实例方法, 不能读取任何实例属性的值，<code class="highlighter-rouge">self</code> 不能被引用.</li>
+    </ul>
+  </li>
+  <li>继承相关
+    <ul>
+      <li>如果子类没有定义任何的指定构造器, 那么会默认继承所有来自父类的指定构造器.</li>
+      <li>如果子类提供了所有父类指定构造器的实现, 不管是通过上一条规则继承过来的, 还是通过自定义实现的, 它将自动继承所有父类的便利构造器.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>Swift 中的构造器 <code class="highlighter-rouge">init</code> 中坑还是很多的, 而目前我也终于把这个构造器这个坑填上了, 最终决定还是要重新<strong>详细</strong>看一遍 Swift 的<a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/index.html#//apple_ref/doc/uid/TP40014097-CH3-ID0">官方文档</a>, 而整篇博客和问题的解决都是基于官方文档的. 使用下来 Swift 比 Objective-C 语言使用起来的注意事项和坑更多, 也有很多的黑魔法, 等待着我们去开发和探索.</p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=Swift 类构造器的使用&amp;url=swift-zhong-init-de-shi-yong"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=swift-zhong-init-de-shi-yong"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=swift-zhong-init-de-shi-yong"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/guan-yu-xie-ios-wen-ti-de-jie-da">
+            <section class="post">
+                <h2>关于一些 iOS 面试问题的解答</h2>
+                <p>这篇 post 主要是对知乎上 [iOS程序员的问题列表](http://www.zhihu.com/question/19604641) 的回答, 也算是对自己已有的知识进行整理. 如果你对本篇 post 中的回答有所疑问, 可以在下面留言. 如果有问题, 我一定会修改的 :-) ## 问题以及回答...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ios-swizillingzeng-jia-gou-zi-fang-fa">
+            <section class="post">
+                <h2>iOS 为 UIKit 属性增加钩子方法</h2>
+                <p>最近在做一个用于实现夜间模式的开源框架, 需监听 UIKit 中的属性, 而这个监听的通知者就是 UIKit 实例本身, 当我最开始想要做的时候, 我感觉这个东西实在太简单了, 不过之后… ##KVO 我想到的第一个解决方案是使用 KVO 来解决. KVO...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

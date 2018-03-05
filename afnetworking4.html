@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>AFNetworkReachabilityManager 监控网络状态（四）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//afnetworking4" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AFNetworkReachabilityManager 监控网络状态（四）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//afnetworking4" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AFNetworkReachabilityManager 监控网络状态（四）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//afnetworking4" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "AFNetworkReachabilityManager 监控网络状态（四）",
+    "url": "/reprinted//afnetworking4",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">AFNetworkReachabilityManager 监控网络状态（四）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-04-13">13 Apr 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+<p><code class="highlighter-rouge">AFNetworkReachabilityManager</code> 是对 <code class="highlighter-rouge">SystemConfiguration</code> 模块的封装，苹果的文档中也有一个类似的项目 <a href="https://developer.apple.com/library/ios/samplecode/reachability/">Reachability</a> 这里对网络状态的监控跟苹果官方的实现几乎是完全相同的。</p>
+
+<p>同样在 github 上有一个类似的项目叫做 <a href="https://github.com/tonymillion/Reachability">Reachability</a> 不过这个项目<strong>由于命名的原因可能会在审核时被拒绝</strong>。</p>
+
+<p>无论是 <code class="highlighter-rouge">AFNetworkReachabilityManager</code>，苹果官方的项目或者说 github 上的 Reachability，它们的实现都是类似的，而在这里我们会以 <code class="highlighter-rouge">AFNetworking</code> 中的 <code class="highlighter-rouge">AFNetworkReachabilityManager</code> 为例来说明在 iOS 开发中，我们是怎样监控网络状态的。</p>
+
+<h2 id="afnetworkreachabilitymanager-的使用和实现">AFNetworkReachabilityManager 的使用和实现</h2>
+
+<p><code class="highlighter-rouge">AFNetworkReachabilityManager</code> 的使用还是非常简单的，只需要三个步骤，就基本可以完成对网络状态的监控。</p>
+
+<ol>
+  <li><a href="#init">初始化 <code class="highlighter-rouge">AFNetworkReachabilityManager</code></a></li>
+  <li><a href="#monitor">调用 <code class="highlighter-rouge">startMonitoring</code> 方法开始对网络状态进行监控</a></li>
+  <li><a href="#block">设置 <code class="highlighter-rouge">networkReachabilityStatusBlock</code> 在每次网络状态改变时, 调用这个 block</a></li>
+</ol>
+
+<h3 id="初始化-afnetworkreachabilitymanager"><a id="init"></a>初始化 AFNetworkReachabilityManager</h3>
+
+<p>在初始化方法中，使用 <code class="highlighter-rouge">SCNetworkReachabilityCreateWithAddress</code> 或者 <code class="highlighter-rouge">SCNetworkReachabilityCreateWithName</code> 生成一个 <code class="highlighter-rouge">SCNetworkReachabilityRef</code> 的引用。</p>
+
+<pre><code class="language-objectivec">+ (instancetype)managerForDomain:(NSString *)domain {
+    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [domain UTF8String]);
+
+    AFNetworkReachabilityManager *manager = [[self alloc] initWithReachability:reachability];
+
+    return manager;
+}
+
++ (instancetype)managerForAddress:(const void *)address {
+    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)address);
+    AFNetworkReachabilityManager *manager = [[self alloc] initWithReachability:reachability];
+
+    return manager;
+}
+</code></pre>
+
+<ol>
+  <li>这两个方法会通过一个<strong>域名</strong>或者一个 <code class="highlighter-rouge">sockaddr_in</code> 的指针生成一个 <code class="highlighter-rouge">SCNetworkReachabilityRef</code></li>
+  <li>调用 <code class="highlighter-rouge">- [AFNetworkReachabilityManager initWithReachability:]</code> 将生成的 <code class="highlighter-rouge">SCNetworkReachabilityRef</code> 引用传给 <code class="highlighter-rouge">networkReachability</code></li>
+  <li>设置一个默认的 <code class="highlighter-rouge">networkReachabilityStatus</code></li>
+</ol>
+
+<pre><code class="language-objectivec">- (instancetype)initWithReachability:(SCNetworkReachabilityRef)reachability {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+
+    self.networkReachability = CFBridgingRelease(reachability);
+    self.networkReachabilityStatus = AFNetworkReachabilityStatusUnknown;
+
+    return self;
+}
+</code></pre>
+
+<blockquote>
+  <p>当调用 <code class="highlighter-rouge">CFBridgingRelease(reachability)</code> 后，会把 <code class="highlighter-rouge">reachability</code> 桥接成一个 NSObject 对象赋值给 <code class="highlighter-rouge">self.networkReachability</code>，然后释放原来的 CoreFoundation 对象。</p>
+</blockquote>
+
+<h3 id="监控网络状态"><a id="monitor"></a>监控网络状态</h3>
+
+<p>在初始化 <code class="highlighter-rouge">AFNetworkReachabilityManager</code> 后，会调用 <code class="highlighter-rouge">startMonitoring</code> 方法开始监控网络状态。</p>
+
+<pre><code class="language-objectivec">- (void)startMonitoring {
+    [self stopMonitoring];
+
+    if (!self.networkReachability) {
+        return;
+    }
+
+    __weak __typeof(self)weakSelf = self;
+    AFNetworkReachabilityStatusBlock callback = ^(AFNetworkReachabilityStatus status) {
+        __strong __typeof(weakSelf)strongSelf = weakSelf;
+
+        strongSelf.networkReachabilityStatus = status;
+        if (strongSelf.networkReachabilityStatusBlock) {
+            strongSelf.networkReachabilityStatusBlock(status);
+        }
+
+    };
+
+    id networkReachability = self.networkReachability;
+    SCNetworkReachabilityContext context = {0, (__bridge void *)callback, AFNetworkReachabilityRetainCallback, AFNetworkReachabilityReleaseCallback, NULL};
+    SCNetworkReachabilitySetCallback((__bridge SCNetworkReachabilityRef)networkReachability, AFNetworkReachabilityCallback, &amp;context);
+    SCNetworkReachabilityScheduleWithRunLoop((__bridge SCNetworkReachabilityRef)networkReachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^{
+        SCNetworkReachabilityFlags flags;
+        if (SCNetworkReachabilityGetFlags((__bridge SCNetworkReachabilityRef)networkReachability, &amp;flags)) {
+            AFPostReachabilityStatusChange(flags, callback);
+        }
+    });
+}
+</code></pre>
+
+<ol>
+  <li>
+    <p>先调用 <code class="highlighter-rouge">- stopMonitoring</code> 方法，如果之前设置过对网络状态的监听，使用 <code class="highlighter-rouge">SCNetworkReachabilityUnscheduleFromRunLoop</code> 方法取消之前在 Main Runloop 中的监听</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> - (void)stopMonitoring {
+     if (!self.networkReachability) {
+         return;
+     }
+
+     SCNetworkReachabilityUnscheduleFromRunLoop((__bridge SCNetworkReachabilityRef)self.networkReachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建一个在每次网络状态改变时的回调</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> __weak __typeof(self)weakSelf = self;
+ AFNetworkReachabilityStatusBlock callback = ^(AFNetworkReachabilityStatus status) {
+     __strong __typeof(weakSelf)strongSelf = weakSelf;
+
+     strongSelf.networkReachabilityStatus = status;
+     if (strongSelf.networkReachabilityStatusBlock) {
+         strongSelf.networkReachabilityStatusBlock(status);
+     }
+
+ };
+</code></pre></div>    </div>
+
+    <ul>
+      <li>每次回调被调用时
+        <ul>
+          <li>重新设置 <code class="highlighter-rouge">networkReachabilityStatus</code> 属性</li>
+          <li>调用 <code class="highlighter-rouge">networkReachabilityStatusBlock</code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>创建一个 <code class="highlighter-rouge">SCNetworkReachabilityContext</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> typedef struct {
+     CFIndex		version;
+     void *		__nullable info;
+     const void	* __nonnull (* __nullable retain)(const void *info);
+     void		(* __nullable release)(const void *info);
+     CFStringRef	__nonnull (* __nullable copyDescription)(const void *info);
+ } SCNetworkReachabilityContext;
+
+ SCNetworkReachabilityContext context = {
+     0,
+     (__bridge void *)callback,
+     AFNetworkReachabilityRetainCallback,
+     AFNetworkReachabilityReleaseCallback,
+     NULL
+ };
+</code></pre></div>    </div>
+
+    <ul>
+      <li>其中的 <code class="highlighter-rouge">callback</code> 就是上一步中的创建的 block 对象</li>
+      <li>这里的 <code class="highlighter-rouge">AFNetworkReachabilityRetainCallback</code> 和 <code class="highlighter-rouge">AFNetworkReachabilityReleaseCallback</code> 都是非常简单的 block，在回调被调用时，只是使用 <code class="highlighter-rouge">Block_copy</code> 和 <code class="highlighter-rouge">Block_release</code> 这样的宏</li>
+      <li>
+        <p>传入的 <code class="highlighter-rouge">info</code> 会以参数的形式在 <code class="highlighter-rouge">AFNetworkReachabilityCallback</code> 执行时传入</p>
+
+        <p>static const void * AFNetworkReachabilityRetainCallback(const void *info) {
+      return Block_copy(info);
+  }</p>
+
+        <p>static void AFNetworkReachabilityReleaseCallback(const void *info) {
+      if (info) {
+          Block_release(info);
+      }
+  }</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>当目标的网络状态改变时，会调用传入的回调</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> SCNetworkReachabilitySetCallback(
+     (__bridge SCNetworkReachabilityRef)networkReachability,
+     AFNetworkReachabilityCallback,
+     &amp;context
+ );
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>在 Main Runloop 中对应的模式开始监控网络状态</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> SCNetworkReachabilityScheduleWithRunLoop(
+     (__bridge SCNetworkReachabilityRef)networkReachability,
+     CFRunLoopGetMain(),
+     kCFRunLoopCommonModes
+ );
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>获取当前的网络状态，调用 callback</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^{
+     SCNetworkReachabilityFlags flags;
+     if (SCNetworkReachabilityGetFlags((__bridge SCNetworkReachabilityRef)networkReachability, &amp;flags)) {
+         AFPostReachabilityStatusChange(flags, callback);
+     }
+ });
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>在下一节中会介绍上面所提到的一些 C 函数以及各种回调。</p>
+
+<h3 id="设置-networkreachabilitystatusblock-以及回调"><a id="block"></a>设置 networkReachabilityStatusBlock 以及回调</h3>
+
+<p>在 Main Runloop 中对网络状态进行监控之后，在每次网络状态改变，就会调用 <code class="highlighter-rouge">AFNetworkReachabilityCallback</code> 函数：</p>
+
+<pre><code class="language-objectivec">static void AFNetworkReachabilityCallback(SCNetworkReachabilityRef __unused target, SCNetworkReachabilityFlags flags, void *info) {
+    AFPostReachabilityStatusChange(flags, (__bridge AFNetworkReachabilityStatusBlock)info);
+}
+</code></pre>
+
+<p>这里会从 <code class="highlighter-rouge">info</code> 中取出之前存在 <code class="highlighter-rouge">context</code> 中的 <code class="highlighter-rouge">AFNetworkReachabilityStatusBlock</code>。</p>
+
+<pre><code class="language-objectivec">__weak __typeof(self)weakSelf = self;
+AFNetworkReachabilityStatusBlock callback = ^(AFNetworkReachabilityStatus status) {
+    __strong __typeof(weakSelf)strongSelf = weakSelf;
+
+    strongSelf.networkReachabilityStatus = status;
+    if (strongSelf.networkReachabilityStatusBlock) {
+        strongSelf.networkReachabilityStatusBlock(status);
+    }
+
+};
+</code></pre>
+
+<p>取出这个 block 之后，传入 <code class="highlighter-rouge">AFPostReachabilityStatusChange</code> 函数：</p>
+
+<pre><code class="language-objectivec">static void AFPostReachabilityStatusChange(SCNetworkReachabilityFlags flags, AFNetworkReachabilityStatusBlock block) {
+    AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusForFlags(flags);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (block) {
+            block(status);
+        }
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        NSDictionary *userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(status) };
+        [notificationCenter postNotificationName:AFNetworkingReachabilityDidChangeNotification object:nil userInfo:userInfo];
+    });
+}
+</code></pre>
+
+<ol>
+  <li>调用 <code class="highlighter-rouge">AFNetworkReachabilityStatusForFlags</code> 获取当前的网络可达性状态</li>
+  <li><strong>在主线程中异步执行</strong>上面传入的 <code class="highlighter-rouge">callback</code> block（设置 <code class="highlighter-rouge">self</code> 的网络状态，调用 <code class="highlighter-rouge">networkReachabilityStatusBlock</code>）</li>
+  <li>发送 <code class="highlighter-rouge">AFNetworkingReachabilityDidChangeNotification</code> 通知.</li>
+</ol>
+
+<pre><code class="language-objectivec">static AFNetworkReachabilityStatus AFNetworkReachabilityStatusForFlags(SCNetworkReachabilityFlags flags) {
+    BOOL isReachable = ((flags &amp; kSCNetworkReachabilityFlagsReachable) != 0);
+    BOOL needsConnection = ((flags &amp; kSCNetworkReachabilityFlagsConnectionRequired) != 0);
+    BOOL canConnectionAutomatically = (((flags &amp; kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) || ((flags &amp; kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0));
+    BOOL canConnectWithoutUserInteraction = (canConnectionAutomatically &amp;&amp; (flags &amp; kSCNetworkReachabilityFlagsInterventionRequired) == 0);
+    BOOL isNetworkReachable = (isReachable &amp;&amp; (!needsConnection || canConnectWithoutUserInteraction));
+
+    AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusUnknown;
+    if (isNetworkReachable == NO) {
+        status = AFNetworkReachabilityStatusNotReachable;
+    }
+#if	TARGET_OS_IPHONE
+    else if ((flags &amp; kSCNetworkReachabilityFlagsIsWWAN) != 0) {
+        status = AFNetworkReachabilityStatusReachableViaWWAN;
+    }
+#endif
+    else {
+        status = AFNetworkReachabilityStatusReachableViaWiFi;
+    }
+
+    return status;
+}
+</code></pre>
+
+<p>因为 <code class="highlighter-rouge">flags</code> 是一个 <code class="highlighter-rouge">SCNetworkReachabilityFlags</code>，它的不同位代表了不同的网络可达性状态，通过 <code class="highlighter-rouge">flags</code> 的位操作，获取当前的状态信息 <code class="highlighter-rouge">AFNetworkReachabilityStatus</code>。</p>
+
+<pre><code class="language-objectivec">typedef CF_OPTIONS(uint32_t, SCNetworkReachabilityFlags) {
+	kSCNetworkReachabilityFlagsTransientConnection	= 1&lt;&lt;0,
+	kSCNetworkReachabilityFlagsReachable		= 1&lt;&lt;1,
+	kSCNetworkReachabilityFlagsConnectionRequired	= 1&lt;&lt;2,
+	kSCNetworkReachabilityFlagsConnectionOnTraffic	= 1&lt;&lt;3,
+	kSCNetworkReachabilityFlagsInterventionRequired	= 1&lt;&lt;4,
+	kSCNetworkReachabilityFlagsConnectionOnDemand	= 1&lt;&lt;5,	// __OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_3_0)
+	kSCNetworkReachabilityFlagsIsLocalAddress	= 1&lt;&lt;16,
+	kSCNetworkReachabilityFlagsIsDirect		= 1&lt;&lt;17,
+#if	TARGET_OS_IPHONE
+	kSCNetworkReachabilityFlagsIsWWAN		= 1&lt;&lt;18,
+#endif	// TARGET_OS_IPHONE
+
+	kSCNetworkReachabilityFlagsConnectionAutomatic	= kSCNetworkReachabilityFlagsConnectionOnTraffic
+};
+</code></pre>
+
+<p>这里就是在 <code class="highlighter-rouge">SystemConfiguration</code> 中定义的全部的网络状态的标志位。</p>
+
+<h2 id="与-afnetworking-协作">与 AFNetworking 协作</h2>
+
+<p>其实这个类与 <code class="highlighter-rouge">AFNetworking</code> 整个框架并没有太多的耦合。正相反，它在整个框架中作为一个<strong>即插即用</strong>的类使用，每一个 <code class="highlighter-rouge">AFURLSessionManager</code> 都会持有一个 <code class="highlighter-rouge">AFNetworkReachabilityManager</code> 的实例。</p>
+
+<pre><code class="language-objectivec">self.reachabilityManager = [AFNetworkReachabilityManager sharedManager];
+</code></pre>
+
+<p>这是整个框架中除了 <code class="highlighter-rouge">AFNetworkReachabilityManager.h/m</code> 文件，<strong>唯一一个</strong>引用到这个类的地方。</p>
+
+<p>在实际的使用中，我们也可以直接操作 <code class="highlighter-rouge">AFURLSessionManager</code> 的 <code class="highlighter-rouge">reachabilityManager</code> 来获取当前的网络可达性状态，而不是自己手动初始化一个实例，当然这么做也是没有任何问题的。</p>
+
+<h2 id="总结">总结</h2>
+
+<ol>
+  <li><code class="highlighter-rouge">AFNetworkReachabilityManager</code> 实际上只是一个对底层 <code class="highlighter-rouge">SystemConfiguration</code> 库中的 C 函数封装的类，它为我们隐藏了 C 语言的实现，提供了统一的 Objective-C 语言接口</li>
+  <li>它是 <code class="highlighter-rouge">AFNetworking</code> 中一个即插即用的模块</li>
+</ol>
+
+<h2 id="相关文章">相关文章</h2>
+
+<p>关于其他 AFNetworking 源代码分析的其他文章：</p>
+
+<ul>
+  <li><a href="http://draveness.me/afnetworking1">AFNetworking 概述（一）</a></li>
+  <li><a href="http://draveness.me/afnetworking2">AFNetworking 的核心 AFURLSessionManager（二）</a></li>
+  <li><a href="http://draveness.me/afnetworking3">处理请求和响应 AFURLSerialization（三）</a></li>
+  <li><a href="http://draveness.me/afnetworking4">AFNetworkReachabilityManager 监控网络状态（四）</a></li>
+  <li><a href="http://draveness.me/afnetworking5">验证 HTTPS 请求的证书（五）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=AFNetworkReachabilityManager 监控网络状态（四）&amp;url=afnetworking4"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=afnetworking4"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=afnetworking4"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/afnetworking5">
+            <section class="post">
+                <h2>验证 HTTPS 请求的证书（五）</h2>
+                <p>Blog: [Draveness](http://draveness.me) 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) 自 iOS9 发布之后，由于新特性 [App Transport Security](https://developer.apple.com/library/ios/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html) 的引入，在默认行为下是不能发送 HTTP 请求的。很多网站都在转用 HTTPS，而 `AFNetworking` 中的...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/afnetworking3">
+            <section class="post">
+                <h2>处理请求和响应 AFURLSerialization（三）</h2>
+                <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 在前面两个部分已经分析过 AFNetworking 是对 NSURLSession 的封装，也了解了它是如何发出请求的，在这里我们对发出请求以及接收响应的过程进行序列化，这涉及到两个模块： AFURLResponseSerialization AFURLRequestSerialization 前者是处理响应的模块，将请求返回的数据解析成对应的格式。而后者的主要作用是修改请求（主要是 HTTP 请求）的头部，提供了一些语义明确的接口设置 HTTP 头部字段。...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

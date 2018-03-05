@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>Ouroboros 的实现 ---- 提供神奇的滚动效果</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ouroboros 的实现 ---- 提供神奇的滚动效果" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ouroboros 的实现 ---- 提供神奇的滚动效果" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "Ouroboros 的实现 ---- 提供神奇的滚动效果",
+    "url": "/reprinted//ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">Ouroboros 的实现 ---- 提供神奇的滚动效果</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p><a href="https://github.com/Draveness/Ouroboros">Ouroboros</a> 是一个根据 <code class="highlighter-rouge">scrollView</code> 滚动的距离完成动画的一个仓库. 灵感来源于 <code class="highlighter-rouge">javascript</code> 的第三方框架 <a href="https://github.com/janpaepke/ScrollMagic">scrollMagic</a>.</p>
+
+<p><img src="https://raw.githubusercontent.com/Draveness/Ouroboros/master/demo.gif" alt="" /></p>
+
+<p>我在使用 <code class="highlighter-rouge">scrollMagic</code> 的过程中, 觉得这种根据当前滚动距离改变视图状态的方式非常的优雅, 而且这种动画是可以<strong>回退</strong>的, 在我看来, 这种动画的方式完全适合于在 iOS App 中完成引导界面的动画.</p>
+
+<p>在以往的开发经验中, 经常需要根据 <code class="highlighter-rouge">scrollView</code> 的滚动距离完成一些相应的动画, 而 <code class="highlighter-rouge">Ouroboros</code> 就是 iOS 中用于解决这一类问题的框架.</p>
+
+<h2 id="动画">动画?</h2>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 与其说是为视图添加动画, 不如说是改变视图当前的状态. 当动画根据 <code class="highlighter-rouge">scrollView</code> 的滚动距离而进行时, 所谓的 <code class="highlighter-rouge">duration</code> 就失去了意义. 我们不会知道动画<strong>什么时候开始, 什么时候结束</strong>, “动画” 的状态完全取决于位置. 而这也是这些动画可以<strong>后退</strong>的最重要原因.</p>
+
+<blockquote>
+  <p>为视图添加的其实并不是通常意义的动画, 而是根据当前的 <code class="highlighter-rouge">scrollView</code> 的滚动位置, 计算出当前视图的状态, 然后再更新视图的这样一组动作.</p>
+</blockquote>
+
+<h2 id="实现">实现</h2>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 的组成还是非常的简单, 总共分为以下几部分</p>
+
+<ul>
+  <li><code class="highlighter-rouge">UIScrollView</code> 的分类, 提供当前位置</li>
+  <li><code class="highlighter-rouge">Ouroboros</code>, 聚合一组动画属性相同的 <code class="highlighter-rouge">Scale</code></li>
+  <li><code class="highlighter-rouge">Scale</code>, 用于计算当前状态</li>
+  <li><code class="highlighter-rouge">UIView</code> 的分类, 为添加动画提供便利的方法, 并负责更新视图的状态</li>
+</ul>
+
+<h3 id="uiscrollviewouroboros">UIScrollView+Ouroboros</h3>
+
+<p><code class="highlighter-rouge">UIScrollView+Ouroboros</code> 这个分类的主要作用就是为整个 <code class="highlighter-rouge">Ouroboros</code> 提供数据支持, 也就是导致视图状态改变的原数据, <code class="highlighter-rouge">contentOffset</code>.</p>
+
+<p>根据 <code class="highlighter-rouge">UIScrollView</code> 的滚动方向不同, 而 <code class="highlighter-rouge">UIScrollView</code> 的属性 <code class="highlighter-rouge">ou_scrollDirection</code> 决定了是根据 <code class="highlighter-rouge">contentOffset.x</code> 还是 <code class="highlighter-rouge">contentOffset.y</code> 来改变视图的状态.</p>
+
+<p>我在 <code class="highlighter-rouge">UIScrollView</code> 中通过 method swizillzing 动态地改变了原有的 <code class="highlighter-rouge">-setContentOffset:</code> 方法的实现.</p>
+
+<pre><code class="language-objectivec">- (void)ou_setContentOffset:(CGPoint)contentOffset {
+    [self ou_setContentOffset:contentOffset];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OURScrollViewUpdateContentOffset
+                                                        object:nil
+                                                      userInfo:@{@"contentOffset": [NSValue valueWithCGPoint:contentOffset],
+                                                                 @"direction":@(self.ou_scrollDirection)}];
+}
+</code></pre>
+
+<p>当 <code class="highlighter-rouge">UIScrollView</code> 滚动时, 它的 <code class="highlighter-rouge">contentOffset</code> 会不断发生改变, 而我们就可以通过方法调剂改变原有方法的实现, 在 <code class="highlighter-rouge">contentOffset</code> 改变时发出通知, 来通知 <code class="highlighter-rouge">Ouroboros</code> 中的其他模块根据 <code class="highlighter-rouge">contentOffset</code> 和  <code class="highlighter-rouge">ou_scrollDirection</code> 来对视图的状态进行更新.</p>
+
+<h3 id="uiviewouroboros">UIView+Ouroboros</h3>
+
+<p><code class="highlighter-rouge">UIView+Ouroboros</code> 这个分类与大多数框架中的分类的作用一样, 为 <code class="highlighter-rouge">UIView</code> 提供”开箱即用”的方法, 其核心方法为 <code class="highlighter-rouge">-our_animateWithProperty:configureBlock:</code>, :</p>
+
+<pre><code class="language-objectivec">- (void)our_animateWithProperty:(OURAnimationProperty)property
+                 configureBlock:(ScaleAnimationBlock)configureBlock {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateState:) name:OURScrollViewUpdateContentOffset object:nil];
+    Ouroboros *ouroboros = [self ouroborosWithProperty:property];
+    Scale *scale = [[Scale alloc] init];
+    configureBlock(scale);
+    NSMutableArray&lt;Scale *&gt; *scales = [ouroboros mutableArrayValueForKey:@"scales"];
+    [scales addObject:scale];
+}
+</code></pre>
+
+<p>当这个方法被调用时:</p>
+
+<ol>
+  <li>首先会注册 <code class="highlighter-rouge">OURScrollViewUpdateContentOffset</code> 通知, 当 <code class="highlighter-rouge">contentOffset</code> 改变时调用 <code class="highlighter-rouge">-updateState:</code> 方法.</li>
+  <li>然后会根据方法传入的 <code class="highlighter-rouge">property</code>, 获取一个对应的 <code class="highlighter-rouge">Ouroboros</code> 的对象, 这个对象的作用就是为了管理一组 <code class="highlighter-rouge">Scale</code>.</li>
+  <li>而在获取 <code class="highlighter-rouge">ouroboros</code> 之后, 会实例化一个 <code class="highlighter-rouge">scale</code></li>
+  <li>使用传入的 <code class="highlighter-rouge">block</code> 配置这个 <code class="highlighter-rouge">scale</code></li>
+  <li>存入 <code class="highlighter-rouge">ouroboros</code> 持有的 <code class="highlighter-rouge">scales</code> 数组中</li>
+</ol>
+
+<p>在这里有这样几个问题, <strong>每一个视图对应的一组 <code class="highlighter-rouge">property</code> 相同的动画, 都由相同的 <code class="highlighter-rouge">ouroboros</code> 对象来处理</strong>, 这样做的主要原因是防止在同一区间中改变视图的同一属性多次的问题.</p>
+
+<pre><code class="language-objectivec">[yellowView our_animateWithProperty:OURAnimationPropertyViewHeight configureBlock:^(Scale * _Nonnull scale) {
+    scale.toValue = @(200);
+    scale.trigger = 0;
+    scale.offset = 320 * 2;
+}];
+[yellowView our_animateWithProperty:OURAnimationPropertyViewHeight configureBlock:^(Scale * _Nonnull scale) {
+    scale.toValue = @(400);
+    scale.trigger = 320;
+    scale.offset = 320 * 0.5;
+}];
+</code></pre>
+
+<p>在这里当我们第一次调用 <code class="highlighter-rouge">-our_animateWithProperty:configureBlock:</code> 方法时, 在 <code class="highlighter-rouge">[0, 640]</code> 之间改变了视图的高度, 而在我们第二次为视图高度添加动画时, 在 <code class="highlighter-rouge">[320, 480]</code> 之间改变了视图的高度, 而这时就造成了冲突. 而这就是 <code class="highlighter-rouge">ouroboros</code> 要解决的一个问题.</p>
+
+<p>当 <code class="highlighter-rouge">UIScrollView</code> 滚动并且发出通知告知视图需要更新状态时, 就会调用在该分类中另一个比较重要的方法 <code class="highlighter-rouge">-updateState:</code></p>
+
+<ol>
+  <li>这个方法首先会从 <code class="highlighter-rouge">notification</code> 对象中取出 <code class="highlighter-rouge">contentOffset</code> 和 <code class="highlighter-rouge">ou_scrollDirection</code> 的值</li>
+  <li>然后遍历视图自己持有的 <code class="highlighter-rouge">ouroboroses</code> 数组</li>
+  <li>通过其中的每一个 <code class="highlighter-rouge">ouroboros</code> 获取当前位置下的值, 根据 <code class="highlighter-rouge">ouroboros.property</code> 更新视图的状态.</li>
+</ol>
+
+<pre><code class="language-objectivec">- (void)updateState:(NSNotification *)notification {
+    CGPoint contentOffset = [[notification userInfo][@"contentOffset"] CGPointValue];
+    OURScrollDirection direction = [[notification userInfo][@"direction"] integerValue];
+    for (Ouroboros *ouroboros in self.ouroboroses) {
+        CGFloat currentPosition = 0;
+        if (direction == OURScrollDirectionHorizontal) {
+            currentPosition = contentOffset.x;
+        } else {
+            currentPosition = contentOffset.y;
+        }
+
+        id value = [ouroboros getCurrentValueWithPosition:currentPosition];
+        OURAnimationProperty property = ouroboros.property;
+
+        switch (property) {
+            case OURAnimationPropertyViewBackgroundColor: {
+                self.backgroundColor = value;
+            }
+                break;
+            ...
+        }
+    }
+}
+</code></pre>
+
+<p>其中的 <code class="highlighter-rouge">-getCurrentValueWithPosition:</code> 方法会在下面介绍.</p>
+
+<h3 id="ouroboros">Ouroboros</h3>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 作为这个框架的核心类, 它为视图的更新提供数据支持, 并且负责管理器持有的 <code class="highlighter-rouge">Scale</code> 对象, 发现其中的可能的动画冲突,
+在这个类中也提供了几个创建 <code class="highlighter-rouge">CGRect</code> <code class="highlighter-rouge">CGSize</code> 和 <code class="highlighter-rouge">CGPoint</code> 的方法.</p>
+
+<pre><code class="language-objectivec">NSValue *NSValueFromCGRectParameters(CGFloat x, CGFloat y, CGFloat width, CGFloat height);
+NSValue *NSValueFromCGPointParameters(CGFloat x, CGFloat y);
+NSValue *NSValueFromCGSizeParameters(CGFloat width, CGFloat height);
+</code></pre>
+
+<p>当 <code class="highlighter-rouge">UIView</code> 调用 <code class="highlighter-rouge">-updateState:</code> 方法更新视图时, 调用了 <code class="highlighter-rouge">-getCurrentValueWithPosition:</code> 方法, 该方法根据当前的状态获取了视图该 <code class="highlighter-rouge">property</code> 对应的值.</p>
+
+<pre><code class="language-objectivec">- (id)getCurrentValueWithPosition:(CGFloat)position {
+    Scale *previousScale = nil;
+    Scale *afterScale = nil;
+    for (Scale *scale in self.scales) {
+        if ([scale isCurrentPositionOnScale:position]) {
+            CGFloat percent = (position - scale.trigger) / scale.offset;
+            return [scale calculateInternalValueWithPercent:percent];
+        } else if (scale.trigger &gt; position &amp;&amp; (!afterScale || afterScale.trigger &gt; scale.trigger)) {
+            afterScale = scale;
+        } else if (scale.stop &lt; position &amp;&amp; (!previousScale || previousScale.stop &lt; scale.stop)) {
+            previousScale = scale;
+        }
+    }
+    if (previousScale) {
+        return previousScale.toValue;
+    } else if (afterScale) {
+        return afterScale.fromValue;
+    }
+    NSAssert(NO, @"FATAL ERROR, Unknown current value for property %@", @(self.property));
+    return [[NSObject alloc] init];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 对象会遍历持有的 <code class="highlighter-rouge">scales</code> 数组, 这时可能会发生三种情况:</p>
+
+<ol>
+  <li>如果当前位置, 在某一个 <code class="highlighter-rouge">scale</code> 的区间中, 就会直接通过 <code class="highlighter-rouge">-calculateInternalValueWithPercent:</code> 方法, 返回当前位置的数值.</li>
+  <li>否则, 当前位置不在某一个 <code class="highlighter-rouge">scale</code> 上, 但是存在 <code class="highlighter-rouge">previousScale</code> 就会返回 <code class="highlighter-rouge">previousScale.toValue</code>, 也就是 <code class="highlighter-rouge">previousScale</code> 结束时的值.</li>
+  <li>如果不存在 <code class="highlighter-rouge">previousScale</code>, 但是存在 <code class="highlighter-rouge">afterScale</code> 那么就会返回 <code class="highlighter-rouge">afterScale.fromValue</code>, 也就是 <code class="highlighter-rouge">afterScale</code> 的初始值.</li>
+</ol>
+
+<blockquote>
+  <p>而当该方法调用时, 一定会存在至少一个 <code class="highlighter-rouge">scale</code>, 所以 <code class="highlighter-rouge">- getCurrentValueWithPosition:</code> 方法总会返回正确的值.</p>
+</blockquote>
+
+<p>比如说, 存在以下两个 <code class="highlighter-rouge">scales</code></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[100, 200] [400, 500]
+</code></pre></div></div>
+
+<ol>
+  <li>如果当前位置在 <code class="highlighter-rouge">[100, 200]</code> 或者 <code class="highlighter-rouge">[400, 500]</code> 之间, 那么直接通过这两个 <code class="highlighter-rouge">scale</code> 计算就能获得当前位置的值.</li>
+  <li>如果在 <code class="highlighter-rouge">[-Inf, 100]</code> 之间, 就会返回 <code class="highlighter-rouge">100</code> 处的值.</li>
+  <li>如果在 <code class="highlighter-rouge">[200, 400]</code> 之间, 就会返回 <code class="highlighter-rouge">200</code> 处的值</li>
+  <li>如果在 <code class="highlighter-rouge">[500, +Inf]</code> 之间, 就会返回 <code class="highlighter-rouge">500</code> 处的值</li>
+</ol>
+
+<p><code class="highlighter-rouge">Ouroboros</code> 这个类的另一个作用就是发现 <code class="highlighter-rouge">scale</code> 之间的覆盖, 而这个是通过 <code class="highlighter-rouge">Objective-C</code> 语言中的 <code class="highlighter-rouge">KVO</code> 完成的, 实现这个功能主要调用了三个方法:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">-mutableArrayValueForKey:</code></li>
+  <li><code class="highlighter-rouge">-insertObject:in&lt;Key&gt;AtIndex:</code></li>
+  <li><code class="highlighter-rouge">-removeObjectFrom&lt;Key&gt;AtIndex:</code></li>
+</ul>
+
+<p><code class="highlighter-rouge">Objective-C</code> 中对数组的 <code class="highlighter-rouge">KVO</code> 主要由这三个方法实现, 首先需要通过 <code class="highlighter-rouge">-mutableArrayValueForKey:</code> 方法获取需要 observe 的可变数组</p>
+
+<pre><code class="language-objectivec">NSMutableArray&lt;Scale *&gt; *scales = [ouroboros mutableArrayValueForKey:@"scales"];
+</code></pre>
+
+<p>然后在操作这个数组, 例如 <code class="highlighter-rouge">-addObject:</code> 等方法时, 就会调用 <code class="highlighter-rouge">-insertObject:in&lt;Key&gt;AtIndex:</code>, <code class="highlighter-rouge">-removeObjectFrom&lt;Key&gt;AtIndex:</code> 方法, 而我们在只要在 <code class="highlighter-rouge">ouroboros</code> 覆写这两个方法就可以了.</p>
+
+<pre><code class="language-objectivec">- (void)insertObject:(Scale *)currentScale inScalesAtIndex:(NSUInteger)index {
+    Scale *previousScale = nil;
+    Scale *afterScale = nil;
+    for (Scale *scale in self.scales) {
+        if ([scale isSeparateWithScale:currentScale]) {
+            if (scale.trigger &gt;= currentScale.stop &amp;&amp; (!afterScale || afterScale.trigger &gt;= scale.stop)) {
+                afterScale = scale;
+            } else if (scale.stop &lt;= currentScale.trigger &amp;&amp; (!previousScale || previousScale.stop &lt;= scale.trigger)) {
+                previousScale = scale;
+            }
+        } else {
+            NSAssert(NO, @"Can not added an overlapping scales to the same ouroboros.");
+        }
+    }
+
+    if (previousScale) {
+        currentScale.fromValue = previousScale.toValue;
+    } else {
+        currentScale.fromValue = self.startValue;
+    }
+    if (afterScale) {
+        afterScale.fromValue = currentScale.toValue;
+    }
+    [self.scales insertObject:currentScale atIndex:index];
+}
+
+- (void)removeObjectFromScalesAtIndex:(NSUInteger)index {
+    [self.scales removeObjectAtIndex:index];
+}
+</code></pre>
+
+<p>在这里 <code class="highlighter-rouge">-removeObjectFromScalesAtIndex:</code> 方法的实现并不重要, 我们需要关注的是 <code class="highlighter-rouge">-insertObject:inScalesAtIndex:</code> 方法. 这个方法在最开始会先将即将插入的 <code class="highlighter-rouge">scale</code> 与其它所有的 <code class="highlighter-rouge">scale</code> 进行比较, 查看是否有 overlapping, 并找出最近的 <code class="highlighter-rouge">previousScale</code> 和 <code class="highlighter-rouge">afterScale</code>. 重新设置 <code class="highlighter-rouge">currentScale</code> 和 <code class="highlighter-rouge">afterScale</code> 的初始值. 我相信由于上面也有类似的代码, 这里的逻辑也很好解释.</p>
+
+<h3 id="scale">Scale</h3>
+
+<p><code class="highlighter-rouge">Scale</code> 作为 <code class="highlighter-rouge">Ouroboros</code> 的一部分, 它的核心作用就是保存一个 <code class="highlighter-rouge">Ouroboros</code> 动画的状态</p>
+
+<ul>
+  <li>toValue</li>
+  <li>trigger</li>
+  <li>offset</li>
+  <li>function</li>
+</ul>
+
+<p>然后根据这些状态和 <code class="highlighter-rouge">percent</code> 计算视图的状态, 也就是 <code class="highlighter-rouge">-calculateInternalValueWithPercent:</code> 方法.</p>
+
+<p>这个方法的实现非常长, 我们在这里只截取其中的一部分</p>
+
+<pre><code class="language-objectivec">- (id)calculateInternalValueWithPercent:(CGFloat)percent {
+    percent = [self justifyPercent:percent];
+
+    CGFloat value = self.functionBlock(self.offset * percent * 1000, 0, 1, self.offset * 1000);
+
+    id result = [[NSValue alloc] init];
+    if ([self.fromValue isKindOfClass:[NSNumber class]]) {
+        CGFloat fromValue = [self.fromValue floatValue];
+        CGFloat toValue = [self.toValue floatValue];
+
+        CGFloat resultValue = fromValue + (toValue - fromValue) * value;
+        result = @(resultValue);
+    }
+    ...
+
+    return result;
+}
+</code></pre>
+
+<p>当 <code class="highlighter-rouge">percent</code> 传进来之后, 要调用 <code class="highlighter-rouge">-justifyPercent:</code> 方法保证当前 <code class="highlighter-rouge">percent</code> 值的范围在 <code class="highlighter-rouge">[0, 1]</code> 之间, 然后通过 <code class="highlighter-rouge">functionBlock</code> 根据不同的函数曲线偏移当前的 <code class="highlighter-rouge">offset</code> 值, 默认的函数曲线为线性的, 也就是不会改变 <code class="highlighter-rouge">percent</code> 值. 在这之后, 由于 <code class="highlighter-rouge">fromValue</code> 和 <code class="highlighter-rouge">toValue</code> 的值有不同的类型, 要根据值类型的不同, 计算出不同的 <code class="highlighter-rouge">resultValue</code>. 公式差不多都是这样的:</p>
+
+<blockquote>
+  <p>fromValue + (toValue - fromValue) * value</p>
+</blockquote>
+
+<p>如果是 <code class="highlighter-rouge">UIColor</code> 就会分别计算 <code class="highlighter-rouge">red</code> <code class="highlighter-rouge">green</code> <code class="highlighter-rouge">blue</code> <code class="highlighter-rouge">alpha</code> 四部分, 然后重新组成 <code class="highlighter-rouge">UIColor</code>, 如果是 <code class="highlighter-rouge">CGRect</code> 等其他值也会分别计算各个组成部分, 最后再重新组合成对应的值的类型.</p>
+
+<h2 id="总结">总结</h2>
+
+<p>到这里, 整个 <code class="highlighter-rouge">Ouroboros</code> 框架的实现就已经基本介绍完了, 整个框架的实现还是比较简单的. 如果你有更好的想法或者有新的建议, 可以在 github 上开一个 issue 或者 PR.</p>
+
+<iframe src="https://ghbtns.com/github-btn.html?user=Draveness&amp;repo=Ouroboros&amp;type=star&amp;size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=Ouroboros 的实现 ---- 提供神奇的滚动效果&amp;url=ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ios-yuan-dai-ma-fen-xi-mbprogresshud">
+            <section class="post">
+                <h2>iOS 源代码分析 ---- MBProgressHUD</h2>
+                <p>[MBProgressHUD]() 是一个为 iOS app 添加透明浮层 HUD 的第三方框架. 作为一个 UI 层面的框架, 它的实现很简单, 但是其中也有一些非常有意思的代码. ## MBProgressHUD `MBProgressHUD`...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/nsuserdefaults">
+            <section class="post">
+                <h2>NSUserDefaults 的默认值</h2>
+                <p>NSUserDefaults 提供了一个与默认设置交互的接口. 这些默认设置允许一个 App 为每一个单独的用户的设置提供定制化的行为. 数据的同步 我们可以通过 NSUserDefaults 对象在运行时从数据库读取用户的数据, 并添加到缓存中. 在我们正常获取或者设置 NSUserDefaults 的值时, 数据库和缓存中的数据其实并没有同步更新, 因为这样会影响效率....</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

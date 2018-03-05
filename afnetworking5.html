@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>验证 HTTPS 请求的证书（五）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//afnetworking5" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="验证 HTTPS 请求的证书（五）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//afnetworking5" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="验证 HTTPS 请求的证书（五）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//afnetworking5" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "验证 HTTPS 请求的证书（五）",
+    "url": "/reprinted//afnetworking5",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">验证 HTTPS 请求的证书（五）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-04-16">16 Apr 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+<p>自 iOS9 发布之后，由于新特性 <a href="https://developer.apple.com/library/ios/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html">App Transport Security</a> 的引入，在默认行为下是不能发送 HTTP 请求的。很多网站都在转用 HTTPS，而 <code class="highlighter-rouge">AFNetworking</code> 中的 <code class="highlighter-rouge">AFSecurityPolicy</code> 就是为了阻止中间人攻击，以及其它漏洞的工具。</p>
+
+<p><code class="highlighter-rouge">AFSecurityPolicy</code> 主要作用就是验证 HTTPS 请求的证书是否有效，如果 app 中有一些敏感信息或者涉及交易信息，一定要使用 HTTPS 来保证交易或者用户信息的安全。</p>
+
+<h2 id="afsslpinningmode">AFSSLPinningMode</h2>
+
+<p>使用 <code class="highlighter-rouge">AFSecurityPolicy</code> 时，总共有三种验证服务器是否被信任的方式：</p>
+
+<pre><code class="language-objectivec">typedef NS_ENUM(NSUInteger, AFSSLPinningMode) {
+    AFSSLPinningModeNone,
+    AFSSLPinningModePublicKey,
+    AFSSLPinningModeCertificate,
+};
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">AFSSLPinningModeNone</code> 是默认的认证方式，只会在系统的信任的证书列表中对服务端返回的证书进行验证</li>
+  <li><code class="highlighter-rouge">AFSSLPinningModeCertificate</code> 需要客户端预先保存服务端的证书</li>
+  <li><code class="highlighter-rouge">AFSSLPinningModeCertificate</code> 也需要预先保存服务端发送的证书，但是这里只会验证证书中的公钥是否正确</li>
+</ul>
+
+<h2 id="初始化以及设置">初始化以及设置</h2>
+
+<p>在使用 <code class="highlighter-rouge">AFSecurityPolicy</code> 验证服务端是否受到信任之前，要对其进行初始化，使用初始化方法时，主要目的是设置<strong>验证服务器是否受信任的方式</strong>。</p>
+
+<pre><code class="language-objectivec">+ (instancetype)policyWithPinningMode:(AFSSLPinningMode)pinningMode {
+    return [self policyWithPinningMode:pinningMode withPinnedCertificates:[self defaultPinnedCertificates]];
+}
+
++ (instancetype)policyWithPinningMode:(AFSSLPinningMode)pinningMode withPinnedCertificates:(NSSet *)pinnedCertificates {
+    AFSecurityPolicy *securityPolicy = [[self alloc] init];
+    securityPolicy.SSLPinningMode = pinningMode;
+
+    [securityPolicy setPinnedCertificates:pinnedCertificates];
+
+    return securityPolicy;
+}
+</code></pre>
+
+<p>这里没有什么地方值得解释的。不过在调用 <code class="highlighter-rouge">pinnedCertificate</code> 的 setter 方法时，会从全部的证书中<strong>取出公钥</strong>保存到 <code class="highlighter-rouge">pinnedPublicKeys</code> 属性中。</p>
+
+<pre><code class="language-objectivec">- (void)setPinnedCertificates:(NSSet *)pinnedCertificates {
+    _pinnedCertificates = pinnedCertificates;
+
+    if (self.pinnedCertificates) {
+        NSMutableSet *mutablePinnedPublicKeys = [NSMutableSet setWithCapacity:[self.pinnedCertificates count]];
+        for (NSData *certificate in self.pinnedCertificates) {
+            id publicKey = AFPublicKeyForCertificate(certificate);
+            if (!publicKey) {
+                continue;
+            }
+            [mutablePinnedPublicKeys addObject:publicKey];
+        }
+        self.pinnedPublicKeys = [NSSet setWithSet:mutablePinnedPublicKeys];
+    } else {
+        self.pinnedPublicKeys = nil;
+    }
+}
+</code></pre>
+
+<p>在这里调用了 <code class="highlighter-rouge">AFPublicKeyForCertificate</code> 对证书进行操作，返回一个公钥。</p>
+
+<h2 id="操作-sectrustref">操作 SecTrustRef</h2>
+
+<p>对 <code class="highlighter-rouge">serverTrust</code> 的操作的函数基本上都是 C 的 API，都定义在 <code class="highlighter-rouge">Security</code> 模块中，先来分析一下在上一节中 <code class="highlighter-rouge">AFPublicKeyForCertificate</code> 的实现</p>
+
+<pre><code class="language-objectivec">static id AFPublicKeyForCertificate(NSData *certificate) {
+    id allowedPublicKey = nil;
+    SecCertificateRef allowedCertificate;
+    SecCertificateRef allowedCertificates[1];
+    CFArrayRef tempCertificates = nil;
+    SecPolicyRef policy = nil;
+    SecTrustRef allowedTrust = nil;
+    SecTrustResultType result;
+
+    allowedCertificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certificate);
+    __Require_Quiet(allowedCertificate != NULL, _out);
+
+    allowedCertificates[0] = allowedCertificate;
+    tempCertificates = CFArrayCreate(NULL, (const void **)allowedCertificates, 1, NULL);
+
+    policy = SecPolicyCreateBasicX509();
+    __Require_noErr_Quiet(SecTrustCreateWithCertificates(tempCertificates, policy, &amp;allowedTrust), _out);
+    __Require_noErr_Quiet(SecTrustEvaluate(allowedTrust, &amp;result), _out);
+
+    allowedPublicKey = (__bridge_transfer id)SecTrustCopyPublicKey(allowedTrust);
+
+_out:
+    if (allowedTrust) {
+        CFRelease(allowedTrust);
+    }
+
+    if (policy) {
+        CFRelease(policy);
+    }
+
+    if (tempCertificates) {
+        CFRelease(tempCertificates);
+    }
+
+    if (allowedCertificate) {
+        CFRelease(allowedCertificate);
+    }
+
+    return allowedPublicKey;
+}
+</code></pre>
+
+<ol>
+  <li>
+    <p>初始化一坨临时变量</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> id allowedPublicKey = nil;
+ SecCertificateRef allowedCertificate;
+ SecCertificateRef allowedCertificates[1];
+ CFArrayRef tempCertificates = nil;
+ SecPolicyRef policy = nil;
+ SecTrustRef allowedTrust = nil;
+ SecTrustResultType result;
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>使用 <code class="highlighter-rouge">SecCertificateCreateWithData</code> 通过 DER 表示的数据生成一个 <code class="highlighter-rouge">SecCertificateRef</code>，然后判断返回值是否为 <code class="highlighter-rouge">NULL</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> allowedCertificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certificate);
+ __Require_Quiet(allowedCertificate != NULL, _out);
+</code></pre></div>    </div>
+
+    <ul>
+      <li>
+        <p>这里使用了一个非常神奇的宏 <code class="highlighter-rouge">__Require_Quiet</code>，它会判断 <code class="highlighter-rouge">allowedCertificate != NULL</code> 是否成立，如果 <code class="highlighter-rouge">allowedCertificate</code> 为空就会跳到 <code class="highlighter-rouge">_out</code> 标签处继续执行</p>
+
+        <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  #ifndef __Require_Quiet
+      #define __Require_Quiet(assertion, exceptionLabel)                            \
+        do                                                                          \
+        {                                                                           \
+            if ( __builtin_expect(!(assertion), 0) )                                \
+            {                                                                       \
+                goto exceptionLabel;                                                \
+            }                                                                       \
+        } while ( 0 )
+  #endif
+</code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>通过上面的 <code class="highlighter-rouge">allowedCertificate</code> 创建一个 <code class="highlighter-rouge">CFArray</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> allowedCertificates[0] = allowedCertificate;
+ tempCertificates = CFArrayCreate(NULL, (const void **)allowedCertificates, 1, NULL);
+</code></pre></div>    </div>
+
+    <ul>
+      <li>下面的 <code class="highlighter-rouge">SecTrustCreateWithCertificates</code> 只会接收数组作为参数。</li>
+    </ul>
+  </li>
+  <li>
+    <p>创建一个默认的符合 X509 标准的 <code class="highlighter-rouge">SecPolicyRef</code>，通过默认的 <code class="highlighter-rouge">SecPolicyRef</code> 和证书创建一个 <code class="highlighter-rouge">SecTrustRef</code> 用于信任评估，对该对象进行信任评估，确认生成的 <code class="highlighter-rouge">SecTrustRef</code> 是值得信任的。</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> policy = SecPolicyCreateBasicX509();
+ __Require_noErr_Quiet(SecTrustCreateWithCertificates(tempCertificates, policy, &amp;allowedTrust), _out);
+ __Require_noErr_Quiet(SecTrustEvaluate(allowedTrust, &amp;result), _out);
+</code></pre></div>    </div>
+
+    <ul>
+      <li>这里使用的 <code class="highlighter-rouge">__Require_noErr_Quiet</code> 和上面的宏差不多，只是会根据返回值判断是否存在错误。</li>
+    </ul>
+  </li>
+  <li>
+    <p>获取公钥</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> allowedPublicKey = (__bridge_transfer id)SecTrustCopyPublicKey(allowedTrust);
+</code></pre></div>    </div>
+
+    <ul>
+      <li>这里的 <code class="highlighter-rouge">__bridge_transfer</code> 会将结果桥接成 <code class="highlighter-rouge">NSObject</code> 对象，然后将 <code class="highlighter-rouge">SecTrustCopyPublicKey</code> 返回的指针释放。</li>
+    </ul>
+  </li>
+  <li>
+    <p>释放各种 C 语言指针</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (allowedTrust) {
+     CFRelease(allowedTrust);
+ }
+
+ if (policy) {
+     CFRelease(policy);
+ }
+
+ if (tempCertificates) {
+     CFRelease(tempCertificates);
+ }
+
+ if (allowedCertificate) {
+     CFRelease(allowedCertificate);
+ }
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<blockquote>
+  <p>每一个 <code class="highlighter-rouge">SecTrustRef</code> 的对象都是包含多个 <code class="highlighter-rouge">SecCertificateRef</code> 和 <code class="highlighter-rouge">SecPolicyRef</code>。其中 <code class="highlighter-rouge">SecCertificateRef</code> 可以使用 DER 进行表示，并且其中存储着公钥信息。</p>
+</blockquote>
+
+<p>对它的操作还有 <code class="highlighter-rouge">AFCertificateTrustChainForServerTrust</code> 和 <code class="highlighter-rouge">AFPublicKeyTrustChainForServerTrust</code> 但是它们几乎调用了相同的 API。</p>
+
+<pre><code class="language-objectivec">static NSArray * AFCertificateTrustChainForServerTrust(SecTrustRef serverTrust) {
+    CFIndex certificateCount = SecTrustGetCertificateCount(serverTrust);
+    NSMutableArray *trustChain = [NSMutableArray arrayWithCapacity:(NSUInteger)certificateCount];
+
+    for (CFIndex i = 0; i &lt; certificateCount; i++) {
+        SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, i);
+        [trustChain addObject:(__bridge_transfer NSData *)SecCertificateCopyData(certificate)];
+    }
+
+    return [NSArray arrayWithArray:trustChain];
+}
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">SecTrustGetCertificateAtIndex</code> 获取 <code class="highlighter-rouge">SecTrustRef</code> 中的证书</li>
+  <li><code class="highlighter-rouge">SecCertificateCopyData</code> 从证书中或者 DER 表示的数据</li>
+</ul>
+
+<h2 id="验证服务端是否受信">验证服务端是否受信</h2>
+
+<p>验证服务端是否守信是通过 <code class="highlighter-rouge">- [AFSecurityPolicy evaluateServerTrust:forDomain:]</code> 方法进行的。</p>
+
+<pre><code class="language-objectivec">- (BOOL)evaluateServerTrust:(SecTrustRef)serverTrust
+                  forDomain:(NSString *)domain
+{
+
+	#1: 不能隐式地信任自己签发的证书
+
+	#2: 设置 policy
+
+	#3: 验证证书是否有效
+
+	#4: 根据 SSLPinningMode 对服务端进行验证
+
+    return NO;
+}
+</code></pre>
+
+<ol>
+  <li>
+    <p>不能隐式地信任自己签发的证书</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (domain &amp;&amp; self.allowInvalidCertificates &amp;&amp; self.validatesDomainName &amp;&amp; (self.SSLPinningMode == AFSSLPinningModeNone || [self.pinnedCertificates count] == 0)) {
+     NSLog(@"In order to validate a domain name for self signed certificates, you MUST use pinning.");
+     return NO;
+ }
+</code></pre></div>    </div>
+
+    <blockquote>
+      <p>Do not implicitly trust self-signed certificates as anchors (kSecTrustOptionImplicitAnchors).
+Instead, add your own (self-signed) CA certificate to the list of trusted anchors.</p>
+    </blockquote>
+
+    <ul>
+      <li>所以如果没有提供证书或者不验证证书，并且还设置 <code class="highlighter-rouge">allowInvalidCertificates</code> 为<strong>真</strong>，满足上面的所有条件，说明这次的验证是不安全的，会直接返回 <code class="highlighter-rouge">NO</code></li>
+    </ul>
+  </li>
+  <li>
+    <p>设置 policy</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> NSMutableArray *policies = [NSMutableArray array];
+ if (self.validatesDomainName) {
+     [policies addObject:(__bridge_transfer id)SecPolicyCreateSSL(true, (__bridge CFStringRef)domain)];
+ } else {
+     [policies addObject:(__bridge_transfer id)SecPolicyCreateBasicX509()];
+ }
+</code></pre></div>    </div>
+
+    <ul>
+      <li>如果要验证域名的话，就以域名为参数创建一个 <code class="highlighter-rouge">SecPolicyRef</code>，否则会创建一个符合 X509 标准的默认 <code class="highlighter-rouge">SecPolicyRef</code> 对象</li>
+    </ul>
+  </li>
+  <li>
+    <p>验证证书的有效性</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (self.SSLPinningMode == AFSSLPinningModeNone) {
+     return self.allowInvalidCertificates || AFServerTrustIsValid(serverTrust);
+ } else if (!AFServerTrustIsValid(serverTrust) &amp;&amp; !self.allowInvalidCertificates) {
+     return NO;
+ }
+</code></pre></div>    </div>
+
+    <ul>
+      <li>如果<strong>只根据信任列表中的证书</strong>进行验证，即 <code class="highlighter-rouge">self.SSLPinningMode == AFSSLPinningModeNone</code>。如果允许无效的证书的就会直接返回 <code class="highlighter-rouge">YES</code>。不允许就会对服务端信任进行验证。</li>
+      <li>如果服务器信任无效，并且不允许无效证书，就会返回 <code class="highlighter-rouge">NO</code></li>
+    </ul>
+  </li>
+  <li>
+    <p>根据 <code class="highlighter-rouge">SSLPinningMode</code> 对服务器信任进行验证</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> switch (self.SSLPinningMode) {
+     case AFSSLPinningModeNone:
+     default:
+         return NO;
+     case AFSSLPinningModeCertificate: {
+         ...
+     }
+     case AFSSLPinningModePublicKey: {
+         ...
+     }
+ }
+</code></pre></div>    </div>
+
+    <ul>
+      <li><code class="highlighter-rouge">AFSSLPinningModeNone</code> 直接返回 <code class="highlighter-rouge">NO</code></li>
+      <li>
+        <p><code class="highlighter-rouge">AFSSLPinningModeCertificate</code></p>
+
+        <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  NSMutableArray *pinnedCertificates = [NSMutableArray array];
+  for (NSData *certificateData in self.pinnedCertificates) {
+      [pinnedCertificates addObject:(__bridge_transfer id)SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certificateData)];
+  }
+  SecTrustSetAnchorCertificates(serverTrust, (__bridge CFArrayRef)pinnedCertificates);
+
+  if (!AFServerTrustIsValid(serverTrust)) {
+      return NO;
+  }
+
+  // obtain the chain after being validated, which *should* contain the pinned certificate in the last position (if it's the Root CA)
+  NSArray *serverCertificates = AFCertificateTrustChainForServerTrust(serverTrust);
+
+  for (NSData *trustChainCertificate in [serverCertificates reverseObjectEnumerator]) {
+      if ([self.pinnedCertificates containsObject:trustChainCertificate]) {
+          return YES;
+      }
+  }
+
+  return NO;
+</code></pre></div>        </div>
+
+        <ol>
+          <li>从 <code class="highlighter-rouge">self.pinnedCertificates</code> 中获取 DER 表示的数据</li>
+          <li>使用 <code class="highlighter-rouge">SecTrustSetAnchorCertificates</code> 为服务器信任设置证书</li>
+          <li>判断服务器信任的有效性</li>
+          <li>使用 <code class="highlighter-rouge">AFCertificateTrustChainForServerTrust</code> 获取服务器信任中的全部 DER 表示的证书</li>
+          <li>如果 <code class="highlighter-rouge">pinnedCertificates</code> 中有相同的证书，就会返回 <code class="highlighter-rouge">YES</code></li>
+        </ol>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">AFSSLPinningModePublicKey</code></p>
+
+        <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  NSUInteger trustedPublicKeyCount = 0;
+  NSArray *publicKeys = AFPublicKeyTrustChainForServerTrust(serverTrust);
+
+  for (id trustChainPublicKey in publicKeys) {
+      for (id pinnedPublicKey in self.pinnedPublicKeys) {
+          if (AFSecKeyIsEqualToKey((__bridge SecKeyRef)trustChainPublicKey, (__bridge SecKeyRef)pinnedPublicKey)) {
+              trustedPublicKeyCount += 1;
+          }
+      }
+  }
+  return trustedPublicKeyCount &gt; 0;
+</code></pre></div>        </div>
+
+        <ul>
+          <li>这部分的实现和上面的差不多，区别有两点
+            <ol>
+              <li>会从服务器信任中获取公钥</li>
+              <li><code class="highlighter-rouge">pinnedPublicKeys</code> 中的公钥与服务器信任中的公钥相同的数量大于 0，就会返回真</li>
+            </ol>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="与-afurlsessionmanager-协作">与 AFURLSessionManager 协作</h2>
+
+<p>在代理协议 <code class="highlighter-rouge">- URLSession:didReceiveChallenge:completionHandler:</code> 或者 <code class="highlighter-rouge">- URLSession:task:didReceiveChallenge:completionHandler:</code> 代理方法被调用时会运行这段代码</p>
+
+<pre><code class="language-objectivec">if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+    if ([self.securityPolicy evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:challenge.protectionSpace.host]) {
+        disposition = NSURLSessionAuthChallengeUseCredential;
+        credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
+    } else {
+        disposition = NSURLSessionAuthChallengeRejectProtectionSpace;
+    }
+} else {
+    disposition = NSURLSessionAuthChallengePerformDefaultHandling;
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">NSURLAuthenticationChallenge</code> 表示一个认证的挑战，提供了关于这次认证的全部信息。它有一个非常重要的属性 <code class="highlighter-rouge">protectionSpace</code>，这里保存了需要认证的保护空间, 每一个 <code class="highlighter-rouge">NSURLProtectionSpace</code> 对象都保存了主机地址，端口和认证方法等重要信息。</p>
+
+<p>在上面的方法中，如果保护空间中的认证方法为 <code class="highlighter-rouge">NSURLAuthenticationMethodServerTrust</code>，那么就会使用在上一小节中提到的方法 <code class="highlighter-rouge">- [AFSecurityPolicy evaluateServerTrust:forDomain:]</code> 对保护空间中的 <code class="highlighter-rouge">serverTrust</code> 以及域名 <code class="highlighter-rouge">host</code> 进行认证</p>
+
+<p>根据认证的结果，会在 <code class="highlighter-rouge">completionHandler</code> 中传入不同的 <code class="highlighter-rouge">disposition</code> 和 <code class="highlighter-rouge">credential</code> 参数。</p>
+
+<h2 id="小结">小结</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">AFSecurityPolicy</code> 同样也作为一个即插即用的模块，在 AFNetworking 中作为验证 HTTPS 证书是否有效的模块存在，在 iOS 对 HTTPS 日渐重视的今天，在我看来，使用 HTTPS 会成为今后 API 开发的标配。</li>
+</ul>
+
+<h2 id="相关文章">相关文章</h2>
+
+<p>关于其他 AFNetworking 源代码分析的其他文章：</p>
+
+<ul>
+  <li><a href="http://draveness.me/afnetworking1">AFNetworking 概述（一）</a></li>
+  <li><a href="http://draveness.me/afnetworking2">AFNetworking 的核心 AFURLSessionManager（二）</a></li>
+  <li><a href="http://draveness.me/afnetworking3">处理请求和响应 AFURLSerialization（三）</a></li>
+  <li><a href="http://draveness.me/afnetworking4">AFNetworkReachabilityManager 监控网络状态（四）</a></li>
+  <li><a href="http://draveness.me/afnetworking5">验证 HTTPS 请求的证书（五）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=验证 HTTPS 请求的证书（五）&amp;url=afnetworking5"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=afnetworking5"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=afnetworking5"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/isa">
+            <section class="post">
+                <h2>从 NSObject 的初始化了解 isa</h2>
+                <p>Blog: [Draveness](http://draveness.me) 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 `x86_64`...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/afnetworking4">
+            <section class="post">
+                <h2>AFNetworkReachabilityManager 监控网络状态（四）</h2>
+                <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze AFNetworkReachabilityManager 是对 SystemConfiguration 模块的封装，苹果的文档中也有一个类似的项目 Reachability 这里对网络状态的监控跟苹果官方的实现几乎是完全相同的。 同样在 github 上有一个类似的项目叫做 Reachability 不过这个项目由于命名的原因可能会在审核时被拒绝。 无论是...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

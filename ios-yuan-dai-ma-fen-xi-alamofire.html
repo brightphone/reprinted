@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>iOS 源代码分析 ---- Alamofire</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//ios-yuan-dai-ma-fen-xi-alamofire" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="iOS 源代码分析 ---- Alamofire" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//ios-yuan-dai-ma-fen-xi-alamofire" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="iOS 源代码分析 ---- Alamofire" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//ios-yuan-dai-ma-fen-xi-alamofire" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "iOS 源代码分析 ---- Alamofire",
+    "url": "/reprinted//ios-yuan-dai-ma-fen-xi-alamofire",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios  nav-current" role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">iOS 源代码分析 ---- Alamofire</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>已经有几个月没有阅读著名开源项目的源代码了, 最近才有时间来做这件事情.</p>
+
+<p>下面是 Github 主页上对 <a href="https://github.com/Alamofire/Alamofire">Alamofire</a> 的描述</p>
+
+<blockquote>
+  <p>Elegant HTTP Networking in Swift</p>
+</blockquote>
+
+<p>为什么这次我选择阅读 Alamofire 的源代码而不是 AFNetworking 呢, 其实有两点原因.</p>
+
+<ol>
+  <li>AFNetworking 作为一个有着很多年的历史的框架, 它虽然有着强大的社区, 不过因为时间太久了, 可能有一些历史上的包袱. 而 Alamofire 是在 Swift 诞生之后才开始出现的, 到现在为止也并没有多长时间, 它的源代码都是<strong>新鲜</strong>的.</li>
+  <li>由于最近在写 Swift 的项目, 所以没有选择 AFNetworking.</li>
+</ol>
+
+<p>在阅读 Alamofire 的源代码之前, 我先粗略的查看了一下 Alamofire 实现的代码行数:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>find Source <span class="nt">-name</span> <span class="s2">"*.swift"</span> | xargs <span class="nb">cat</span> |wc <span class="nt">-l</span>
+<span class="o">&gt;</span> 3363
+</code></pre></div></div>
+
+<p>也就是说 Alamofire 在包含注释以及空行的情况下, 只使用了 3000 多行代码就实现了一个用于处理 HTTP 请求的框架.</p>
+
+<p>所以它描述中的 <code class="highlighter-rouge">Elegant</code> 也可以说是名副其实.</p>
+
+<h2 id="目录结构">目录结构</h2>
+
+<p>首先, 我们来看一下 Alamofire 中的目录结构, 来了解一下它是如何组织各个文件的.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- Source
+	- Alamore.swift
+	- Core
+		- Manager.swift
+		- ParameterEncoding.swift
+		- Request.swift
+	- Features
+		- Download.swift
+		- MultipartFromData.swift
+		- ResponseSeriallization.swift
+		- Upload.swift
+		- Validation.swift
+</code></pre></div></div>
+
+<p>框架中最核心并且我们最值得关注的就是 <code class="highlighter-rouge">Alamore.swift</code> <code class="highlighter-rouge">Manager.swift</code> 和 <code class="highlighter-rouge">Request.swift</code> 这三个文件. 也是在这篇 post 中主要介绍的三个文件.</p>
+
+<h3 id="alamofire">Alamofire</h3>
+
+<p>在 Alamofire 中并没有找到 <code class="highlighter-rouge">Alamofire</code> 这个类, 相反这仅仅是一个命名空间, 在 <code class="highlighter-rouge">Alamofire.swift</code> 这个文件中不存在 <code class="highlighter-rouge">class Alamofire</code> 这种关键字, 这只是为了使得方法名更简洁的一种手段.</p>
+
+<p>我们在使用 Alamofire 时, 往往都会采用这种方式:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">Alamofire</span><span class="o">.</span><span class="nf">request</span><span class="p">(</span><span class="o">.</span><span class="kt">GET</span><span class="p">,</span> <span class="s">"http://httpbin.org/get"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>有了 Alamofire 作为命名空间, 就不用担心 <code class="highlighter-rouge">request</code> 方法与其他同名方法的冲突了.</p>
+
+<p>在 <code class="highlighter-rouge">Alamofire.swift</code>  文件中为我们提供了三类方法:</p>
+
+<ul>
+  <li>request</li>
+  <li>upload</li>
+  <li>download</li>
+</ul>
+
+<p>这三种方法都是通过调用 <code class="highlighter-rouge">Manager</code> 对应的操作来完成请求, 上传和下载的操作, 并返回一个 <code class="highlighter-rouge">Request</code> 的实例.</p>
+
+<p>下面是 <code class="highlighter-rouge">request</code> 方法的一个实现:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="nv">method</span><span class="p">:</span> <span class="kt">Method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">:</span> <span class="kt">URLStringConvertible</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">AnyObject</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="kt">ParameterEncoding</span> <span class="o">=</span> <span class="o">.</span><span class="kt">URL</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Request</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">Manager</span><span class="o">.</span><span class="n">sharedInstance</span><span class="o">.</span><span class="nf">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="n">parameters</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="n">encoding</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="n">headers</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这也就是 <code class="highlighter-rouge">Alamofire.request(.GET, "http://httpbin.org/get")</code> 所调用的方法. 而这个方法实际上就是通过这些参数调用 <code class="highlighter-rouge">Manager</code> 的具体方法, 我们所使用的 <code class="highlighter-rouge">request</code> 也好 <code class="highlighter-rouge">download</code> 也好, 都是对 <code class="highlighter-rouge">Manager</code> 方法的一个包装罢了.</p>
+
+<h3 id="manager">Manager</h3>
+
+<p>Alamofire 中的几乎所有操作都是通过 <code class="highlighter-rouge">Manager</code> 来控制, 而 <code class="highlighter-rouge">Manager</code> 也可以说是 Alamofire 的核心部分, 它负责与 <code class="highlighter-rouge">Request</code> 交互完成网络操作:</p>
+
+<blockquote>
+  <p>Responsible for creating and managing <code class="highlighter-rouge">Request</code> objects, as well as their underlying <code class="highlighter-rouge">NSURLSession</code>.</p>
+</blockquote>
+
+<h4 id="managersharedinstance">Manager.sharedInstance</h4>
+
+<p><code class="highlighter-rouge">Manager</code> 在 Alamofire 中有着极其重要的地位, 而在 <code class="highlighter-rouge">Manager</code> 方法的设计中, 一般也使用 <code class="highlighter-rouge">sharedInstance</code> 来获取 <code class="highlighter-rouge">Manager</code> 的单例:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">sharedInstance</span><span class="p">:</span> <span class="kt">Manager</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">configuration</span> <span class="o">=</span> <span class="kt">NSURLSessionConfiguration</span><span class="o">.</span><span class="nf">defaultSessionConfiguration</span><span class="p">()</span>
+    <span class="n">configuration</span><span class="o">.</span><span class="kt">HTTPAdditionalHeaders</span> <span class="o">=</span> <span class="kt">Manager</span><span class="o">.</span><span class="n">defaultHTTPHeaders</span>
+
+    <span class="k">return</span> <span class="kt">Manager</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="n">configuration</span><span class="p">)</span>
+<span class="p">}()</span>
+</code></pre></div></div>
+
+<p>对于其中 <code class="highlighter-rouge">defaultHTTPHeaders</code> 和 <code class="highlighter-rouge">Manager</code> 的初始化方法, 在这里就不多提了, 但是在这里有必要说明一下 <code class="highlighter-rouge">SessionDelegate</code> 这个类, 在 <code class="highlighter-rouge">Manager</code> 的初始化方法中, 调用了 <code class="highlighter-rouge">SessionDelegate</code> 的初始化方法, 返回了一个它的实例.</p>
+
+<h4 id="sessiondelegate">SessionDelegate</h4>
+
+<blockquote>
+  <p>Responsible for handling all delegate callbacks for the underlying session.</p>
+</blockquote>
+
+<p>这个类的主要作用就是处理对应 session 的所有代理回调, 它持有两个属性:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="k">var</span> <span class="nv">subdelegates</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">:</span> <span class="kt">Request</span><span class="o">.</span><span class="kt">TaskDelegate</span><span class="p">]</span> <span class="o">=</span> <span class="p">[:]</span>
+<span class="kd">private</span> <span class="k">let</span> <span class="nv">subdelegateQueue</span> <span class="o">=</span> <span class="nf">dispatch_queue_create</span><span class="p">(</span><span class="kc">nil</span><span class="p">,</span> <span class="kt">DISPATCH_QUEUE_CONCURRENT</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">subdelegates</code> 以 task 标识符为键, 存储了所有的回调. <code class="highlighter-rouge">subdelegateQueue</code> 是一个异步的队列, 用于处理任务的回调.</p>
+
+<h4 id="managersharedinstacerequest">Manager.sharedInstace.request</h4>
+
+<p><code class="highlighter-rouge">Manager</code> 有两个返回 <code class="highlighter-rouge">Request</code> 实例的 <code class="highlighter-rouge">request</code> 方法:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">public func request(method: Method, _ URLString: URLStringConvertible, parameters: [String: AnyObject]? = nil, encoding: ParameterEncoding = .URL, headers: [String: String]? = nil) -&gt; Request</code></li>
+  <li><code class="highlighter-rouge">public func request(URLRequest: URLRequestConvertible) -&gt; Request</code></li>
+</ul>
+
+<p>第一个方法的实现非常的简单:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="nv">method</span><span class="p">:</span> <span class="kt">Method</span><span class="p">,</span> <span class="n">_</span> <span class="kt">URLString</span><span class="p">:</span> <span class="kt">URLStringConvertible</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">AnyObject</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="kt">ParameterEncoding</span> <span class="o">=</span> <span class="o">.</span><span class="kt">URL</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Request</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">mutableURLRequest</span> <span class="o">=</span> <span class="kt">URLRequest</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="n">headers</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">encodedURLRequest</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">mutableURLRequest</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="mi">0</span>
+    <span class="k">return</span> <span class="nf">request</span><span class="p">(</span><span class="n">encodedURLRequest</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>方法中首先调用了 <code class="highlighter-rouge">URLRequest</code> 方法:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="kt">URLRequest</span><span class="p">(</span><span class="nv">method</span><span class="p">:</span> <span class="kt">Method</span><span class="p">,</span> <span class="kt">URLString</span><span class="p">:</span> <span class="kt">URLStringConvertible</span><span class="p">,</span> <span class="nv">headers</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">NSMutableURLRequest</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">mutableURLRequest</span> <span class="o">=</span> <span class="kt">NSMutableURLRequest</span><span class="p">(</span><span class="kt">URL</span><span class="p">:</span> <span class="kt">NSURL</span><span class="p">(</span><span class="nv">string</span><span class="p">:</span> <span class="kt">URLString</span><span class="o">.</span><span class="kt">URLString</span><span class="p">)</span><span class="o">!</span><span class="p">)</span>
+    <span class="n">mutableURLRequest</span><span class="o">.</span><span class="kt">HTTPMethod</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">rawValue</span>
+
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">headers</span> <span class="o">=</span> <span class="n">headers</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">headerField</span><span class="p">,</span> <span class="n">headerValue</span><span class="p">)</span> <span class="k">in</span> <span class="n">headers</span> <span class="p">{</span>
+        <span class="n">mutableURLRequest</span><span class="o">.</span><span class="nf">setValue</span><span class="p">(</span><span class="n">headerValue</span><span class="p">,</span> <span class="nv">forHTTPHeaderField</span><span class="p">:</span> <span class="n">headerField</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">mutableURLRequest</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>首先创建一个 <code class="highlighter-rouge">NSMutableURLRequest</code> 设置它的 HTTP 请求方法和 HTTP header, 然后返回这个请求.</p>
+
+<p>在请求被返回之后, 就进入了下一个环节 <code class="highlighter-rouge">encode</code>.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">encodedURLRequest</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">mutableURLRequest</span><span class="p">,</span> <span class="nv">parameters</span><span class="p">:</span> <span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="mi">0</span>
+</code></pre></div></div>
+
+<h4 id="parameterencodingencoding">ParameterEncoding.encoding</h4>
+
+<p><code class="highlighter-rouge">ParameterEncoding</code> 是一个用来处理一系列的参数是如何被”添加”到 URL 请求上的.</p>
+
+<blockquote>
+  <p>Used to specify the way in which a set of parameters are applied to a URL request.</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">ParameterEncoding</code> 类型中有四种不同的编码方法:</p>
+
+<ul>
+  <li>URL</li>
+  <li>JSON</li>
+  <li>PropertyList</li>
+  <li>Custom</li>
+</ul>
+
+<p>其中 <code class="highlighter-rouge">encode</code> 方法就根据 <code class="highlighter-rouge">ParameterEncoding</code> 类型的不同返回不同的 <code class="highlighter-rouge">NSMutableURLRequest</code></p>
+
+<p>如果 <code class="highlighter-rouge">PatameterEncoding</code> 的类型为 <code class="highlighter-rouge">URL</code>, 那么就会把这次请求的参数以下面这种形式添加到请求的 <code class="highlighter-rouge">URL</code> 上</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>foo[]=1&amp;foo[]=2
+</code></pre></div></div>
+
+<p>在完成对参数的编码之后, 就会调用另一个同名的 <code class="highlighter-rouge">request</code> 方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">request</span><span class="p">(</span><span class="n">encodedURLRequest</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="managersharedinstacerequesturlrequestconvertible">Manager.sharedInstace.request(URLRequestConvertible)</h4>
+
+<p><code class="highlighter-rouge">request</code> 方法根据指定的 URL 请求返回一个 <code class="highlighter-rouge">Request</code></p>
+
+<blockquote>
+  <p>Creates a request for the specified URL request.</p>
+</blockquote>
+
+<p>它使用 <code class="highlighter-rouge">dispatch_sync</code> 把一个 <code class="highlighter-rouge">NSURLRequest</code> 请求同步加到一个串行队列中, 返回一个 <code class="highlighter-rouge">NSURLSessionDataTask</code>. 并通过 <code class="highlighter-rouge">session</code> 和 <code class="highlighter-rouge">dataTask</code> 生成一个 <code class="highlighter-rouge">Request</code> 的实例.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="kt">URLRequest</span><span class="p">:</span> <span class="kt">URLRequestConvertible</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Request</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">dataTask</span><span class="p">:</span> <span class="kt">NSURLSessionDataTask</span><span class="o">!</span>
+
+    <span class="nf">dispatch_sync</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">dataTask</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="nf">dataTaskWithRequest</span><span class="p">(</span><span class="kt">URLRequest</span><span class="o">.</span><span class="kt">URLRequest</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="nv">request</span> <span class="o">=</span> <span class="kt">Request</span><span class="p">(</span><span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">,</span> <span class="nv">task</span><span class="p">:</span> <span class="n">dataTask</span><span class="p">)</span>
+    <span class="n">delegate</span><span class="p">[</span><span class="n">request</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">task</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">delegate</span>
+
+    <span class="k">if</span> <span class="n">startRequestsImmediately</span> <span class="p">{</span>
+        <span class="n">request</span><span class="o">.</span><span class="nf">resume</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">request</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这段代码还是很直观的, 它的主要作用就是创建 <code class="highlighter-rouge">Request</code> 实例, 并发送请求.</p>
+
+<h4 id="requestinit">Request.init</h4>
+
+<p><code class="highlighter-rouge">Request</code> 这个类的 <code class="highlighter-rouge">init</code> 方法根据传入的 <code class="highlighter-rouge">task</code> 类型的不同, 生成了不用类型的 <code class="highlighter-rouge">TaskDelegate</code>, 可以说是 Swift 中对于反射的运用:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">init</span><span class="p">(</span><span class="nv">session</span><span class="p">:</span> <span class="kt">NSURLSession</span><span class="p">,</span> <span class="nv">task</span><span class="p">:</span> <span class="kt">NSURLSessionTask</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+
+    <span class="k">switch</span> <span class="n">task</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="k">is</span> <span class="kt">NSURLSessionUploadTask</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">UploadTaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="k">case</span> <span class="k">is</span> <span class="kt">NSURLSessionDataTask</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">DataTaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="k">case</span> <span class="k">is</span> <span class="kt">NSURLSessionDownloadTask</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">DownloadTaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="kt">TaskDelegate</span><span class="p">(</span><span class="nv">task</span><span class="p">:</span> <span class="n">task</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在 <code class="highlighter-rouge">UploadTaskDelegate</code> <code class="highlighter-rouge">DataTaskDelegate</code> <code class="highlighter-rouge">DownloadTaskDelegate</code> 和 <code class="highlighter-rouge">TaskDelegate</code> 几个类的作用是处理对应任务的回调, 在 <code class="highlighter-rouge">Request</code> 实例初始化之后, 会把对应的 <code class="highlighter-rouge">delegate</code> 添加到 <code class="highlighter-rouge">manager</code> 持有的 <code class="highlighter-rouge">delegate</code> 数组中, 方便之后在对应的时间节点通知代理事件的发生.</p>
+
+<p>在最后返回 <code class="highlighter-rouge">request</code>, 到这里一次网络请求就基本完成了.</p>
+
+<h3 id="responseserialization">ResponseSerialization</h3>
+
+<p><code class="highlighter-rouge">ResponseSerialization</code> 是用来对 <code class="highlighter-rouge">Reponse</code> 返回的值进行序列化显示的一个 extension.</p>
+
+<p>它的设计非常的巧妙, 同时可以处理 <code class="highlighter-rouge">Data</code> <code class="highlighter-rouge">String</code> 和 <code class="highlighter-rouge">JSON</code> 格式的数据,</p>
+
+<h4 id="responseserializer-协议">ResponseSerializer 协议</h4>
+
+<p>Alamofire 在这个文件的开头定义了一个所有 responseSerializer 都必须遵循的 <code class="highlighter-rouge">protocol</code>, 这个 protocol 的内容十分简单, 其中最重要的就是:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">serializeResponse</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">NSData</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">SerializedObject</span><span class="o">&gt;</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>所有的 responseSerializer 都必须包含 <code class="highlighter-rouge">serializeResponse</code> 这个闭包, 它的作用就是处理 response.</p>
+
+<h4 id="genericresponseserializer">GenericResponseSerializer</h4>
+
+<p>为了同时处理不同类型的数据, Alamofire 使用泛型创建了 <code class="highlighter-rouge">GenericResponseSerializer&lt;T&gt;</code>, 这个结构体为处理 <code class="highlighter-rouge">JSON</code> <code class="highlighter-rouge">XML</code> 和 <code class="highlighter-rouge">NSData</code> 等数据的 responseSerializer 提供了一个骨架.</p>
+
+<p>它在结构体中遵循了 <code class="highlighter-rouge">ResponseSerializer</code> 协议, 然后提供了一个 <code class="highlighter-rouge">init</code> 方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">serializeResponse</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">NSData</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">SerializedObject</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">serializeResponse</span> <span class="o">=</span> <span class="n">serializeResponse</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="response-方法">response 方法</h4>
+
+<p>在 Alamofire 中, 如果我们调用了 reponse 方法, 就会在 request 结束时, 添加一个处理器来处理服务器的 reponse.</p>
+
+<p>这个方法有两个版本, 第一个版本是不对返回的数据进行处理:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">response</span><span class="p">(</span>
+    <span class="n">queue</span> <span class="nv">queue</span><span class="p">:</span> <span class="n">dispatch_queue_t</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">NSData</span><span class="p">?,</span> <span class="kt">NSError</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span>
+<span class="p">{</span>
+    <span class="n">delegate</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">addOperationWithBlock</span> <span class="p">{</span>
+        <span class="nf">dispatch_async</span><span class="p">(</span><span class="n">queue</span> <span class="p">??</span> <span class="nf">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">completionHandler</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="k">self</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>该方法的实现将一个 block 追加到 request 所在的队列中, 其它的部分过于简单, 在这里就不多说了.</p>
+
+<p>另一个版本的 response 的作用就是处理多种类型的数据.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">response</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span> <span class="kt">ResponseSerializer</span><span class="p">,</span> <span class="kt">V</span> <span class="k">where</span> <span class="kt">T</span><span class="o">.</span><span class="kt">SerializedObject</span> <span class="o">==</span> <span class="kt">V</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">queue</span> <span class="nv">queue</span><span class="p">:</span> <span class="n">dispatch_queue_t</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">responseSerializer</span><span class="p">:</span> <span class="kt">T</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span>
+<span class="p">{</span>
+    <span class="n">delegate</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">addOperationWithBlock</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">responseSerializer</span><span class="o">.</span><span class="nf">serializeResponse</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="o">.</span><span class="kt">Failure</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">delegate</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="nf">dispatch_async</span><span class="p">(</span><span class="n">queue</span> <span class="p">??</span> <span class="nf">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">completionHandler</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="k">self</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="k">self</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>它会直接调用参数中 <code class="highlighter-rouge">responseSerializer</code> 所持有的闭包 <code class="highlighter-rouge">serializeResponse</code>, 然后返回对应的数据.</p>
+
+<h4 id="多种类型的-response-数据">多种类型的 response 数据</h4>
+
+<p>有了高级的抽象方法 <code class="highlighter-rouge">response</code>, 我们现在就可以直接向这个方法中传入不同的 <code class="highlighter-rouge">responseSerializer</code> 来产生不同数据类型的 <code class="highlighter-rouge">handler</code></p>
+
+<p>比如说 <code class="highlighter-rouge">NSData</code></p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">dataResponseSerializer</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">GenericResponseSerializer</span><span class="o">&lt;</span><span class="kt">NSData</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">GenericResponseSerializer</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">data</span> <span class="k">in</span>
+        <span class="k">guard</span> <span class="k">let</span> <span class="nv">validData</span> <span class="o">=</span> <span class="n">data</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">failureReason</span> <span class="o">=</span> <span class="s">"Data could not be serialized. Input data was nil."</span>
+            <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="kt">Error</span><span class="o">.</span><span class="nf">errorWithCode</span><span class="p">(</span><span class="o">.</span><span class="kt">DataSerializationFailed</span><span class="p">,</span> <span class="nv">failureReason</span><span class="p">:</span> <span class="n">failureReason</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">.</span><span class="kt">Failure</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="o">.</span><span class="kt">Success</span><span class="p">(</span><span class="n">validData</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">responseData</span><span class="p">(</span><span class="nv">completionHandler</span><span class="p">:</span> <span class="p">(</span><span class="kt">NSURLRequest</span><span class="p">?,</span> <span class="kt">NSHTTPURLResponse</span><span class="p">?,</span> <span class="kt">Result</span><span class="o">&lt;</span><span class="kt">NSData</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nf">response</span><span class="p">(</span><span class="nv">responseSerializer</span><span class="p">:</span> <span class="kt">Request</span><span class="o">.</span><span class="nf">dataResponseSerializer</span><span class="p">(),</span> <span class="nv">completionHandler</span><span class="p">:</span> <span class="n">completionHandler</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在 <code class="highlighter-rouge">ResponseSerialization.swift</code> 这个文件中, 你还可以看到其中对于 <code class="highlighter-rouge">String</code> <code class="highlighter-rouge">JSON</code> <code class="highlighter-rouge">propertyList</code> 数据处理的 <code class="highlighter-rouge">responseSerializer</code>.</p>
+
+<h3 id="urlstringconvertible">URLStringConvertible</h3>
+
+<p>在 ALamofire 的实现中还有一些我们可以学习的地方. 因为 Alamofire 是一个 Swift 的框架, 而且 Swift 是静态语言, 所以有一些坑是必须要解决的, 比如说 <code class="highlighter-rouge">NSURL</code> 和 <code class="highlighter-rouge">String</code> 之间的相互转换. 在 Alamofire 中用了一种非常优雅的解决方案, 我相信能够给很多人带来一定的启发.</p>
+
+<p>首先我们先定义了一个 <code class="highlighter-rouge">protocol</code> <code class="highlighter-rouge">URLStringConvertible</code> (注释部分已经省略) :</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个 <code class="highlighter-rouge">protocol</code> 只定义了一个 <code class="highlighter-rouge">var</code>, 遵循这个协议的类必须实现 <code class="highlighter-rouge">URLString</code> 返回 <code class="highlighter-rouge">String</code> 的这个<strong>功能</strong>.</p>
+
+<p>接下来让所有可以转化为 <code class="highlighter-rouge">String</code> 的类全部遵循这个协议, 这个方法虽然我以前知道, 不过我还是第一次见到在实际中的使用, 真的非常的优雅:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">extension</span> <span class="kt">String</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">self</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSURL</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">absoluteString</span><span class="o">!</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSURLComponents</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">URL</span><span class="o">!.</span><span class="kt">URLString</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSURLRequest</span><span class="p">:</span> <span class="kt">URLStringConvertible</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">URLString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">URL</span><span class="o">!.</span><span class="kt">URLString</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样 <code class="highlighter-rouge">String</code> <code class="highlighter-rouge">NSURL</code> <code class="highlighter-rouge">NSURLComponents</code> 和 <code class="highlighter-rouge">NSURLRequest</code> 都可以调用 <code class="highlighter-rouge">URLString</code> 方法了. 我们也就可以<strong>直接在方法的签名中使用 <code class="highlighter-rouge">URLStringConvertible</code> 类型</strong>.</p>
+
+<h2 id="end">End</h2>
+
+<p>到目前为止关于 Alamofire 这个框架就大致介绍完了, 框架的实现还是非常简洁和优雅的, 这篇 post 从开始写到现在也过去了好久, 写的也不是十分的详细具体. 如果你对这个框架的实现有兴趣, 那么看一看这个框架的源代码也未尝不可.</p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">draveness.me</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=iOS 源代码分析 ---- Alamofire&amp;url=ios-yuan-dai-ma-fen-xi-alamofire"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=ios-yuan-dai-ma-fen-xi-alamofire"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=ios-yuan-dai-ma-fen-xi-alamofire"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">
+            <section class="post">
+                <h2>iOS 开发中的重构</h2>
+                <p>随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 `DRY` 的原则, 使得项目难以维护. ## 为什么要重构 为什么要重构, 重构其实是一件持续性的工作,...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ios-yuan-dai-ma-fen-xi-mbprogresshud">
+            <section class="post">
+                <h2>iOS 源代码分析 ---- MBProgressHUD</h2>
+                <p>MBProgressHUD 是一个为 iOS app 添加透明浮层 HUD 的第三方框架. 作为一个 UI 层面的框架, 它的实现很简单, 但是其中也有一些非常有意思的代码. MBProgressHUD MBProgressHUD 是一个...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

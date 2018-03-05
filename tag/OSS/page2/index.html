@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- Page Meta -->
-    <title>Brightness</title>
+    <title></title>
     <meta name="description" content="" />
 
     <!-- Mobile Meta -->
@@ -26,31 +26,31 @@
     <style>.hljs { background: none; }</style>
 
     <!-- Ghost outputs important style and meta data with this tag -->
-        <link rel="canonical" href="/reprinted//" />
+        <link rel="canonical" href="/reprinted//tag/OSS/page2/" />
     <meta name="referrer" content="origin" />
     <link rel="next" href="/reprinted/page2/" />
 
     <meta property="og:site_name" content="" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Brightness" />
+    <meta property="og:title" content="" />
     <meta property="og:description" content="" />
-    <meta property="og:url" content="/reprinted//" />
-    <meta property="og:image" content="/reprinted/assets/images/cover1.jpg" />
+    <meta property="og:url" content="/reprinted//tag/OSS/page2/" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Brightness" />
+    <meta name="twitter:title" content="" />
     <meta name="twitter:description" content="" />
-    <meta name="twitter:url" content="/reprinted//" />
-    <meta name="twitter:image:src" content="/reprinted/assets/images/cover1.jpg" />
+    <meta name="twitter:url" content="/reprinted//tag/OSS/page2/" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
 
     <script type="application/ld+json">
 {
     "@context": "http://schema.org",
     "@type": "Website",
     "publisher": "",
-    "name": "Brightness",
-    "url": "/reprinted//",
-    "image": "/reprinted/assets/images/cover1.jpg",
+    "name": "",
+    "url": "/reprinted//tag/OSS/page2/",
+    "image": "/reprinted/assets/images/cover2.jpg",
     "description": ""
 }
     </script>
@@ -60,7 +60,7 @@
 
 
 </head>
-<body class="home-template nav-closed">
+<body class="paged archive-template nav-closed">
 
     <!-- The blog navigation links -->
     <div class="nav">
@@ -69,7 +69,7 @@
         <span class="hidden">Close</span>
     </a>
     <ul>
-        <li class="nav-home  nav-current" role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
         <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
         <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
         <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
@@ -84,12 +84,14 @@
     <div class="site-wrapper">
 
         <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
-        <!-- < default -->
+        <!-- dynamically overriding backgrounds for tags as well as descriptions -->
+
+
+<!-- default -->
 <!-- The tag above means - insert everything in this file into the [body] of the default.hbs template -->
 
-<!-- The big featured header  -->
-<header class="main-header "
-        style="background-image: url(/reprinted/assets/images/cover1.jpg) ">
+<!-- If we have a tag cover, display that - else blog cover - else nothing -->
+<header class="main-header tag-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
     <nav class="main-nav overlay clearfix">
         <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
         
@@ -98,11 +100,14 @@
     </nav>
     <div class="vertical">
         <div class="main-header-content inner">
-            <h1 class="page-title"></h1>
-            <h2 class="page-description"></h2>
+            <h1 class="page-title">OSS</h1>
+            <h2 class="page-description">
+            
+			    A 24-post collection
+            
+            </h2>
         </div>
     </div>
-    <a class="scroll-down icon-arrow-left" href="#content" data-offset="-45"><span class="hidden">Scroll Down</span></a>
 </header>
 
 <!-- The main content area on the homepage -->
@@ -114,9 +119,13 @@
         
             <nav class="pagination" role="pagination">
     
-    <span class="page-number"> Page 1 of 3 </span>
+        
+            <a class="newer-posts" href="/reprinted/tag/OSS" title="Previous Page">&laquo; Newer Posts</a>
+        
+    
+    <span class="page-number"> Page 2 of 3 </span>
      
-        <a class="older-posts" href="/reprinted/page2/" title="Next Page">Next Page &raquo;</a>
+        <a class="older-posts" href="/reprinted/tag/OSS/page3/" title="Next Page">Older Posts &raquo;</a>
      
 </nav>
         
@@ -126,290 +135,10 @@
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/message">从源代码看 ObjC 中消息的发送</a></h2>
+            <h2 class="post-title"><a href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">iOS 开发中的重构</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64 架构下运行的，对于在 arm64 中运行的代码会特别说明。 写在前面 如果你点开这篇文章，相信你对 Objective-C 比较熟悉，并且有多年使用 Objective-C 编程的经验，这篇文章会假设你知道： 在 Objective-C 中的“方法调用”其实应该叫做消息传递... <a class="read-more" href="/reprinted/message">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-25">25 Apr 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/method-struct">深入解析 ObjC 中方法的结构</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64 架构下运行的，对于在 arm64 中运行的代码会特别说明。 在上一篇分析 isa 的文章从 NSObject 的初始化了解 isa中曾经说到过实例方法被调用时，会通过其持有 isa 指针寻找对应的类，然后在其中的 class_data_bits_t... <a class="read-more" href="/reprinted/method-struct">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-23">23 Apr 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/isa">从 NSObject 的初始化了解 isa</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64 架构下运行的，对于在 arm64 中运行的代码会特别说明。 如果你曾经对 ObjC 底层的实现有一定的了解，你应该会知道 Objective-C 对象都是 C 语言结构体，所有的对象都包含一个类型为 isa 的指针，那么你可能确实对... <a class="read-more" href="/reprinted/isa">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-21">21 Apr 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/afnetworking5">验证 HTTPS 请求的证书（五）</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 自 iOS9 发布之后，由于新特性 App Transport Security 的引入，在默认行为下是不能发送 HTTP 请求的。很多网站都在转用 HTTPS，而 AFNetworking 中的 AFSecurityPolicy 就是为了阻止中间人攻击，以及其它漏洞的工具。 AFSecurityPolicy 主要作用就是验证 HTTPS 请求的证书是否有效，如果 app 中有一些敏感信息或者涉及交易信息，一定要使用 HTTPS 来保证交易或者用户信息的安全。 AFSSLPinningMode... <a class="read-more" href="/reprinted/afnetworking5">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-16">16 Apr 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/afnetworking4">AFNetworkReachabilityManager 监控网络状态（四）</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze AFNetworkReachabilityManager 是对 SystemConfiguration 模块的封装，苹果的文档中也有一个类似的项目 Reachability 这里对网络状态的监控跟苹果官方的实现几乎是完全相同的。 同样在 github 上有一个类似的项目叫做 Reachability 不过这个项目由于命名的原因可能会在审核时被拒绝。 无论是 AFNetworkReachabilityManager，苹果官方的项目或者说 github 上的 Reachability，它们的实现都是类似的，而在这里我们会以 AFNetworking 中的 AFNetworkReachabilityManager 为例来说明在 iOS 开发中，我们是怎样监控网络状态的。 AFNetworkReachabilityManager... <a class="read-more" href="/reprinted/afnetworking4">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-13">13 Apr 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/afnetworking3">处理请求和响应 AFURLSerialization（三）</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 在前面两个部分已经分析过 AFNetworking 是对 NSURLSession 的封装，也了解了它是如何发出请求的，在这里我们对发出请求以及接收响应的过程进行序列化，这涉及到两个模块： AFURLResponseSerialization AFURLRequestSerialization 前者是处理响应的模块，将请求返回的数据解析成对应的格式。而后者的主要作用是修改请求（主要是 HTTP 请求）的头部，提供了一些语义明确的接口设置 HTTP 头部字段。 我们首先会对 AFURLResponseSerialization 进行简单的介绍，因为这个模块使用在 AFURLSessionManager 也就是核心类中，而后者 AFURLRequestSerialization 主要用于 AFHTTPSessionManager 中，因为它主要用于修改 HTTP 头部。... <a class="read-more" href="/reprinted/afnetworking3">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-12">12 Apr 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/afnetworking2">AFNetworking 的核心 AFURLSessionManager（二）</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze AFURLSessionManager 绝对可以称得上是 AFNetworking 的核心。 负责创建和管理 NSURLSession 管理 NSURLSessionTask 实现 NSURLSessionDelegate 等协议中的代理方法 使用 AFURLSessionManagerTaskDelegate 管理进度 使用 _AFURLSessionTaskSwizzling 调剂方法 引入 AFSecurityPolicy 保证请求的安全 引入 AFNetworkReachabilityManager 监控网络状态... <a class="read-more" href="/reprinted/afnetworking2">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-03-30">30 Mar 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/afnetworking1">AFNetworking 概述（一）</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 在这一系列的文章中，我会对 AFNetworking 的源代码进行分析，深入了解一下它是如何构建的，如何在日常中完成发送 HTTP 请求、构建网络层这一任务。 AFNetworking 是如今 iOS 开发中不可缺少的组件之一。它的 github 配置上是如下介绍的： Perhaps the most important feature of all, however, is the amazing community... <a class="read-more" href="/reprinted/afnetworking1">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-03-21">21 Mar 2016</time>
-        </footer>
-    </article>
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/blockskit-2">神奇的 BlocksKit （二）</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>关注仓库，及时获得更新：iOS-Source-Code-Analyze 这篇文章『神奇的 BlocksKit』的第二部分，关于第一部分的内容在这里： 神奇的 BlocksKit（一） 神奇的 BlocksKit（二） 动态代理 动态代理这部分可以说是 BlocksKit 的精华。它使用 block 属性替换 UIKit 中的所有能够通过代理完成的事件，省略了设置代理和实现方法的过程，让对象自己实现代理方法，而且这个功能的实现是极其动态的。 其实不是对象自己实现的代理方法，只是框架为我们提供的便捷方法，不需要构造其它对象就能完成代理方法的实现，具体我们会在后面详细地解释。 下面是这部分几个关键的类： A2BlockInvocation 的主要作用是存储和转发 block A2DynamicDelegate 用来实现类的代理和数据源，它是 NSProxy 的子类 NSObject+A2DynamicDelegate 负责为返回... <a class="read-more" href="/reprinted/blockskit-2">&raquo;</a></p>
+            <p>随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 DRY 的原则, 使得项目难以维护. 为什么要重构 为什么要重构, 重构其实是一件持续性的工作, 工程师在进行开发的过程中难免会有无法考虑周全的地方, 而目前的很多 iOS, Android 项目其实都是业务驱动的, 而业务和需求的更改导致原来模块的设计不再适用于当前的状况. 而大多数工程师是懒惰的. 因为没有足够的推动力去修改当前模块的设计, 所以通过打补丁的方式实现需求, 最终可能会导致整个项目代码的失控, 陷入焦油坑. 重构,... <a class="read-more" href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -445,10 +174,10 @@
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/blockskit-1">神奇的 BlocksKit （一）</a></h2>
+            <h2 class="post-title"><a href="/reprinted/ios-yuan-dai-ma-fen-xi-alamofire">iOS 源代码分析 ---- Alamofire</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>关注仓库，及时获得更新：iOS-Source-Code-Analyze 高能预警：本篇文章非常长，因为 BlocksKit 的实现还是比较复杂和有意的。这篇文章不是为了剖析 iOS 开发中的 block 的实现以及它是如何组成甚至使用的，如果你想通过这篇文章来了解 block 的实现，它并不能帮到你。 Block 到底是什么？这可能是困扰很多 iOS 初学者的一个问题。如果你在 Google 上搜索类似的问题时，可以查找到几十万条结果，block 在 iOS 开发中有着非常重要的地位，而且它的作用也越来越重要。 概述 这篇文章仅对 BlocksKit v2.2.5 的源代码进行分析，从框架的内部理解下面的功能是如何实现的： 为 NSArray、... <a class="read-more" href="/reprinted/blockskit-1">&raquo;</a></p>
+            <p>已经有几个月没有阅读著名开源项目的源代码了, 最近才有时间来做这件事情. 下面是 Github 主页上对 Alamofire 的描述 Elegant HTTP Networking in Swift 为什么这次我选择阅读 Alamofire 的源代码而不是 AFNetworking 呢, 其实有两点原因. AFNetworking 作为一个有着很多年的历史的框架, 它虽然有着强大的社区, 不过因为时间太久了, 可能有一些历史上的包袱. 而 Alamofire 是在... <a class="read-more" href="/reprinted/ios-yuan-dai-ma-fen-xi-alamofire">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -479,6 +208,310 @@
                 
             
             <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/ios-yuan-dai-ma-fen-xi-mbprogresshud">iOS 源代码分析 ---- MBProgressHUD</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>MBProgressHUD 是一个为 iOS app 添加透明浮层 HUD 的第三方框架. 作为一个 UI 层面的框架, 它的实现很简单, 但是其中也有一些非常有意思的代码. MBProgressHUD MBProgressHUD 是一个 UIView 的子类, 它提供了一系列的创建 HUD 的方法. 我们在这里会主要介绍三种使用 HUD 的方法. + showHUDAddedTo:animated: -... <a class="read-more" href="/reprinted/ios-yuan-dai-ma-fen-xi-mbprogresshud">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo">Ouroboros 的实现 ---- 提供神奇的滚动效果</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>Ouroboros 是一个根据 scrollView 滚动的距离完成动画的一个仓库. 灵感来源于 javascript 的第三方框架 scrollMagic. 我在使用 scrollMagic 的过程中, 觉得这种根据当前滚动距离改变视图状态的方式非常的优雅, 而且这种动画是可以回退的, 在我看来, 这种动画的方式完全适合于在 iOS App 中完成引导界面的动画. 在以往的开发经验中, 经常需要根据 scrollView 的滚动距离完成一些相应的动画, 而 Ouroboros 就是 iOS... <a class="read-more" href="/reprinted/ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/nsuserdefaults">NSUserDefaults 的默认值</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>NSUserDefaults 提供了一个与默认设置交互的接口. 这些默认设置允许一个 App 为每一个单独的用户的设置提供定制化的行为. 数据的同步 我们可以通过 NSUserDefaults 对象在运行时从数据库读取用户的数据, 并添加到缓存中. 在我们正常获取或者设置 NSUserDefaults 的值时, 数据库和缓存中的数据其实并没有同步更新, 因为这样会影响效率. NSUserDefaults 在需要同步时会自动调用 synchronize 方法更新数据库数据. 我们也可以手动调用 synchronize 来同步数据. 不可变 从 NSUserDefaults 中返回的值都是不可变的,... <a class="read-more" href="/reprinted/nsuserdefaults">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-2">StackOverflow 黑魔法系列 <2></a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>距离上一次的 StackOverflow 黑魔法系列的 post 已经很久了, 自己也很久没有写技术博客了, 虽然这次带来的又是一篇水文. 但是好久没有写了, 写写水文也好试试手. AutoReleasePool iOS 中的 run loop 等待一些事件的发生并且响应这些实践. 这个事件可能包括用户触摸屏幕等等. 处理每一个 iOS 中的事件时, 一个新的 autorelease pool 都会在开始时被创建, 然后在事件响应结束后被 drain. 从理论上来说,... <a class="read-more" href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-2">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-08-03">03 Aug 2015</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/swift-de-na-xie-keng">MagicMove 在 iOS 中的实现</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>最近由于去武汉参加 hackday, 十多天没有更新博客了. 今天就来说一说, 我在 hackday 上使用 swift 开发 App 遇到的哪些问题吧. 神奇移动 我曾经在很多的 App 中都实现了类似 Keynote 中的神奇移动的效果, 也就是指定当前帧和下一帧中的视图, 当 Keynote 从当前帧切换到下一帧时, 就会根据当前的这两帧中视图的位置添加动画, 达到神奇的效果. 而我在 iOS 开发中的实现其实有以下几个步骤.... <a class="read-more" href="/reprinted/swift-de-na-xie-keng">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-06-07">07 Jun 2015</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/lian-shi-yu-fa-yu-objective-c">链式语法与 Objective-C</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>作为一个 Objective-C 语言的使用者已经有近两年的时间了. 在逐渐熟悉手中的工具, Objective-C 语言的同时, 我也开始从更高的角度来观察这一门语言. 虽然至今我也不敢说我精通 Objective-C 和 Cocoa Touch, 但是我对它们也有了一些自己的见解. Objective-C Objective-C 语言的语法使得我感觉到这门语言是如此的优雅. 在别人看来啰嗦的 label, 其实更是为了增加语言的可读性, 使 Objective-C 更像一门自然语言而做出的努力. 大多数的方法都不需要去查看文档, 只凭借方法的签名就能获得这个方法的作用, 这点使我们 iOS... <a class="read-more" href="/reprinted/lian-shi-yu-fa-yu-objective-c">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-05-27">27 May 2015</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-1">StackOverflow 黑魔法系列 <1></a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>最近看到了很多关于 iOS 开发的黑魔法, 发现最终的链接都是来自与 stackoverflow, 我感觉需要在 stackoverflow 上这个社区逛一逛, 找一些比较屌~~神奇的黑魔法来分享一下, 也能够多两篇水文~~提高一下自己的水平, 当然我会在每一条”咒语”的后面加上原文的链接. 原子(atomic)和非原子(nonatomic)的区别是什么? @property(nonatomic, retain) UITextField *userName; @property(atomic, retain) UITextField *userName; @property(retain) UITextField *userName; 这三行代码中的后两行是相同的, 因为 atomic... <a class="read-more" href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-1">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-04-30">30 Apr 2015</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/ios-yuan-dai-ma-fen-xi-masonry">iOS 源代码分析----Masonry</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>Masonry 是 Objective-C 中用于自动布局的第三方框架, 我们一般使用它来代替冗长, 繁琐的 AutoLayout 代码. Masonry 的使用还是很简洁的: [button mas_makeConstraints:^(MASConstraintMaker *make) { make.centerX.equalTo(self.view); make.top.equalTo(self.view).with.offset(40); make.width.equalTo(@185); make.height.equalTo(@38); }]; 从 mas_makeConstraints: 开始 其中最常用的方法就是 // View+MASAdditions.h -... <a class="read-more" href="/reprinted/ios-yuan-dai-ma-fen-xi-masonry">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-04-27">27 Apr 2015</time>
         </footer>
     </article>
     
@@ -487,9 +520,13 @@
     
         <nav class="pagination" role="pagination">
     
-    <span class="page-number"> Page 1 of 3 </span>
+        
+            <a class="newer-posts" href="/reprinted/tag/OSS" title="Previous Page">&laquo; Newer Posts</a>
+        
+    
+    <span class="page-number"> Page 2 of 3 </span>
      
-        <a class="older-posts" href="/reprinted/page2/" title="Next Page">Next Page &raquo;</a>
+        <a class="older-posts" href="/reprinted/tag/OSS/page3/" title="Next Page">Older Posts &raquo;</a>
      
 </nav>
     

@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>神奇的 BlocksKit （二）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//blockskit-2" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="神奇的 BlocksKit （二）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//blockskit-2" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="神奇的 BlocksKit （二）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//blockskit-2" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "神奇的 BlocksKit （二）",
+    "url": "/reprinted//blockskit-2",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">神奇的 BlocksKit （二）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+<p>这篇文章『神奇的 BlocksKit』的第二部分，关于第一部分的内容在这里：</p>
+
+<ul>
+  <li><a href="http://draveness.me/blockskit-1/">神奇的 BlocksKit（一）</a></li>
+  <li><a href="http://draveness.me/blockskit-2/">神奇的 BlocksKit（二）</a></li>
+</ul>
+
+<h2 id="动态代理">动态代理</h2>
+
+<p>动态代理这部分可以说是 BlocksKit 的精华。它<strong>使用 block 属性替换 UIKit 中的所有能够通过代理完成的事件</strong>，省略了设置代理和实现方法的过程，让对象自己实现代理方法，而且这个功能的实现是极其动态的。</p>
+
+<blockquote>
+  <p>其实不是对象自己实现的代理方法，只是框架为我们提供的便捷方法，不需要构造其它对象就能完成代理方法的实现，具体我们会在后面详细地解释。</p>
+</blockquote>
+
+<p>下面是这部分几个关键的类：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">A2BlockInvocation</code> 的主要作用是存储和转发 block</li>
+  <li><code class="highlighter-rouge">A2DynamicDelegate</code> 用来实现类的代理和数据源，它是 <code class="highlighter-rouge">NSProxy</code> 的子类</li>
+  <li><code class="highlighter-rouge">NSObject+A2DynamicDelegate</code> 负责为返回 <code class="highlighter-rouge">bk_dynamicDelegate</code> 和 <code class="highlighter-rouge">bk_dynamicDataSource</code> 等 <code class="highlighter-rouge">A2DynamicDelegate</code> 类型的实例，为 <code class="highlighter-rouge">NSObject</code> 提供主要的接口</li>
+  <li><code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 提供了一系列接口将代理方法映射到 block 上</li>
+  <li>其他的 UIKit 的分类提供对应的属性，并在对应的 <code class="highlighter-rouge">A2DynamicDelegate</code> 子类中实现代理方法</li>
+</ul>
+
+<p>这里是我对这部分代码结构的理解：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-20-blockskit.png" alt="" /></p>
+
+<p>这篇文成首先会从上到下对整个工作原理进行概述，然后再从底层到顶层详细地解释这个框架的机制和原理。</p>
+
+<h3 id="动态代理工作概述">动态代理工作概述</h3>
+
+<p>在这里我们要对这部分的实现进行一个简单的概述，从上到下跟踪 BlocksKit 的调用过程。</p>
+
+<p>以 <code class="highlighter-rouge">UIImagePickerController</code> 为例，因为这个文件中的代码较少，能省去很多不必要的实现细节。</p>
+
+<p>在头文件中声明了两个属性，也就是 <code class="highlighter-rouge">UIImagePickerController</code> 代理方法的对应 block 属性：</p>
+
+<pre><code class="language-objectivec">@property (nonatomic，copy) void(^bk_didFinishPickingMediaBlock)(UIImagePickerController *，NSDictionary *);
+@property (nonatomic，copy) void(^bk_didCancelBlock)(UIImagePickerController *);
+</code></pre>
+
+<p>然后在实现文件中动态生成这两个方法的存取方法</p>
+
+<pre><code class="language-objectivec">@dynamic bk_didFinishPickingMediaBlock;
+@dynamic bk_didCancelBlock;
+</code></pre>
+
+<p>你可以看到在这个名为 <code class="highlighter-rouge">BlocksKit</code> 的分类中只添加了一个方法：</p>
+
+<pre><code class="language-objectivec">+ (void)load
+{
+	@autoreleasepool {
+		[self bk_registerDynamicDelegate];
+		[self bk_linkDelegateMethods:@{ @"bk_didFinishPickingMediaBlock": @"imagePickerController:didFinishPickingMediaWithInfo:",
+                                        @"bk_didCancelBlock": @"imagePickerControllerDidCancel:" }];
+	}
+}
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">load</code> 中实现这个方法，能够减少其中两个方法的调用次数，在 <code class="highlighter-rouge">autoreleasepool</code> 块中调用方法，使得其它地方的代码不会受到这里注册代理，链接代理方法中产生的对象的影响。</p>
+
+<p><code class="highlighter-rouge">bk_registerDynamicDelegate</code> 方法是 <code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 分类中添加的方法，用于修改原有属性 <code class="highlighter-rouge">delegate</code> 方法的实现（<strong>动态替换 delegate 方法实现</strong>）。在这里就是与 <code class="highlighter-rouge">UIImagePickerController+BlocksKit</code> 处于同一文件下的 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code>，先不说这个文件的功能，会在之后介绍。</p>
+
+<p>在 <code class="highlighter-rouge">NSObject+A2DynamicDelegate</code> 分类中的 <code class="highlighter-rouge">bk_registerDynamicDelegateNamed:forProtocol:</code> 修改 <code class="highlighter-rouge">@selector(delegate)</code> 和 <code class="highlighter-rouge">@selector(setDelegate:)</code> 的实现，使用 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code> 替换原有的 <code class="highlighter-rouge">delegate</code></p>
+
+<pre><code class="language-objectivec">IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id delegate) {
+	A2DynamicDelegate *dynamicDelegate = getDynamicDelegate(delegatingObject，protocol，infoAsPtr，YES);
+	if ([delegate isEqual:dynamicDelegate]) {
+		delegate = nil;
+	}
+	dynamicDelegate.realDelegate = delegate;
+});
+
+IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+    return [delegatingObject bk_dynamicDelegateForProtocol:a2_protocolForDelegatingObject(delegatingObject，protocol)];
+});
+</code></pre>
+
+<p>在获取 <code class="highlighter-rouge">delegate</code> 属性时，就会获取 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code>， <code class="highlighter-rouge">realDelegate</code> 相当于原有的 <code class="highlighter-rouge">delegate</code> 属性，会在下面的小节中具体分析。</p>
+
+<p>在 <code class="highlighter-rouge">load</code> 方法中调用下一个方法是 <code class="highlighter-rouge">bk_linkDelegateMethods:</code> 这个方法会把代理方法和对应的 block 属性链接起来，这样可以通过代理方法的选择子查找对应的 block。</p>
+
+<pre><code class="language-objectivec">IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+	A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，NO);
+	return [delegate blockImplementationForMethod:selector];
+});
+
+IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id block) {
+	A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，YES);
+	[delegate implementMethod:selector withBlock:block];
+});
+</code></pre>
+
+<p>通过调用 <code class="highlighter-rouge">A2DynamicDelegate</code> 的实例方法 <code class="highlighter-rouge">blockImplementationForMethod:</code> 和 <code class="highlighter-rouge">implementMethod:withBlock:</code> 动态实现 block 的存取方法。</p>
+
+<p>当代理方法 <code class="highlighter-rouge">imagePickerController:didFinishPickingMediaWithInfo:</code> 被调用时，因为 <code class="highlighter-rouge">A2DynamicUIImagePickerControllerDelegate</code> 是 <code class="highlighter-rouge">UIImagePickerController</code> 的代理，所以会调用它的方法：</p>
+
+<pre><code class="language-objectivec">- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+	id realDelegate = self.realDelegate;
+	if (realDelegate &amp;&amp; [realDelegate respondsToSelector:@selector(imagePickerController:didFinishPickingMediaWithInfo:)])
+		[realDelegate imagePickerController:picker didFinishPickingMediaWithInfo:info];
+
+	void (^block)(UIImagePickerController *，NSDictionary *) = [self blockImplementationForMethod:_cmd];
+	if (block) block(picker，info);
+}
+</code></pre>
+
+<p>通过 <code class="highlighter-rouge">blockImplementationForMethod:</code> 方法获取在上面存储的 block，然后传入参数执行该代码块。</p>
+
+<ol>
+  <li>在 <code class="highlighter-rouge">load</code> 方法注册动态代理并链接代理方法</li>
+  <li>在运行时修改原有的 <code class="highlighter-rouge">delegate</code> 属性的存取方法，使用 <code class="highlighter-rouge">A2DynamicDelegate</code> 替换原有的 <code class="highlighter-rouge">delegate</code>，原有的 <code class="highlighter-rouge">delegate</code> 换为 <code class="highlighter-rouge">realDelegate</code></li>
+  <li>为 block 属性动态实现存取方法，返回对应 <code class="highlighter-rouge">A2DynamicDelegate</code> 子类中存储的 block</li>
+  <li>在代理方法真正被调用时，查找 <code class="highlighter-rouge">realDelegate</code> 中是否对代理方法做出响应，无论是否响应，都通过选择子查找对应的 <code class="highlighter-rouge">block</code>，然后传入相应参数执行 block</li>
+</ol>
+
+<h3 id="自底向上分析动态代理的工作">自底向上分析动态代理的工作</h3>
+
+<p>我们已经自顶向下分析了 BlocksKit 的工作过程，也对这个部分有一个基本的了解，接下来我们将从底层到顶层分析整个 BlocksKit，我们再来看一下整个框架的结构图：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-20-blockskit.png" alt="" /></p>
+
+<p>我们将以下面的顺序来依次介绍这些模块，其中的 <code class="highlighter-rouge">UITextField</code> 可以换成其它的类：</p>
+
+<ol>
+  <li>A2BlockInvocation</li>
+  <li>A2DynamicDelegate</li>
+  <li>NSObject+A2DynamicDelegate</li>
+  <li>A2DynamicUITextFieldDelegate</li>
+  <li>UITextField+BlocksKit</li>
+</ol>
+
+<h4 id="a2blockinvocation">A2BlockInvocation</h4>
+
+<p><code class="highlighter-rouge">A2BlockInvocation</code> 使用来对闭包，也就是 block 进行存储和转发的类。</p>
+
+<p>先介绍这个的是因为 <code class="highlighter-rouge">A2BlockInvocation</code> 的功能比较底层，涉及的内容也都比较奇葩，所以想先简单介绍一下，避免之后一个类分几部分介绍。</p>
+
+<p>在 Objective-C 中，每一个方法甚至 block 都是有类型签名的：</p>
+
+<pre><code class="language-objectivec">@interface NSMethodSignature : NSObject {
+
+...
+
+@property (readonly) NSUInteger numberOfArguments;
+
+...
+
+@property (readonly) const char *methodReturnType NS_RETURNS_INNER_POINTER;
+
+...
+
+@end
+</code></pre>
+
+<p>它们有返回类型、参数数字和参数类型等等。</p>
+
+<h5 id="block-结构体">Block 结构体</h5>
+
+<p>block 的签名没有哪个函数能够直接获取，它存储在 block 的结构体中，就像这样：</p>
+
+<pre><code class="language-objectivec">typedef NS_OPTIONS(int，BKBlockFlags) {
+	BKBlockFlagsHasCopyDisposeHelpers = (1 &lt;&lt; 25),
+	BKBlockFlagsHasSignature          = (1 &lt;&lt; 30)
+};
+
+typedef struct _BKBlock {
+	__unused Class isa;
+	BKBlockFlags flags;
+	__unused int reserved;
+	void (__unused *invoke)(struct _BKBlock *block，...);
+	struct {
+		unsigned long int reserved;
+		unsigned long int size;
+		// requires BKBlockFlagsHasCopyDisposeHelpers
+		void (*copy)(void *dst，const void *src);
+		void (*dispose)(const void *);
+		// requires BKBlockFlagsHasSignature
+		const char *signature;
+		const char *layout;
+	} *descriptor;
+	// imported variables
+} *BKBlockRef;
+</code></pre>
+
+<p>这部分其实就是 block 实际存储在内存中的数据接口，可以在 runtime 中的源代码中看到这里的代码。</p>
+
+<h5 id="typesignatureforblock">typeSignatureForBlock</h5>
+
+<p>上面的 <code class="highlighter-rouge">signature</code> 就是 block 的签名，下面实现方法来获取这个签名</p>
+
+<pre><code class="language-objectivec">+ (NSMethodSignature *)typeSignatureForBlock:(id)block __attribute__((pure，nonnull(1)))
+{
+	BKBlockRef layout = (__bridge void *)block;
+
+	// 如果 block 没有签名直接返回空
+	if (!(layout-&gt;flags &amp; BKBlockFlagsHasSignature))
+		return nil;
+
+	void *desc = layout-&gt;descriptor;
+	desc += 2 * sizeof(unsigned long int);
+
+	if (layout-&gt;flags &amp; BKBlockFlagsHasCopyDisposeHelpers)
+		desc += 2 * sizeof(void *);
+
+	if (!desc)
+		return nil;
+
+	const char *signature = (*(const char **)desc);
+
+	return [NSMethodSignature signatureWithObjCTypes:signature];
+}
+</code></pre>
+
+<p>知道了这个方法的作用再理解它的实现就非常简单了，根据<code class="highlighter-rouge">flag</code> 来移动指针，最终 <code class="highlighter-rouge">signature</code> 所在的内存空间。</p>
+
+<blockquote>
+  <p>Unlike a typical method signature，a block type signature has no <code class="highlighter-rouge">self</code> (<code class="highlighter-rouge">'@'</code>)
+ or <code class="highlighter-rouge">_cmd</code> (<code class="highlighter-rouge">':'</code>) parameter，but instead just one parameter for the block itself
+ (<code class="highlighter-rouge">'@?'</code>)。</p>
+</blockquote>
+
+<p>在这里所涉及的 <code class="highlighter-rouge">@</code>、<code class="highlighter-rouge">:</code> 和<code class="highlighter-rouge">@?</code> 可以看这里的文档 <a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html">类型编码</a></p>
+
+<p>在一般的方法签名中 block 的类型签名是没有 <code class="highlighter-rouge">self</code> (<code class="highlighter-rouge">'@'</code>) 或者 <code class="highlighter-rouge">_cmd</code> (<code class="highlighter-rouge">':'</code>) 的，只有一个参数代表 block 自己 (<code class="highlighter-rouge">'@?'</code>).</p>
+
+<ul>
+  <li><code class="highlighter-rouge">^(UIActionSheet *) {}</code>
+    <ul>
+      <li>参数类型：<code class="highlighter-rouge">@?(@"UIActionSheet")</code></li>
+      <li>返回类型：<code class="highlighter-rouge">v</code></li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">- (void)willPresentActionSheet:(UIActionSheet *)actionSheet</code>
+    <ul>
+      <li>参数类型：<code class="highlighter-rouge">@:@</code></li>
+      <li>返回类型：<code class="highlighter-rouge">v</code></li>
+    </ul>
+  </li>
+</ul>
+
+<p>为什么要把 <code class="highlighter-rouge">@"UIActionSheet"</code> 标记上括号？因为它们属于同一个参数。</p>
+
+<p>同时因为 <code class="highlighter-rouge">UIActionSheet</code> 也是 <code class="highlighter-rouge">id</code> 类型，所以它的类型编码也是 <code class="highlighter-rouge">@</code>。</p>
+
+<p>当调用 <code class="highlighter-rouge">initWithBlock:</code> 方法时，会先调用上面说的方法 <code class="highlighter-rouge">typeSignatureForBlock:</code> 获取 block 的类型签名：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithBlock:(id)block
+{
+	NSParameterAssert(block);
+	NSMethodSignature *blockSignature = [[self class] typeSignatureForBlock:block];
+	NSMethodSignature *methodSignature = [[self class] methodSignatureForBlockSignature:blockSignature];
+	NSAssert(methodSignature，@"Incompatible block: %@"，block);
+	return (self = [self initWithBlock:block methodSignature:methodSignature blockSignature:blockSignature]);
+}
+</code></pre>
+
+<h5 id="methodsignatureforblocksignature">methodSignatureForBlockSignature</h5>
+
+<p>然后调用 <code class="highlighter-rouge">methodSignatureForBlockSignature:</code> 方法构造一个可以兼容的方法签名：</p>
+
+<pre><code class="language-objectivec">+ (NSMethodSignature *)methodSignatureForBlockSignature:(NSMethodSignature *)original
+{
+	#1: 检查方法签名的参数，省略
+
+	NSMutableString *signature = [[NSMutableString alloc] initWithCapacity:original.numberOfArguments + 1];
+
+	const char *retTypeStr = original.methodReturnType;
+	// 返回类型，id 类型(self @)，选择子类型(SEL :)
+	[signature appendFormat:@"%s%s%s"，retTypeStr，@encode(id)，@encode(SEL)];
+	// signature = (返回类型)@:
+
+	for (NSUInteger i = 1; i &lt; original.numberOfArguments; i++) {
+		const char *typeStr = [original getArgumentTypeAtIndex:i];
+		NSString *type = [[NSString alloc] initWithBytesNoCopy:(void *)typeStr length:strlen(typeStr) encoding:NSUTF8StringEncoding freeWhenDone:NO];
+		[signature appendString:type];
+	}
+
+	// signature = (返回类型)@:(参数类型)
+
+	return [NSMethodSignature signatureWithObjCTypes:signature.UTF8String];
+}
+</code></pre>
+
+<p>具体的实现细节我们就省略了，它的工作原理是把 <code class="highlighter-rouge">@?(@"UIActionSheet")</code> 类型签名转换成 <code class="highlighter-rouge">@:@</code>，然后返回方法签名。</p>
+
+<p>关于代码中的 <code class="highlighter-rouge">@encode</code> 可以看这里 <a href="https://gcc.gnu.org/onlinedocs/gcc-3.2/gcc/Function-Attributes.html">声明方法的属性</a></p>
+
+<h5 id="issignaturecompatiblewithsignature">isSignature:compatibleWithSignature:</h5>
+
+<p>在这个类中最后一个重要的方法就是 <code class="highlighter-rouge">isSignature:compatibleWithSignature:</code>，这个方法是判断传入的 block 和方法的类型签名是否兼容。</p>
+
+<pre><code class="language-objectivec">+ (BOOL)isSignature:(NSMethodSignature *)signatureA compatibleWithSignature:(NSMethodSignature *)signatureB __attribute__((pure))
+{
+	#1: 参数检查，省略
+
+	...
+
+	#2: 判断返回值是否相同，省略
+	if (signatureA.methodReturnType[0] != signatureB.methodReturnType[0]) return NO;
+
+	#3: 设置 methodSignature 和 blockSignature
+
+	...
+
+	#4: 比较 methodSignature 和 blockSignature
+
+	return YES;
+}
+</code></pre>
+
+<p>第 <code class="highlighter-rouge">#3</code> 部分设置 <code class="highlighter-rouge">methodSignature</code> 和 <code class="highlighter-rouge">blockSignature</code>。</p>
+
+<p>因为<strong>方法签名会比 block 类型签名多一个默认参数</strong>，所以，这里会将参数多的设置为 <code class="highlighter-rouge">methodSignature</code>，如果把为 block 类型签名的设置给了 <code class="highlighter-rouge">methodSignature</code> 也不会有问题，在 <code class="highlighter-rouge">#4</code> 部分会判断出来并返回 <code class="highlighter-rouge">NO</code>。</p>
+
+<blockquote>
+  <p>方法默认参数：<code class="highlighter-rouge">self，SEL</code>，block 默认类型参数: <code class="highlighter-rouge">block</code></p>
+</blockquote>
+
+<pre><code class="language-objectivec">NSMethodSignature *methodSignature = nil，*blockSignature = nil;
+if (signatureA.numberOfArguments &gt; signatureB.numberOfArguments) {
+    methodSignature = signatureA;
+    blockSignature = signatureB;
+} else if (signatureB.numberOfArguments &gt; signatureA.numberOfArguments) {
+    methodSignature = signatureB;
+    blockSignature = signatureA;
+} else {
+    return NO;
+}
+</code></pre>
+
+<p>第 <code class="highlighter-rouge">#4</code> 部分就是一次比较各个类型签名，也没什么复杂的，需要注意的就是选择正确的 index</p>
+
+<pre><code class="language-objectivec">NSUInteger numberOfArguments = methodSignature.numberOfArguments;
+for (NSUInteger i = 2; i &lt; numberOfArguments; i++) {
+    if ([methodSignature getArgumentTypeAtIndex:i][0] != [blockSignature getArgumentTypeAtIndex:i - 1][0])
+        return NO;
+}
+</code></pre>
+
+<h5 id="invokewithinvocationreturnvalueoutreturnvalue">invokeWithInvocation:returnValue:outReturnValue:</h5>
+
+<p>这一节主要介绍的是，当 <code class="highlighter-rouge">A2BlockInvocation</code> 对象具体需要执行某一个 <code class="highlighter-rouge">NSInvocation</code> 时是如何工作的，其实这个方法还是很容易理解的。</p>
+
+<pre><code class="language-objectivec">- (BOOL)invokeWithInvocation:(NSInvocation *)outerInv returnValue:(out NSValue **)outReturnValue setOnInvocation:(BOOL)setOnInvocation
+{
+	#1: 参数以及类型签名是否匹配的检查，省略
+
+	NSInvocation *innerInv = [NSInvocation invocationWithMethodSignature:self.blockSignature];
+
+	#2: 设置 innerInv 参数
+
+	...
+
+	[innerInv invokeWithTarget:self.block];
+
+	#3: 获取返回值
+
+	free(argBuf);
+
+	return YES;
+}
+</code></pre>
+
+<p>第 <code class="highlighter-rouge">#2</code>、<code class="highlighter-rouge">#3</code> 部分的代码是为了设置 <code class="highlighter-rouge">innerInv</code> 的参数，获取返回值：</p>
+
+<pre><code class="language-objectivec">void *argBuf = NULL;
+
+for (NSUInteger i = 2; i &lt; sig.numberOfArguments; i++) {
+	const char *type = [sig getArgumentTypeAtIndex:i];
+	NSUInteger argSize;
+	NSGetSizeAndAlignment(type，&amp;argSize，NULL);
+
+	if (!(argBuf = reallocf(argBuf，argSize))) {
+		return NO;
+	}
+
+	[outerInv getArgument:argBuf atIndex:i];
+	[innerInv setArgument:argBuf atIndex:i - 1];
+}
+
+// 执行 block
+
+NSUInteger retSize = sig.methodReturnLength;
+if (retSize) {
+    if (outReturnValue || setOnInvocation) {
+        if (!(argBuf = reallocf(argBuf，retSize))) {
+            return NO;
+        }
+
+        [innerInv getReturnValue:argBuf];
+
+        if (setOnInvocation) {
+            [outerInv setReturnValue:argBuf];
+        }
+
+        if (outReturnValue) {
+            *outReturnValue = [NSValue valueWithBytes:argBuf objCType:sig.methodReturnType];
+        }
+    }
+} else {
+    if (outReturnValue) {
+        *outReturnValue = nil;
+    }
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">A2BlockInvocation</code> 这一节就到这里了，接下来要说一下 <code class="highlighter-rouge">A2DynamicDelegate</code>。</p>
+
+<h4 id="a2dynamicdelegate">A2DynamicDelegate</h4>
+
+<p><code class="highlighter-rouge">A2DynamicDelegate</code> 可以说是 BlocksKit 实现动态代理的关键，是这个框架中很重要的类，它通过 block 实现了类的代理和数据源等协议。</p>
+
+<p><code class="highlighter-rouge">A2DynamicDelegate</code> 它的父类是 <code class="highlighter-rouge">NSProxy</code>，而 <code class="highlighter-rouge">NSProxy</code> 出现的目的就是为了代理一个对象的。</p>
+
+<pre><code class="language-objectivec">@interface NSProxy &lt;NSObject&gt;
+</code></pre>
+
+<p>我们不具体解释这里的 <code class="highlighter-rouge">NSProxy</code>，如果想要更详细的信息，请看<a href="https://developer.apple.com/library/prerelease/ios/documentation/Cocoa/Reference/Foundation/Classes/NSProxy_Class/index.html">这里</a>。</p>
+
+<p><code class="highlighter-rouge">A2DynamicDelegate</code> 作为 <code class="highlighter-rouge">NSProxy</code> 的子类，必须实现 <code class="highlighter-rouge">forwardInvocation:</code> <code class="highlighter-rouge">methodSignatureForSelector:</code> 方法进行对象转发，这是在苹果官方文档中说明的。</p>
+
+<h5 id="覆写必要的方法-methodsignatureforselector-和-forwardinvocation">覆写必要的方法 methodSignatureForSelector: 和 forwardInvocation:</h5>
+
+<p>我们首先来看一下 <code class="highlighter-rouge">methodSignatureForSelector:</code>，它为一个选择子返回合适的方法签名：</p>
+
+<pre><code class="language-objectivec">- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
+{
+	A2BlockInvocation *invocation = nil;
+	if ((invocation = [self.invocationsBySelectors bk_objectForSelector:aSelector]))
+		return invocation.methodSignature;
+	else if ([self.realDelegate methodSignatureForSelector:aSelector])
+		return [self.realDelegate methodSignatureForSelector:aSelector];
+	else if (class_respondsToSelector(object_getClass(self)，aSelector))
+		return [object_getClass(self) methodSignatureForSelector:aSelector];
+	return [[NSObject class] methodSignatureForSelector:aSelector];
+}
+</code></pre>
+
+<p>这里的逻辑如下：</p>
+
+<ol>
+  <li>判断 <code class="highlighter-rouge">invocationsBySelectors</code> 属性中是否存储了该选择子对应的 <code class="highlighter-rouge">A2BlockInvocation</code>，直接返回这个 <code class="highlighter-rouge">invocation</code> 对象的类型签名，也就是说自己实现了该选择子对应的方法</li>
+  <li>
+    <p>在真正的 <code class="highlighter-rouge">realDelegate</code> 中查找原有的代理(不是当前的动态代理 <code class="highlighter-rouge">A2DynamicDelegate</code>)是否实现了该选择子，并返回方法签名</p>
+
+    <blockquote>
+      <p>在这里的 <code class="highlighter-rouge">realDelegate</code> 是对象真正的代理，例如</p>
+    </blockquote>
+
+    <pre><code class="language-objectivec"> self.tableView.delegate = [[UIViewController alloc] init];
+</code></pre>
+
+    <p>其中 <code class="highlighter-rouge">realDelegate</code> 是视图控制器，但是在我们设置时，不需要这么设置</p>
+
+    <pre><code class="language-objectivec"> self.tableView.realDelegate = [[UIViewController alloc] init];
+</code></pre>
+
+    <p>因为在 <code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 中会进行<strong>方法调剂</strong>，修改原有方法的实现，每次在设置 <code class="highlighter-rouge">delegate</code> 时，会将这个值设置传到 <code class="highlighter-rouge">realDelegate</code> 中。</p>
+  </li>
+  <li>在自己的类中查找该方法的选择子</li>
+  <li>如果上面三个步骤都没有得到相应，那么调用 <code class="highlighter-rouge">NSObject</code> 对象的 <code class="highlighter-rouge">methodSignatureForSelector:</code> 方法获取方法签名，当然可能返回空值</li>
+</ol>
+
+<p>====</p>
+
+<p><code class="highlighter-rouge">forwardInvocation:</code> 的实现其实跟上面的方法的思路差不多</p>
+
+<pre><code class="language-objectivec">- (void)forwardInvocation:(NSInvocation *)outerInv
+{
+	SEL selector = outerInv.selector;
+	A2BlockInvocation *innerInv = nil;
+	if ((innerInv = [self.invocationsBySelectors bk_objectForSelector:selector])) {
+		[innerInv invokeWithInvocation:outerInv];
+	} else if ([self.realDelegate respondsToSelector:selector]) {
+		[outerInv invokeWithTarget:self.realDelegate];
+	}
+}
+</code></pre>
+
+<ol>
+  <li>
+    <p>判断 <code class="highlighter-rouge">invocationsBySelectors</code> 属性中是否存储了该选择子对应的 <code class="highlighter-rouge">A2BlockInvocation</code>，然后调用 <code class="highlighter-rouge">invokeWithInvocation:</code> 传入 <code class="highlighter-rouge">outerInv</code> 转发这个方法，最终会调用 <code class="highlighter-rouge">- [A2BlockInvocation invokeWithInvocation:returnValue:setOnInvocation:]
+</code></p>
+  </li>
+  <li>
+    <p>判断 <code class="highlighter-rouge">realDelegate</code> 是否实现了该方法，如果真正的代理能做出响应，将方法转发给 <code class="highlighter-rouge">realDelegate</code></p>
+  </li>
+</ol>
+
+<h5 id="block-实现方法-blockimplementationformethod-和-implementmethodwithblock">Block 实现方法 blockImplementationForMethod: 和 implementMethod:withBlock:</h5>
+
+<p>这部分的代码其实相当于平时的 Getter/Setter</p>
+
+<pre><code class="language-objectivec">- (id)blockImplementationForMethod:(SEL)selector
+{
+	A2BlockInvocation *invocation = nil;
+	if ((invocation = [self.invocationsBySelectors bk_objectForSelector:selector]))
+		return invocation.block;
+	return NULL;
+}
+</code></pre>
+
+<p>因为 block 都是在 <code class="highlighter-rouge">A2BlockInvocation</code> 中封装的，所以在通过选择子查找 block 的时候，实际上是查找对应的 <code class="highlighter-rouge">A2BlockInvocation</code>，然后返回它的 block。</p>
+
+<pre><code class="language-objectivec">- (void)implementMethod:(SEL)selector withBlock:(id)block
+{
+
+	#1: 参数检查，省略
+
+	if (!block) {
+		[self.invocationsBySelectors bk_removeObjectForSelector:selector];
+		return;
+	}
+
+	#2: 实例化 A2BlockInvocation
+
+	[self.invocationsBySelectors bk_setObject:inv forSelector:selector];
+}
+</code></pre>
+
+<p>如果能获取到方法的描述，那么就可以得到对应的方法签名，然后调用不同的初始化方法实例一个 <code class="highlighter-rouge">A2Blockinvocation</code> 对象。</p>
+
+<pre><code class="language-objectivec">	struct objc_method_description methodDescription = protocol_getMethodDescription(self.protocol，selector，YES，!isClassMethod);
+	if (!methodDescription.name) methodDescription = protocol_getMethodDescription(self.protocol，selector，NO，!isClassMethod);
+
+	A2BlockInvocation *inv = nil;
+	if (methodDescription.name) {
+	    NSMethodSignature *protoSig = [NSMethodSignature signatureWithObjCTypes:methodDescription.types];
+	    inv = [[A2BlockInvocation alloc] initWithBlock:block methodSignature:protoSig];
+	} else {
+	    inv = [[A2BlockInvocation alloc] initWithBlock:block];
+	}
+</code></pre>
+
+<p>这两个方法的实现，主要目的是<strong>为子类实现代理方法提供支持</strong>。</p>
+
+<h4 id="nsobjecta2dynamicdelegate-为对象添加动态代理">NSObject+A2DynamicDelegate 为对象添加动态代理</h4>
+
+<p>这个分类是为所有的对象提供简单快捷的接口找到对应的动态代理:</p>
+
+<pre><code class="language-objectivec">@property (readonly，strong) id bk_dynamicDataSource;
+@property (readonly，strong) id bk_dynamicDelegate;
+- (id)bk_dynamicDelegateForProtocol:(Protocol *)protocol;
+</code></pre>
+
+<p>以 <code class="highlighter-rouge">UITableView</code> 为例:</p>
+
+<ul>
+  <li>访问 <code class="highlighter-rouge">tableView.bk_dynamicDataSource</code> 那么它就会寻找 <code class="highlighter-rouge">A2DynamicUITableViewDataSource</code> 的对象</li>
+  <li>访问 <code class="highlighter-rouge">tableView.bk_dynamicDelegate</code> 那么它就会寻找 <code class="highlighter-rouge">A2DynamicUITableViewDelegate</code> 的对象</li>
+</ul>
+
+<p>这些对象都是在后台进程中惰性初始化的：</p>
+
+<pre><code class="language-objectivec">- (id)bk_dynamicDelegateWithClass:(Class)cls forProtocol:(Protocol *)protocol
+{
+	__block A2DynamicDelegate *dynamicDelegate;
+
+	dispatch_sync(a2_backgroundQueue()，^{
+		dynamicDelegate = objc_getAssociatedObject(self，(__bridge const void *)protocol);
+
+		if (!dynamicDelegate)
+		{
+			dynamicDelegate = [[cls alloc] initWithProtocol:protocol];
+			objc_setAssociatedObject(self，(__bridge const void *)protocol，dynamicDelegate，OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+		}
+	});
+
+	return dynamicDelegate;
+}
+</code></pre>
+
+<h4 id="nsobjecta2blockdelegate">NSObject+A2BlockDelegate</h4>
+
+<p>我们在概述的一部分实际上已经接触过这个分类里面的重要方法 <code class="highlighter-rouge">bk_linkProtocol:methods:</code>，它动态实现所有添加的 block 属性的存取方法，比如说 <code class="highlighter-rouge">bk_didFinishPickingMediaBlock</code> <code class="highlighter-rouge">bk_didCancelBlock</code></p>
+
+<pre><code class="language-objectivec">		IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+			A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，NO);
+			return [delegate blockImplementationForMethod:selector];
+		});
+
+		IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id block) {
+			A2DynamicDelegate *delegate = getDynamicDelegate(delegatingObject，protocol，info，YES);
+			[delegate implementMethod:selector withBlock:block];
+		});
+</code></pre>
+
+<p>方法调剂之后的存取方法如下</p>
+
+<ul>
+  <li>getter: 以 selector 为键在动态代理中查找对应的 block</li>
+  <li>setter: 以 selector 也就是代理方法为键，通过 <code class="highlighter-rouge">implementMethod:withBlock:</code> 方法以 <code class="highlighter-rouge">A2BlockInvocation</code> 的形式存储 block</li>
+</ul>
+
+<p>另一个方法 <code class="highlighter-rouge">bk_registerDynamicDelegateNamed:forProtocol:</code>，它主要功能就是修改 getter 和 setter 方法，将原有的 <code class="highlighter-rouge">delegate</code> 转发到 <code class="highlighter-rouge">realDelegate</code>，修改原有的 <code class="highlighter-rouge">delegate</code> 的实现，实现的方法就是喜闻乐见的方法调节：</p>
+
+<pre><code class="language-objectivec">	IMP setterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject，id delegate) {
+		A2DynamicDelegate *dynamicDelegate = getDynamicDelegate(delegatingObject，protocol，infoAsPtr，YES);
+		if ([delegate isEqual:dynamicDelegate]) {
+			delegate = nil;
+		}
+		dynamicDelegate.realDelegate = delegate;
+	});
+
+	IMP getterImplementation = imp_implementationWithBlock(^(NSObject *delegatingObject) {
+		return [delegatingObject bk_dynamicDelegateForProtocol:a2_protocolForDelegatingObject(delegatingObject，protocol)];
+	});
+</code></pre>
+
+<p>注意，在这里省略了一些与脉络无关的实现细节，在调剂过后 <code class="highlighter-rouge">delegate</code> 的存取方法如下：</p>
+
+<ul>
+  <li>getter：返回一个动态代理对象</li>
+  <li>setter：设置代理并不会改变 <code class="highlighter-rouge">delegate</code> 中存储的动态代理，只会修改 <code class="highlighter-rouge">realDelegate</code></li>
+</ul>
+
+<p>我们现在有了通过 runtime 实现 block 的 getter/setter，修改原有的 <code class="highlighter-rouge">delegate</code> 属性的方法将对象的代理设置为动态代理，接下来要在子类化动态代理，使用动态代理的子类实现所有的代理方法。</p>
+
+<h4 id="a2dynamicuitextfielddelegate">A2DynamicUITextFieldDelegate</h4>
+
+<p><code class="highlighter-rouge">A2DynamicUITextFieldDelegate</code> 和 <code class="highlighter-rouge">UITextField+BlocksKit</code> 位于统一文件下，它是一个私有类，我们选取其中一个简单的代理方法：</p>
+
+<pre><code class="language-objectivec">- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+	id realDelegate = self.realDelegate;
+	if (realDelegate &amp;&amp; [realDelegate respondsToSelector:@selector(textFieldDidEndEditing:)])
+		[realDelegate textFieldDidEndEditing:textField];
+	void (^block)(UITextField *) = [self blockImplementationForMethod:_cmd];
+	if (block)
+		block(textField);
+}
+</code></pre>
+
+<ol>
+  <li>当 <code class="highlighter-rouge">realDelegate</code> 实现了该代理方法时，首先调用代理的方法</li>
+  <li>当该代理方法对应的 block 存在的话，也会调用该 block</li>
+</ol>
+
+<h4 id="uitextfieldblockskit-分类和-load-方法">UITextField+BlocksKit 分类和 load 方法</h4>
+
+<p>在最后就是对 <code class="highlighter-rouge">NSObject+A2BlockDelegate</code> 分类中方法的调用</p>
+
+<pre><code class="language-objectivec">+ (void)load {
+    [self bk_registerDynamicDelegate];
+    [self bk_linkDelegateMethods: @{
+        @"bk_shouldBeginEditingBlock": @"textFieldShouldBeginEditing:",
+        @"bk_didBeginEditingBlock": @"textFieldDidBeginEditing:",
+        @"bk_shouldEndEditingBlock": @"textFieldShouldEndEditing:",
+        @"bk_didEndEditingBlock" : @"textFieldDidEndEditing:",
+        @"bk_shouldChangeCharactersInRangeWithReplacementStringBlock" : @"textField:shouldChangeCharactersInRange:replacementString:",
+        @"bk_shouldClearBlock" : @"textFieldShouldClear:",
+        @"bk_shouldReturnBlock" : @"textFieldShouldReturn:",
+    }];
+}
+</code></pre>
+
+<p>为什么在 <code class="highlighter-rouge">load</code> 方法中调用这两个方法？原因有两个：</p>
+
+<ul>
+  <li>该方法只会调用一次，减少了调用的次数</li>
+  <li>该方法只会在文件被引用的时候调用，减少了不必要的动态代理注册等一系列步骤</li>
+</ul>
+
+<p>其中的 <code class="highlighter-rouge">autoreleasepool</code> 的作用在上面已经介绍过了，它使得其它地方的代码不会受到这里注册代理，链接代理方法中产生的对象的影响。</p>
+
+<p><code class="highlighter-rouge">UIKit+BlocksKit</code> 这些分类的另一作用就是提供 block 回调接口，声明属性，然后使用 <code class="highlighter-rouge">@dynamic</code> 表明属性是动态生成的。</p>
+
+<pre><code class="language-objectivec">@property (nonatomic，copy，nullable) BOOL(^bk_shouldBeginEditingBlock)(UITextField *textField);
+@property (nonatomic，copy，nullable) void(^bk_didBeginEditingBlock)(UITextField *textField);
+
+...
+
+@dynamic bk_shouldBeginEditingBlock，bk_didBeginEditingBlock ...;
+</code></pre>
+
+<h2 id="end">End</h2>
+
+<p>到这里对于 BlocksKit 的实现机制就基本上已经看完了。我们在来看一下 整个 BlocksKit 的结构图：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-20-blockskit.png" alt="" /></p>
+
+<p>我写这篇文章大约用了七天的时间，如果你对其中的内容有些疑问，可以发邮件或者在下面留言。</p>
+
+<ul>
+  <li><a href="http://draveness.me/blockskit-1/">神奇的 BlocksKit（一）</a></li>
+  <li><a href="http://draveness.me/blockskit-2/">神奇的 BlocksKit（二）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=神奇的 BlocksKit （二）&amp;url=blockskit-2"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=blockskit-2"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=blockskit-2"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/afnetworking1">
+            <section class="post">
+                <h2>AFNetworking 概述（一）</h2>
+                <p>![afnetworking-logo](http://7xrlu3.com1.z0.glb.clouddn.com/2016-03-21-afnetworking-logo.png) Blog: [Draveness](http://draveness.me) 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) 在这一系列的文章中，我会对 AFNetworking 的源代码进行分析，深入了解一下它是如何构建的，如何在日常中完成发送 HTTP 请求、构建网络层这一任务。 [AFNetworking](https://github.com/AFNetworking/AFNetworking) 是如今 iOS 开发中不可缺少的组件之一。它的 github 配置上是如下介绍的：...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/blockskit-1">
+            <section class="post">
+                <h2>神奇的 BlocksKit （一）</h2>
+                <p>关注仓库，及时获得更新：iOS-Source-Code-Analyze 高能预警：本篇文章非常长，因为 BlocksKit 的实现还是比较复杂和有意的。这篇文章不是为了剖析 iOS 开发中的 block 的实现以及它是如何组成甚至使用的，如果你想通过这篇文章来了解 block 的实现，它并不能帮到你。 Block 到底是什么？这可能是困扰很多 iOS 初学者的一个问题。如果你在 Google...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

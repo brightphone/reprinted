@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>AFNetworking 的核心 AFURLSessionManager（二）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//afnetworking2" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AFNetworking 的核心 AFURLSessionManager（二）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//afnetworking2" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AFNetworking 的核心 AFURLSessionManager（二）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//afnetworking2" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "AFNetworking 的核心 AFURLSessionManager（二）",
+    "url": "/reprinted//afnetworking2",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">AFNetworking 的核心 AFURLSessionManager（二）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-03-30">30 Mar 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+<p><code class="highlighter-rouge">AFURLSessionManager</code> 绝对可以称得上是 AFNetworking 的核心。</p>
+
+<ol>
+  <li><a href="#NSURLSession">负责创建和管理 NSURLSession</a></li>
+  <li><a href="#NSURLSessionTask">管理 NSURLSessionTask</a></li>
+  <li><a href="#NSURLSessionDelegate">实现 NSURLSessionDelegate 等协议中的代理方法</a></li>
+  <li><a href="#AFURLSessionManagerTaskDelegate">使用 AFURLSessionManagerTaskDelegate 管理进度</a></li>
+  <li><a href="#_AFURLSessionTaskSwizzling">使用 _AFURLSessionTaskSwizzling 调剂方法</a></li>
+  <li><a href="#AFSecurityPolocy">引入 AFSecurityPolicy 保证请求的安全</a></li>
+  <li><a href="#AFNetworkReachabilityManager">引入 AFNetworkReachabilityManager 监控网络状态</a></li>
+</ol>
+
+<p>我们会在这里着重介绍上面七个功能中的前五个，分析它是如何包装 <code class="highlighter-rouge">NSURLSession</code> 以及众多代理方法的。</p>
+
+<h2 id="创建和管理-nsurlsession"><a id="NSURLSession"></a>创建和管理 <code class="highlighter-rouge">NSURLSession</code></h2>
+
+<p>在使用 <code class="highlighter-rouge">AFURLSessionManager</code> 时，第一件要做的事情一定是初始化：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithSessionConfiguration:(NSURLSessionConfiguration *)configuration {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+
+    if (!configuration) {
+        configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    }
+
+    self.sessionConfiguration = configuration;
+
+    self.operationQueue = [[NSOperationQueue alloc] init];
+    self.operationQueue.maxConcurrentOperationCount = 1;
+
+    self.session = [NSURLSession sessionWithConfiguration:self.sessionConfiguration delegate:self delegateQueue:self.operationQueue];
+
+    self.responseSerializer = [AFJSONResponseSerializer serializer];
+
+    self.securityPolicy = [AFSecurityPolicy defaultPolicy];
+
+    self.reachabilityManager = [AFNetworkReachabilityManager sharedManager];
+
+    self.mutableTaskDelegatesKeyedByTaskIdentifier = [[NSMutableDictionary alloc] init];
+
+    self.lock = [[NSLock alloc] init];
+    self.lock.name = AFURLSessionManagerLockName;
+
+    #1: 为已有的 task 设置代理, 略
+
+    return self;
+}
+</code></pre>
+
+<p>在初始化方法中，需要完成初始化一些自己持有的实例：</p>
+
+<ol>
+  <li>初始化<strong>会话配置</strong>（NSURLSessionConfiguration），默认为 <code class="highlighter-rouge">defaultSessionConfiguration</code></li>
+  <li>初始化会话（session），并设置会话的代理以及代理队列</li>
+  <li>初始化管理<strong>响应序列化</strong>（AFJSONResponseSerializer），<strong>安全认证</strong>（AFSecurityPolicy）以及<strong>监控网络状态</strong>（AFNetworkReachabilityManager）的实例</li>
+  <li>初始化保存 data task 的字典（mutableTaskDelegatesKeyedByTaskIdentifier）</li>
+</ol>
+
+<h2 id="管理-nsurlsessiontask"><a id="NSURLSessionTask"></a>管理 <code class="highlighter-rouge">NSURLSessionTask</code></h2>
+
+<p>接下来，在获得了 <code class="highlighter-rouge">AFURLSessionManager</code> 的实例之后，我们可以通过以下方法创建 <code class="highlighter-rouge">NSURLSessionDataTask</code> 的实例：</p>
+
+<pre><code class="language-objectivec">- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
+                               uploadProgress:(nullable void (^)(NSProgress *uploadProgress)) uploadProgressBlock
+                             downloadProgress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
+                            completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject,  NSError * _Nullable error))completionHandler;
+
+- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request
+                                         fromFile:(NSURL *)fileURL
+                                         progress:(nullable void (^)(NSProgress *uploadProgress)) uploadProgressBlock
+                                completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject, NSError  * _Nullable error))completionHandler;
+
+...
+
+- (NSURLSessionDownloadTask *)downloadTaskWithRequest:(NSURLRequest *)request
+                                             progress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
+                                          destination:(nullable NSURL * (^)(NSURL *targetPath, NSURLResponse *response))destination
+                                    completionHandler:(nullable void (^)(NSURLResponse *response, NSURL * _Nullable filePath, NSError * _Nullable error))completionHandler;
+
+...
+
+</code></pre>
+
+<p>这里省略了一些返回 <code class="highlighter-rouge">NSURLSessionTask</code> 的方法，因为这些接口的形式都是差不多的。</p>
+
+<p>我们将以 <code class="highlighter-rouge">- [AFURLSessionManager dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:]</code> 方法的实现为例，分析它是如何实例化并返回一个 <code class="highlighter-rouge">NSURLSessionTask</code> 的实例的：</p>
+
+<pre><code class="language-objectivec">- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
+                               uploadProgress:(nullable void (^)(NSProgress *uploadProgress)) uploadProgressBlock
+                             downloadProgress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
+                            completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject,  NSError * _Nullable error))completionHandler {
+
+    __block NSURLSessionDataTask *dataTask = nil;
+    url_session_manager_create_task_safely(^{
+        dataTask = [self.session dataTaskWithRequest:request];
+    });
+
+    [self addDelegateForDataTask:dataTask uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:completionHandler];
+
+    return dataTask;
+}
+</code></pre>
+
+<blockquote>
+  <p><code class="highlighter-rouge">url_session_manager_create_task_safely</code> 的调用是因为苹果框架中的一个 bug <a href="https://github.com/AFNetworking/AFNetworking/issues/2093">#2093</a>，如果有兴趣可以看一下，在这里就不说明了</p>
+</blockquote>
+
+<ol>
+  <li>调用 <code class="highlighter-rouge">- [NSURLSession dataTaskWithRequest:]</code> 方法传入 <code class="highlighter-rouge">NSURLRequest</code></li>
+  <li>调用 <code class="highlighter-rouge">- [AFURLSessionManager addDelegateForDataTask:uploadProgress:downloadProgress:completionHandler:]</code> 方法返回一个 <code class="highlighter-rouge">AFURLSessionManagerTaskDelegate</code> 对象</li>
+  <li>将 <code class="highlighter-rouge">completionHandler</code> <code class="highlighter-rouge">uploadProgressBlock</code> 和 <code class="highlighter-rouge">downloadProgressBlock</code> 传入该对象并在相应事件发生时进行回调</li>
+</ol>
+
+<pre><code class="language-objectivec">- (void)addDelegateForDataTask:(NSURLSessionDataTask *)dataTask
+                uploadProgress:(nullable void (^)(NSProgress *uploadProgress)) uploadProgressBlock
+              downloadProgress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
+             completionHandler:(void (^)(NSURLResponse *response, id responseObject, NSError *error))completionHandler
+{
+    AFURLSessionManagerTaskDelegate *delegate = [[AFURLSessionManagerTaskDelegate alloc] init];
+    delegate.manager = self;
+    delegate.completionHandler = completionHandler;
+
+    dataTask.taskDescription = self.taskDescriptionForSessionTasks;
+    [self setDelegate:delegate forTask:dataTask];
+
+    delegate.uploadProgressBlock = uploadProgressBlock;
+    delegate.downloadProgressBlock = downloadProgressBlock;
+}
+</code></pre>
+
+<p>在这个方法中同时调用了另一个方法 <code class="highlighter-rouge">- [AFURLSessionManager setDelegate:forTask:]</code> 来设置代理：</p>
+
+<pre><code class="language-objectivec">- (void)setDelegate:(AFURLSessionManagerTaskDelegate *)delegate
+            forTask:(NSURLSessionTask *)task
+{
+
+	#1: 检查参数, 略
+
+    [self.lock lock];
+    self.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;
+    [delegate setupProgressForTask:task];
+    [self addNotificationObserverForTask:task];
+    [self.lock unlock];
+}
+</code></pre>
+
+<p>正如上面所提到的，<code class="highlighter-rouge">AFNRUSessionManager</code> 就是通过字典 <code class="highlighter-rouge">mutableTaskDelegatesKeyedByTaskIdentifier</code> 来存储并管理每一个 <code class="highlighter-rouge">NSURLSessionTask</code>，它以 <code class="highlighter-rouge">taskIdentifier</code> 为键存储 task。</p>
+
+<p>该方法使用 <code class="highlighter-rouge">NSLock</code> 来保证不同线程使用 <code class="highlighter-rouge">mutableTaskDelegatesKeyedByTaskIdentifier</code> 时，不会出现<strong>线程竞争</strong>的问题。</p>
+
+<p>同时调用 <a href="#setupProgressForTask">- setupProgressForTask:</a>，我们会在下面具体介绍这个方法。</p>
+
+<h2 id="实现-nsurlsessiondelegate-等协议中的代理方法"><a id="NSURLSessionDelegate"></a>实现 <code class="highlighter-rouge">NSURLSessionDelegate</code> 等协议中的代理方法</h2>
+
+<p>在 <code class="highlighter-rouge">AFURLSessionManager</code> 的头文件中可以看到，它遵循了多个协议，其中包括：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">NSURLSessionDelegate</code></li>
+  <li><code class="highlighter-rouge">NSURLSessionTaskDelegate</code></li>
+  <li><code class="highlighter-rouge">NSURLSessionDataDelegate</code></li>
+  <li><code class="highlighter-rouge">NSURLSessionDownloadDelegate</code></li>
+</ul>
+
+<p>它在初始化方法 <code class="highlighter-rouge">- [AFURLSessionManager initWithSessionConfiguration:]</code> 将 <code class="highlighter-rouge">NSURLSession</code> 的代理指向 <code class="highlighter-rouge">self</code>，然后<strong>实现这些方法</strong>，提供更简洁的 block 的接口：</p>
+
+<pre><code class="language-objectivec">- (void)setSessionDidBecomeInvalidBlock:(nullable void (^)(NSURLSession *session, NSError *error))block;
+- (void)setSessionDidReceiveAuthenticationChallengeBlock:(nullable NSURLSessionAuthChallengeDisposition (^)(NSURLSession *session, NSURLAuthenticationChallenge *challenge, NSURLCredential * _Nullable __autoreleasing * _Nullable credential))block;
+...
+</code></pre>
+
+<p>它为所有的代理协议都提供了对应的 block 接口，方法实现的思路都是相似的，我们以 <code class="highlighter-rouge">- [AFNRLSessionManager setSessionDidBecomeInvalidBlock:]</code> 为例。</p>
+
+<p>首先调用 setter 方法，将 block 存入 <code class="highlighter-rouge">sessionDidBecomeInvalid</code> 属性中：</p>
+
+<pre><code class="language-objectivec">- (void)setSessionDidBecomeInvalidBlock:(void (^)(NSURLSession *session, NSError *error))block {
+    self.sessionDidBecomeInvalid = block;
+}
+</code></pre>
+
+<p>当代理方法调用时，如果存在对应的 block，会执行对应的 block：</p>
+
+<pre><code class="language-objectivec">- (void)URLSession:(NSURLSession *)session
+didBecomeInvalidWithError:(NSError *)error
+{
+    if (self.sessionDidBecomeInvalid) {
+        self.sessionDidBecomeInvalid(session, error);
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:AFURLSessionDidInvalidateNotification object:session];
+}
+</code></pre>
+
+<p>其他相似的接口实现也都差不多，这里直接跳过了。</p>
+
+<h2 id="使用-afurlsessionmanagertaskdelegate-管理进度"><a id="AFURLSessionManagerTaskDelegate"></a>使用 <code class="highlighter-rouge">AFURLSessionManagerTaskDelegate</code> 管理进度</h2>
+
+<p>在上面我们提到过 <code class="highlighter-rouge">AFURLSessionManagerTaskDelegate</code> 类，它主要为 task 提供<strong>进度管理</strong>功能，并在 task 结束时<strong>回调</strong>， 也就是调用在 <code class="highlighter-rouge">- [AFURLSessionManager dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:]</code> 等方法中传入的 <code class="highlighter-rouge">completionHandler</code>。</p>
+
+<p><a id="setupProgressForTask"></a>我们首先分析一下 <code class="highlighter-rouge">AFURLSessionManagerTaskDelegate</code> 是如何对进度进行跟踪的：</p>
+
+<pre><code class="language-objectivec">- (void)setupProgressForTask:(NSURLSessionTask *)task {
+
+	#1：设置在上传进度或者下载进度状态改变时的回调
+
+	#2：KVO
+
+}
+</code></pre>
+
+<p>该方法的实现有两个部分，一部分是对代理持有的两个属性 <code class="highlighter-rouge">uploadProgress</code> 和 <code class="highlighter-rouge">downloadProgress</code> 设置回调</p>
+
+<pre><code class="language-objectivec">__weak __typeof__(task) weakTask = task;
+
+self.uploadProgress.totalUnitCount = task.countOfBytesExpectedToSend;
+[self.uploadProgress setCancellable:YES];
+[self.uploadProgress setCancellationHandler:^{
+   __typeof__(weakTask) strongTask = weakTask;
+   [strongTask cancel];
+}];
+[self.uploadProgress setPausable:YES];
+[self.uploadProgress setPausingHandler:^{
+   __typeof__(weakTask) strongTask = weakTask;
+   [strongTask suspend];
+}];
+if ([self.uploadProgress respondsToSelector:@selector(setResumingHandler:)]) {
+   [self.uploadProgress setResumingHandler:^{
+       __typeof__(weakTask) strongTask = weakTask;
+       [strongTask resume];
+   }];
+}
+</code></pre>
+
+<p>这里只有对 <code class="highlighter-rouge">uploadProgress</code> 设置回调的代码，设置 <code class="highlighter-rouge">downloadProgress</code> 与这里完全相同</p>
+
+<blockquote>
+  <p>主要目的是在对应 <code class="highlighter-rouge">NSProgress</code> 的状态改变时，调用 <code class="highlighter-rouge">resume</code> <code class="highlighter-rouge">suspend</code> 等方法改变 task 的状态。</p>
+</blockquote>
+
+<p>第二部分是对 task 和 <code class="highlighter-rouge">NSProgress</code> 属性进行键值观测：</p>
+
+<pre><code class="language-objectivec">[task addObserver:self
+      forKeyPath:NSStringFromSelector(@selector(countOfBytesReceived))
+         options:NSKeyValueObservingOptionNew
+         context:NULL];
+[task addObserver:self
+      forKeyPath:NSStringFromSelector(@selector(countOfBytesExpectedToReceive))
+         options:NSKeyValueObservingOptionNew
+         context:NULL];
+
+[task addObserver:self
+      forKeyPath:NSStringFromSelector(@selector(countOfBytesSent))
+         options:NSKeyValueObservingOptionNew
+         context:NULL];
+[task addObserver:self
+      forKeyPath:NSStringFromSelector(@selector(countOfBytesExpectedToSend))
+         options:NSKeyValueObservingOptionNew
+         context:NULL];
+
+[self.downloadProgress addObserver:self
+                       forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                          options:NSKeyValueObservingOptionNew
+                          context:NULL];
+[self.uploadProgress addObserver:self
+                     forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                        options:NSKeyValueObservingOptionNew
+                        context:NULL];
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">observeValueForKeypath:ofObject:change:context:</code> 方法中改变进度，并调用 block</p>
+
+<pre><code class="language-objectivec">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSString *,id&gt; *)change context:(void *)context {
+    if ([object isKindOfClass:[NSURLSessionTask class]]) {
+        if ([keyPath isEqualToString:NSStringFromSelector(@selector(countOfBytesReceived))]) {
+            self.downloadProgress.completedUnitCount = [change[@"new"] longLongValue];
+        } else if ([keyPath isEqualToString:NSStringFromSelector(@selector(countOfBytesExpectedToReceive))]) {
+            self.downloadProgress.totalUnitCount = [change[@"new"] longLongValue];
+        } else if ([keyPath isEqualToString:NSStringFromSelector(@selector(countOfBytesSent))]) {
+            self.uploadProgress.completedUnitCount = [change[@"new"] longLongValue];
+        } else if ([keyPath isEqualToString:NSStringFromSelector(@selector(countOfBytesExpectedToSend))]) {
+            self.uploadProgress.totalUnitCount = [change[@"new"] longLongValue];
+        }
+    }
+    else if ([object isEqual:self.downloadProgress]) {
+        if (self.downloadProgressBlock) {
+            self.downloadProgressBlock(object);
+        }
+    }
+    else if ([object isEqual:self.uploadProgress]) {
+        if (self.uploadProgressBlock) {
+            self.uploadProgressBlock(object);
+        }
+    }
+}
+</code></pre>
+
+<p>对象的某些属性改变时更新 <code class="highlighter-rouge">NSProgress</code> 对象或使用 block 传递 <code class="highlighter-rouge">NSProgress</code> 对象 <code class="highlighter-rouge">self.uploadProgressBlock(object)</code>。</p>
+
+<h3 id="代理方法-urlsessiontaskdidcompletewitherror">代理方法 <code class="highlighter-rouge">URLSession:task:didCompleteWithError:</code></h3>
+
+<p>在每一个 <code class="highlighter-rouge">NSURLSessionTask</code> 结束时，都会在代理方法 <code class="highlighter-rouge">URLSession:task:didCompleteWithError:</code> 中：</p>
+
+<ol>
+  <li>调用传入的 <code class="highlighter-rouge">completionHander</code> block</li>
+  <li>发出 <code class="highlighter-rouge">AFNetworkingTaskDidCompleteNotification</code> 通知</li>
+</ol>
+
+<pre><code class="language-objectivec">- (void)URLSession:(__unused NSURLSession *)session
+              task:(NSURLSessionTask *)task
+didCompleteWithError:(NSError *)error
+{
+    #1：获取数据, 存储 `responseSerializer` 和 `downloadFileURL`
+
+    if (error) {
+    	#2：在存在错误时调用 `completionHandler`
+    } else {
+		#3：调用 `completionHandler`
+    }
+}
+</code></pre>
+
+<p>这是整个代理方法的骨架，先看一下最简单的第一部分代码：</p>
+
+<pre><code class="language-objectivec">__block NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+userInfo[AFNetworkingTaskDidCompleteResponseSerializerKey] = manager.responseSerializer;
+
+//Performance Improvement from #2672
+NSData *data = nil;
+if (self.mutableData) {
+   data = [self.mutableData copy];
+   //We no longer need the reference, so nil it out to gain back some memory.
+   self.mutableData = nil;
+}
+
+if (self.downloadFileURL) {
+   userInfo[AFNetworkingTaskDidCompleteAssetPathKey] = self.downloadFileURL;
+} else if (data) {
+   userInfo[AFNetworkingTaskDidCompleteResponseDataKey] = data;
+}
+</code></pre>
+
+<p>这部分代码从 <code class="highlighter-rouge">mutableData</code> 中取出了数据，设置了 <code class="highlighter-rouge">userInfo</code>。</p>
+
+<pre><code class="language-objectivec">userInfo[AFNetworkingTaskDidCompleteErrorKey] = error;
+
+dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^{
+    if (self.completionHandler) {
+        self.completionHandler(task.response, responseObject, error);
+    }
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];
+    });
+});
+</code></pre>
+
+<p>如果当前 <code class="highlighter-rouge">manager</code> 持有 <code class="highlighter-rouge">completionGroup</code> 或者 <code class="highlighter-rouge">completionQueue</code> 就使用它们。否则会创建一个 <code class="highlighter-rouge">dispatch_group_t</code> 并在主线程中调用 <code class="highlighter-rouge">completionHandler</code> 并发送通知(在主线程中)。</p>
+
+<p>如果在执行当前 task 时没有遇到错误，那么先<strong>对数据进行序列化</strong>，然后同样调用 block 并发送通知。</p>
+
+<pre><code class="language-objectivec">dispatch_async(url_session_manager_processing_queue(), ^{
+    NSError *serializationError = nil;
+    responseObject = [manager.responseSerializer responseObjectForResponse:task.response data:data error:&amp;serializationError];
+
+    if (self.downloadFileURL) {
+        responseObject = self.downloadFileURL;
+    }
+
+    if (responseObject) {
+        userInfo[AFNetworkingTaskDidCompleteSerializedResponseKey] = responseObject;
+    }
+
+    if (serializationError) {
+        userInfo[AFNetworkingTaskDidCompleteErrorKey] = serializationError;
+    }
+
+    dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^{
+        if (self.completionHandler) {
+            self.completionHandler(task.response, responseObject, serializationError);
+        }
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];
+        });
+    });
+});
+</code></pre>
+
+<h3 id="代理方法-urlsessiondatataskdidreceivedata-和---urlsessiondownloadtaskdidfinishdownloadingtourl">代理方法 <code class="highlighter-rouge">URLSession:dataTask:didReceiveData:</code> 和 <code class="highlighter-rouge">- URLSession:downloadTask:didFinishDownloadingToURL:</code></h3>
+
+<p>这两个代理方法分别会在收到数据或者完成下载对应文件时调用，作用分别是为 <code class="highlighter-rouge">mutableData</code> 追加数据和处理下载的文件：</p>
+
+<pre><code class="language-objectivec">- (void)URLSession:(__unused NSURLSession *)session
+          dataTask:(__unused NSURLSessionDataTask *)dataTask
+    didReceiveData:(NSData *)data
+{
+    [self.mutableData appendData:data];
+}
+
+- (void)URLSession:(NSURLSession *)session
+      downloadTask:(NSURLSessionDownloadTask *)downloadTask
+didFinishDownloadingToURL:(NSURL *)location
+{
+    NSError *fileManagerError = nil;
+    self.downloadFileURL = nil;
+
+    if (self.downloadTaskDidFinishDownloading) {
+        self.downloadFileURL = self.downloadTaskDidFinishDownloading(session, downloadTask, location);
+        if (self.downloadFileURL) {
+            [[NSFileManager defaultManager] moveItemAtURL:location toURL:self.downloadFileURL error:&amp;fileManagerError];
+
+            if (fileManagerError) {
+                [[NSNotificationCenter defaultCenter] postNotificationName:AFURLSessionDownloadTaskDidFailToMoveFileNotification object:downloadTask userInfo:fileManagerError.userInfo];
+            }
+        }
+    }
+}
+</code></pre>
+
+<h2 id="使用-_afurlsessiontaskswizzling-调剂方法"><a id="_AFURLSessionTaskSwizzling"></a>使用 <code class="highlighter-rouge">_AFURLSessionTaskSwizzling</code> 调剂方法</h2>
+
+<p><code class="highlighter-rouge">_AFURLSessionTaskSwizzling</code> 的唯一功能就是修改 <code class="highlighter-rouge">NSURLSessionTask</code> 的 <code class="highlighter-rouge">resume</code> 和 <code class="highlighter-rouge">suspend</code> 方法，使用下面的方法替换原有的实现</p>
+
+<pre><code class="language-objectivec">- (void)af_resume {
+    NSAssert([self respondsToSelector:@selector(state)], @"Does not respond to state");
+    NSURLSessionTaskState state = [self state];
+    [self af_resume];
+
+    if (state != NSURLSessionTaskStateRunning) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:AFNSURLSessionTaskDidResumeNotification object:self];
+    }
+}
+
+- (void)af_suspend {
+    NSAssert([self respondsToSelector:@selector(state)], @"Does not respond to state");
+    NSURLSessionTaskState state = [self state];
+    [self af_suspend];
+
+    if (state != NSURLSessionTaskStateSuspended) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:AFNSURLSessionTaskDidSuspendNotification object:self];
+    }
+}
+</code></pre>
+
+<p>这样做的目的是为了在方法 <code class="highlighter-rouge">resume</code> 或者 <code class="highlighter-rouge">suspend</code> 被调用时发出通知。</p>
+
+<p>具体方法调剂的过程是在 <code class="highlighter-rouge">+ load</code> 方法中进行的</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">load</code> 方法只会在整个文件被引入时调用一次</p>
+</blockquote>
+
+<pre><code class="language-objectivec">+ (void)load {
+    if (NSClassFromString(@"NSURLSessionTask")) {
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        NSURLSession * session = [NSURLSession sessionWithConfiguration:configuration];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
+        NSURLSessionDataTask *localDataTask = [session dataTaskWithURL:nil];
+#pragma clang diagnostic pop
+        IMP originalAFResumeIMP = method_getImplementation(class_getInstanceMethod([self class], @selector(af_resume)));
+        Class currentClass = [localDataTask class];
+
+        while (class_getInstanceMethod(currentClass, @selector(resume))) {
+            Class superClass = [currentClass superclass];
+            IMP classResumeIMP = method_getImplementation(class_getInstanceMethod(currentClass, @selector(resume)));
+            IMP superclassResumeIMP = method_getImplementation(class_getInstanceMethod(superClass, @selector(resume)));
+            if (classResumeIMP != superclassResumeIMP &amp;&amp;
+                originalAFResumeIMP != classResumeIMP) {
+                [self swizzleResumeAndSuspendMethodForClass:currentClass];
+            }
+            currentClass = [currentClass superclass];
+        }
+
+        [localDataTask cancel];
+        [session finishTasksAndInvalidate];
+    }
+}
+</code></pre>
+
+<ol>
+  <li>首先用 <code class="highlighter-rouge">NSClassFromString(@"NSURLSessionTask")</code> 判断当前部署的 iOS 版本是否含有类 <code class="highlighter-rouge">NSURLSessionTask</code></li>
+  <li>因为 iOS7 和 iOS8 上对于 <code class="highlighter-rouge">NSURLSessionTask</code> 的实现不同，所以会通过 <code class="highlighter-rouge">- [NSURLSession dataTaskWithURL:]</code> 方法返回一个 <code class="highlighter-rouge">NSURLSessionTask</code> 实例</li>
+  <li>取得当前类 <code class="highlighter-rouge">_AFURLSessionTaskSwizzling</code> 中的实现 <code class="highlighter-rouge">af_resume</code></li>
+  <li>如果当前类 <code class="highlighter-rouge">currentClass</code> 有 <code class="highlighter-rouge">resume</code> 方法
+    <ul>
+      <li>真：5</li>
+      <li>假：7</li>
+    </ul>
+  </li>
+  <li>使用 <code class="highlighter-rouge">swizzleResumeAndSuspendMethodForClass:</code> 调剂该类的 <code class="highlighter-rouge">resume</code> 和 <code class="highlighter-rouge">suspend</code> 方法</li>
+  <li><code class="highlighter-rouge">currentClass = [currentClass superclass]</code></li>
+</ol>
+
+<blockquote>
+  <p>这里复杂的实现是为了解决 bug <a href="https://github.com/AFNetworking/AFNetworking/pull/2702">#2702</a></p>
+</blockquote>
+
+<h2 id="引入-afsecuritypolicy-保证请求的安全"><a id="AFSecurityPolicy"></a>引入 <code class="highlighter-rouge">AFSecurityPolicy</code> 保证请求的安全</h2>
+
+<p><code class="highlighter-rouge">AFSecurityPolicy</code> 是 <code class="highlighter-rouge">AFNetworking</code> 用来保证 HTTP 请求安全的类，它被 <code class="highlighter-rouge">AFURLSessionManager</code> 持有，如果你在 <code class="highlighter-rouge">AFURLSessionManager</code> 的实现文件中搜索 <em>self.securityPolicy</em>，你只会得到三条结果：</p>
+
+<ol>
+  <li>初始化 <code class="highlighter-rouge">self.securityPolicy = [AFSecurityPolicy defaultPolicy]</code></li>
+  <li>收到连接层的验证请求时</li>
+  <li>任务接收到验证请求时</li>
+</ol>
+
+<p>在 API 调用上，后两者都调用了 <code class="highlighter-rouge">- [AFSecurityPolicy evaluateServerTrust:forDomain:]</code> 方法来判断<strong>当前服务器是否被信任</strong>，我们会在接下来的文章中具体介绍这个方法的实现的作用。</p>
+
+<pre><code class="language-objectivec">- (void)URLSession:(NSURLSession *)session
+              task:(NSURLSessionTask *)task
+didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
+ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler
+{
+    NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
+    __block NSURLCredential *credential = nil;
+
+    if (self.taskDidReceiveAuthenticationChallenge) {
+        disposition = self.taskDidReceiveAuthenticationChallenge(session, task, challenge, &amp;credential);
+    } else {
+        if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+            if ([self.securityPolicy evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:challenge.protectionSpace.host]) {
+                disposition = NSURLSessionAuthChallengeUseCredential;
+                credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
+            } else {
+                disposition = NSURLSessionAuthChallengeRejectProtectionSpace;
+            }
+        } else {
+            disposition = NSURLSessionAuthChallengePerformDefaultHandling;
+        }
+    }
+
+    if (completionHandler) {
+        completionHandler(disposition, credential);
+    }
+}
+</code></pre>
+
+<p>如果没有传入 <code class="highlighter-rouge">taskDidReceiveAuthenticationChallenge</code> block，只有在上述方法返回 <code class="highlighter-rouge">YES</code> 时，才会获得认证凭证 <code class="highlighter-rouge">credential</code>。</p>
+
+<h2 id="引入-afnetworkreachabilitymanager-监控网络状态"><a id="AFNetworkReachabilityManager"></a>引入 <code class="highlighter-rouge">AFNetworkReachabilityManager</code> 监控网络状态</h2>
+
+<p>与 <code class="highlighter-rouge">AFSecurityPolicy</code> 相同，<code class="highlighter-rouge">AFURLSessionManager</code> 对网络状态的监控是由 <code class="highlighter-rouge">AFNetworkReachabilityManager</code> 来负责的，它仅仅是持有一个 <code class="highlighter-rouge">AFNetworkReachabilityManager</code> 的对象。</p>
+
+<blockquote>
+  <p>真正需要判断网络状态时，仍然<strong>需要开发者调用对应的 API 获取网络状态</strong>。</p>
+</blockquote>
+
+<h2 id="小结">小结</h2>
+
+<ol>
+  <li><code class="highlighter-rouge">AFURLSessionManager</code> 是对 <code class="highlighter-rouge">NSURLSession</code> 的封装</li>
+  <li>它通过 <code class="highlighter-rouge">- [AFURLSessionManager dataTaskWithRequest:completionHandler:]</code> 等接口创建 <code class="highlighter-rouge">NSURLSessionDataTask</code> 的实例</li>
+  <li>持有一个字典 <code class="highlighter-rouge">mutableTaskDelegatesKeyedByTaskIdentifier</code> 管理这些 data task 实例</li>
+  <li>引入 <code class="highlighter-rouge">AFURLSessionManagerTaskDelegate</code> 来对传入的 <code class="highlighter-rouge">uploadProgressBlock</code> <code class="highlighter-rouge">downloadProgressBlock</code> <code class="highlighter-rouge">completionHandler</code> 在合适的时间进行调用</li>
+  <li>实现了全部的代理方法来提供 block 接口</li>
+  <li>通过方法调剂在 data task 状态改变时，发出通知</li>
+</ol>
+
+<p>关于其他 AFNetworking 源代码分析的其他文章：</p>
+
+<ul>
+  <li><a href="http://draveness.me/afnetworking1">AFNetworking 概述（一）</a></li>
+  <li><a href="http://draveness.me/afnetworking2">AFNetworking 的核心 AFURLSessionManager（二）</a></li>
+  <li><a href="http://draveness.me/afnetworking3">处理请求和响应 AFURLSerialization（三）</a></li>
+  <li><a href="http://draveness.me/afnetworking4">AFNetworkReachabilityManager 监控网络状态（四）</a></li>
+  <li><a href="http://draveness.me/afnetworking5">验证 HTTPS 请求的证书（五）</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+<p>Blog: <a href="http://draveness.me">Draveness</a></p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=AFNetworking 的核心 AFURLSessionManager（二）&amp;url=afnetworking2"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=afnetworking2"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=afnetworking2"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/afnetworking3">
+            <section class="post">
+                <h2>处理请求和响应 AFURLSerialization（三）</h2>
+                <p>Blog: [Draveness](http://draveness.me) 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) 在前面两个部分已经分析过 `AFNetworking` 是对 `NSURLSession` 的封装，也了解了它是如何发出请求的，在这里我们**对发出请求以及接收响应的过程**进行序列化，这涉及到两个**模块**： + [AFURLResponseSerialization](#AFURLResponseSerialization) + [AFURLRequestSerialization](#AFURLRequestSerialization) 前者是处理响应的模块，将请求返回的数据解析成对应的格式。而后者的主要作用是修改请求（主要是 HTTP 请求）的头部，提供了一些语义明确的接口设置...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/afnetworking1">
+            <section class="post">
+                <h2>AFNetworking 概述（一）</h2>
+                <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 在这一系列的文章中，我会对 AFNetworking 的源代码进行分析，深入了解一下它是如何构建的，如何在日常中完成发送 HTTP 请求、构建网络层这一任务。 AFNetworking 是如今 iOS 开发中不可缺少的组件之一。它的 github 配置上是如下介绍的： Perhaps...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

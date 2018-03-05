@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>iOS 源代码分析----Masonry</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//ios-yuan-dai-ma-fen-xi-masonry" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="iOS 源代码分析----Masonry" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//ios-yuan-dai-ma-fen-xi-masonry" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="iOS 源代码分析----Masonry" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//ios-yuan-dai-ma-fen-xi-masonry" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "iOS 源代码分析----Masonry",
+    "url": "/reprinted//ios-yuan-dai-ma-fen-xi-masonry",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios  nav-current" role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">iOS 源代码分析----Masonry</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2015-04-27">27 Apr 2015</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <p><a href="https://github.com/SnapKit/Masonry">Masonry</a> 是 Objective-C 中用于自动布局的第三方框架, 我们一般使用它来代替冗长, 繁琐的 AutoLayout 代码.</p>
+
+<p>Masonry 的使用还是很简洁的:</p>
+
+<pre><code class="language-objectivec">[button mas_makeConstraints:^(MASConstraintMaker *make) {
+	make.centerX.equalTo(self.view);
+	make.top.equalTo(self.view).with.offset(40);
+	make.width.equalTo(@185);
+	make.height.equalTo(@38);
+}];
+</code></pre>
+
+<h2 id="从-mas_makeconstraints-开始">从 mas_makeConstraints: 开始</h2>
+
+<p>其中最常用的方法就是</p>
+
+<pre><code class="language-objectivec">// View+MASAdditions.h
+
+- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *make))block;
+</code></pre>
+
+<p>同样, 也有用于<strong>更新和重新构建</strong>约束的分类方法:</p>
+
+<pre><code class="language-objectivec">// View+MASAdditions.h
+
+- (NSArray *)mas_updateConstraints:(void(^)(MASConstraintMaker *make))block;
+- (NSArray *)mas_remakeConstraints:(void(^)(MASConstraintMaker *make))block;
+</code></pre>
+
+<h2 id="constraint-maker-block">Constraint Maker Block</h2>
+
+<p>我们以 <code class="highlighter-rouge">mas_makeConstraints:</code> 方法为入口来分析一下 Masonry 以及类似的框架(SnapKit)是如何工作的. <code class="highlighter-rouge">mas_makeConstraints:</code> 方法位于 <code class="highlighter-rouge">UIView</code> 的分类 <code class="highlighter-rouge">MASAdditions</code> 中.</p>
+
+<blockquote>
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Provides constraint maker block and convience methods for creating MASViewAttribute which are view + NSLayoutAttribute pairs.
+</code></pre></div>  </div>
+</blockquote>
+
+<p>这个分类为我们提供一种非常便捷的方法来配置 <code class="highlighter-rouge">MASConstraintMaker</code>, 并为视图添加 <code class="highlighter-rouge">mas_left</code> <code class="highlighter-rouge">mas_right</code> 等属性.</p>
+
+<p>方法的实现如下:</p>
+
+<pre><code class="language-objectivec">// View+MASAdditions.m
+
+- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *))block {
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+    MASConstraintMaker *constraintMaker = [[MASConstraintMaker alloc] initWithView:self];
+    block(constraintMaker);
+    return [constraintMaker install];
+}
+</code></pre>
+
+<p>因为 Masonry 是封装的苹果的 AutoLayout 框架, 所以我们要在为视图添加约束前将 <code class="highlighter-rouge">translatesAutoresizingMaskIntoConstraints</code> 属性设置为 <code class="highlighter-rouge">NO</code>. 如果这个属性没有被正确设置, 那么视图的约束不会被成功添加.</p>
+
+<p>在设置 <code class="highlighter-rouge">translatesAutoresizingMaskIntoConstraints</code> 属性之后,</p>
+
+<ul>
+  <li>我们会初始化一个 <code class="highlighter-rouge">MASConstraintMaker</code> 的实例.</li>
+  <li>然后将 maker 传入 block 配置其属性.</li>
+  <li>最后调用 maker 的 <code class="highlighter-rouge">install</code> 方法为视图添加约束.</li>
+</ul>
+
+<h2 id="masconstraintmaker">MASConstraintMaker</h2>
+
+<p><code class="highlighter-rouge">MASConstraintMaker</code> 为我们提供了工厂方法来创建 <code class="highlighter-rouge">MASConstraint</code>. 所有的约束都会被收集直到它们最后调用 <code class="highlighter-rouge">install</code> 方法添加到视图上.</p>
+
+<blockquote>
+  <p>Provides factory methods for creating MASConstraints. Constraints are collected until they are ready to be installed</p>
+</blockquote>
+
+<p>在初始化 <code class="highlighter-rouge">MASConstraintMaker</code> 的实例时, 它会<strong>持有一个对应 view 的弱引用</strong>, 并初始化一个  <code class="highlighter-rouge">constraints</code> 的空可变数组用来之后配置属性时持有所有的约束.</p>
+
+<pre><code class="language-objectivec">// MASConstraintMaker.m
+
+- (id)initWithView:(MAS_VIEW *)view {
+    self = [super init];
+    if (!self) return nil;
+
+    self.view = view;
+    self.constraints = NSMutableArray.new;
+
+    return self;
+}
+</code></pre>
+
+<p>这里的 <code class="highlighter-rouge">MAS_VIEW</code> 是一个宏, 是 <code class="highlighter-rouge">UIView</code> 的 alias.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// MASUtilities.h
+</span>
+<span class="cp">#define MAS_VIEW UIView
+</span></code></pre></div></div>
+
+<h2 id="setup-masconstraintmaker">Setup MASConstraintMaker</h2>
+
+<p>在调用 <code class="highlighter-rouge">block(constraintMaker)</code> 时, 实际上是对 <code class="highlighter-rouge">constraintMaker</code> 的配置.</p>
+
+<pre><code class="language-objectivec">make.centerX.equalTo(self.view);
+make.top.equalTo(self.view).with.offset(40);
+make.width.equalTo(@185);
+make.height.equalTo(@38);
+</code></pre>
+
+<h3 id="makeleft">make.left</h3>
+
+<p>访问 <code class="highlighter-rouge">make</code> 的 <code class="highlighter-rouge">left</code> <code class="highlighter-rouge">right</code> <code class="highlighter-rouge">top</code> <code class="highlighter-rouge">bottom</code>  等属性时, 会调用 <code class="highlighter-rouge">constraint:addConstraintWithLayoutAttribute:</code> 方法.</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+- (MASConstraint *)left {
+    return [self addConstraintWithLayoutAttribute:NSLayoutAttributeLeft];
+}
+
+- (MASConstraint *)addConstraintWithLayoutAttribute:(NSLayoutAttribute)layoutAttribute {
+    return [self constraint:nil addConstraintWithLayoutAttribute:layoutAttribute];
+}
+
+- (MASConstraint *)constraint:(MASConstraint *)constraint addConstraintWithLayoutAttribute:(NSLayoutAttribute)layoutAttribute {
+    MASViewAttribute *viewAttribute = [[MASViewAttribute alloc] initWithView:self.view layoutAttribute:layoutAttribute];
+    MASViewConstraint *newConstraint = [[MASViewConstraint alloc] initWithFirstViewAttribute:viewAttribute];
+    if ([constraint isKindOfClass:MASViewConstraint.class]) { ... }
+    if (!constraint) {
+        newConstraint.delegate = self;
+        [self.constraints addObject:newConstraint];
+    }
+    return newConstraint;
+}
+</code></pre>
+
+<p>在调用链上最终会达到 <code class="highlighter-rouge">constraint:addConstraintWithLayoutAttribute:</code> 这一方法, 在这里省略了一些暂时不需要了解的问题. 因为在这个类中传入该方法的第一个参数一直为 <code class="highlighter-rouge">nil</code>, 所以这里省略的代码不会执行.</p>
+
+<p>这部分代码会先以布局属性 <code class="highlighter-rouge">left</code> 和视图本身初始化一个 <code class="highlighter-rouge">MASViewAttribute</code> 的实例, 之后使用 <code class="highlighter-rouge">MASViewAttribute</code> 的实例初始化一个 <code class="highlighter-rouge">constraint</code> 并设置它的代理, 加入数组, 然后返回.</p>
+
+<p>这些工作就是你在输入 <code class="highlighter-rouge">make.left</code> 进行的全部工作, 它会返回一个 <code class="highlighter-rouge">MASConstraint</code>, 用于之后的继续配置.</p>
+
+<h3 id="makeleftequalto80">make.left.equalTo(@80)</h3>
+
+<p>在 <code class="highlighter-rouge">make.left</code> 返回 <code class="highlighter-rouge">MASConstraint</code> 之后, 我们会继续在这个链式的语法中调用下一个方法来指定约束的关系.</p>
+
+<pre><code class="language-objectivec">// MASConstraint.h
+
+- (MASConstraint * (^)(id attr))equalTo;
+- (MASConstraint * (^)(id attr))greaterThanOrEqualTo;
+- (MASConstraint * (^)(id attr))lessThanOrEqualTo;
+</code></pre>
+
+<p>这三个方法是在 <code class="highlighter-rouge">MASViewConstraint</code> 的父类, <code class="highlighter-rouge">MASConstraint</code> 中定义的.</p>
+
+<p><code class="highlighter-rouge">MASConstraint</code> 是一个抽象类, 其中有很多的方法都<strong>必须在子类中覆写</strong>的. Masonry 中有两个 <code class="highlighter-rouge">MASConstraint</code> 的子类, 分别是 <code class="highlighter-rouge">MASViewConstraint</code> 和 <code class="highlighter-rouge">MASCompositeConstraint</code>. 后者实际上是一些<strong>约束的集合</strong>. 这么设计的原因我们会在 post 的最后解释.</p>
+
+<p>先来看一下这三个方法是怎么实现的:</p>
+
+<pre><code class="language-objectivec">// MASConstraint.m
+
+- (MASConstraint * (^)(id))equalTo {
+    return ^id(id attribute) {
+        return self.equalToWithRelation(attribute, NSLayoutRelationEqual);
+    };
+}
+</code></pre>
+
+<p>该方法会导致 <code class="highlighter-rouge">self.equalToWithRelation</code> 的执行, 而这个方法是定义在子类中的, 因为父类作为抽象类没有提供这个方法的具体实现.</p>
+
+<pre><code class="language-objectivec">// MASConstraint.m
+
+- (MASConstraint * (^)(id, NSLayoutRelation))equalToWithRelation { MASMethodNotImplemented(); }
+</code></pre>
+
+<p><code class="highlighter-rouge">MASMethodNotImplemented</code> 也是一个宏定义, 用于在<strong>子类未继承这个方法</strong>或者<strong>直接使用这个类</strong>时抛出异常.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// MASConstraint.m
+</span>
+<span class="cp">#define MASMethodNotImplemented() \
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException \
+                                   reason:[NSString stringWithFormat:@"You must override %@ in a subclass.", NSStringFromSelector(_cmd)] \
+                                 userInfo:nil]
+</span>
+</code></pre></div></div>
+
+<p>因为我们为 <code class="highlighter-rouge">equalTo</code> 提供了参数 <code class="highlighter-rouge">attribute</code> 和布局关系 <code class="highlighter-rouge">NSLayoutRelationEqual</code>, 这两个参数会传递到 <code class="highlighter-rouge">equalToWithRelation</code> 中, 设置 <code class="highlighter-rouge">constraint</code> 的布局关系和 <code class="highlighter-rouge">secondViewAttribute</code> 属性, 为即将 maker 的 <code class="highlighter-rouge">install</code> 做准备.</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+- (MASConstraint * (^)(id, NSLayoutRelation))equalToWithRelation {
+    return ^id(id attribute, NSLayoutRelation relation) {
+        if ([attribute isKindOfClass:NSArray.class]) { ... }
+        else {
+            ...
+            self.layoutRelation = relation;
+            self.secondViewAttribute = attribute;
+            return self;
+        }
+    };
+}
+</code></pre>
+
+<p>我们不得不提一下 <code class="highlighter-rouge">setSecondViewAttribute:</code> 方法, 它并不只是一个简单的 setter 方法, 它会根据你传入的值的种类赋值.</p>
+
+<pre><code class="language-objectivec">// MASConstraintMaker.m
+
+- (void)setSecondViewAttribute:(id)secondViewAttribute {
+    if ([secondViewAttribute isKindOfClass:NSValue.class]) {
+        [self setLayoutConstantWithValue:secondViewAttribute];
+    } else if ([secondViewAttribute isKindOfClass:MAS_VIEW.class]) {
+        _secondViewAttribute = [[MASViewAttribute alloc] initWithView:secondViewAttribute layoutAttribute:self.firstViewAttribute.layoutAttribute];
+    } else if ([secondViewAttribute isKindOfClass:MASViewAttribute.class]) {
+        _secondViewAttribute = secondViewAttribute;
+    } else {
+        NSAssert(NO, @"attempting to add unsupported attribute: %@", secondViewAttribute);
+    }
+}
+</code></pre>
+
+<p>第一种情况对应的就是:</p>
+
+<pre><code class="language-objectivec">make.left.equalTo(@40);
+</code></pre>
+
+<p>传入 <code class="highlighter-rouge">NSValue</code> 的时, 会直接设置 <code class="highlighter-rouge">constraint</code> 的 <code class="highlighter-rouge">offset</code>, <code class="highlighter-rouge">centerOffset</code>, <code class="highlighter-rouge">sizeOffset</code>, 或者 <code class="highlighter-rouge">insets</code></p>
+
+<p>第二种情况一般会直接传入一个视图:</p>
+
+<pre><code class="language-objectivec">make.left.equalTo(view);
+</code></pre>
+
+<p>这时, 就会初始化一个 <code class="highlighter-rouge">layoutAttribute</code> 属性与 <code class="highlighter-rouge">firstViewArribute</code> 相同的 <code class="highlighter-rouge">MASViewAttribute</code>, 上面的代码就会使视图与 <code class="highlighter-rouge">view</code> 左对齐.</p>
+
+<p>第三种情况会传入一个视图的 <code class="highlighter-rouge">MASViewAttribute</code>:</p>
+
+<pre><code class="language-objectivec">make.left.equalTo(view.mas_right);
+</code></pre>
+
+<p>使用这种写法时, 一般是因为约束的方向不同. 这行代码会使视图的左侧与 <code class="highlighter-rouge">view</code> 的右侧对齐.</p>
+
+<p>到这里我们就基本完成了对<strong>一个</strong>约束的配置, 接下来可以使用相同的语法完成对一个视图上所有约束进行配置, 然后进入了最后一个环节.</p>
+
+<h2 id="install-masconstraintmaker">Install MASConstraintMaker</h2>
+
+<p>我们会在 <code class="highlighter-rouge">mas_makeConstraints:</code> 方法的最后调用 <code class="highlighter-rouge">[constraintMaker install]</code> 方法来安装所有存储在 <code class="highlighter-rouge">self.constraints</code> 数组中的所有约束.</p>
+
+<pre><code class="language-objectivec">// MASConstraintMaker.m
+
+- (NSArray *)install {
+    if (self.removeExisting) {
+        NSArray *installedConstraints = [MASViewConstraint installedConstraintsForView:self.view];
+        for (MASConstraint *constraint in installedConstraints) {
+            [constraint uninstall];
+        }
+    }
+    NSArray *constraints = self.constraints.copy;
+    for (MASConstraint *constraint in constraints) {
+        constraint.updateExisting = self.updateExisting;
+        [constraint install];
+    }
+    [self.constraints removeAllObjects];
+    return constraints;
+}
+</code></pre>
+
+<p>在这个方法会先判断当前的视图的约束是否应该要被 <code class="highlighter-rouge">uninstall</code>, 如果我们在最开始调用 <code class="highlighter-rouge">mas_remakeConstraints:</code> 方法时, 视图中原来的约束就会全部被 <code class="highlighter-rouge">uninstall</code>.</p>
+
+<p>然后就会遍历 <code class="highlighter-rouge">constraints</code> 数组, 发送 <code class="highlighter-rouge">install</code> 消息.</p>
+
+<h3 id="masviewconstraint-install">MASViewConstraint install</h3>
+
+<p>MASViewConstraint 的 <code class="highlighter-rouge">install</code> 方法就是最后为当前视图添加约束的最后的方法, 首先这个方法会先获取即将用于初始化 <code class="highlighter-rouge">NSLayoutConstraint</code> 的子类的几个属性.</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+MAS_VIEW *firstLayoutItem = self.firstViewAttribute.view;
+NSLayoutAttribute firstLayoutAttribute = self.firstViewAttribute.layoutAttribute;
+MAS_VIEW *secondLayoutItem = self.secondViewAttribute.view;
+NSLayoutAttribute secondLayoutAttribute = self.secondViewAttribute.layoutAttribute;
+</code></pre>
+
+<p>Masonry 之后会判断当前即将添加的约束是否是 size 类型的约束</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+if (!self.firstViewAttribute.isSizeAttribute &amp;&amp; !self.secondViewAttribute) {
+   secondLayoutItem = firstLayoutItem.superview;
+   secondLayoutAttribute = firstLayoutAttribute;
+}
+</code></pre>
+
+<p>如果不是 size 类型并且没有提供第二个 <code class="highlighter-rouge">viewAttribute</code>, (e.g. <code class="highlighter-rouge">make.left.equalTo(@10);</code>) 会自动将约束添加到 <code class="highlighter-rouge">superview</code> 上. 它等价于:</p>
+
+<pre><code class="language-objectivec">make.left.equalTo(superView.mas_left).with.offset(10);
+</code></pre>
+
+<p>然后就会初始化 <code class="highlighter-rouge">NSLayoutConstraint</code> 的子类 <code class="highlighter-rouge">MASLayoutConstraint</code>:</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+MASLayoutConstraint *layoutConstraint
+   = [MASLayoutConstraint constraintWithItem:firstLayoutItem
+                                   attribute:firstLayoutAttribute
+                                   relatedBy:self.layoutRelation
+                                      toItem:secondLayoutItem
+                                   attribute:secondLayoutAttribute
+                                  multiplier:self.layoutMultiplier
+                                    constant:self.layoutConstant];
+layoutConstraint.priority = self.layoutPriority;                                    
+</code></pre>
+
+<p>接下来它会寻找 <code class="highlighter-rouge">firstLayoutItem</code> 和 <code class="highlighter-rouge">secondLayoutItem</code> 两个视图的公共 <code class="highlighter-rouge">superview</code>, 相当于求两个数的最小公倍数.</p>
+
+<pre><code class="language-objectivec">// View+MASAdditions.m
+
+- (instancetype)mas_closestCommonSuperview:(MAS_VIEW *)view {
+    MAS_VIEW *closestCommonSuperview = nil;
+
+    MAS_VIEW *secondViewSuperview = view;
+    while (!closestCommonSuperview &amp;&amp; secondViewSuperview) {
+        MAS_VIEW *firstViewSuperview = self;
+        while (!closestCommonSuperview &amp;&amp; firstViewSuperview) {
+            if (secondViewSuperview == firstViewSuperview) {
+                closestCommonSuperview = secondViewSuperview;
+            }
+            firstViewSuperview = firstViewSuperview.superview;
+        }
+        secondViewSuperview = secondViewSuperview.superview;
+    }
+    return closestCommonSuperview;
+}
+</code></pre>
+
+<p>如果需要升级当前的约束就会获取原有的约束, 并替换为新的约束, 这样就不需要再次为 <code class="highlighter-rouge">view</code> 安装约束.</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+MASLayoutConstraint *existingConstraint = nil;
+if (self.updateExisting) {
+   existingConstraint = [self layoutConstraintSimilarTo:layoutConstraint];
+}
+if (existingConstraint) {
+   // just update the constant
+   existingConstraint.constant = layoutConstraint.constant;
+   self.layoutConstraint = existingConstraint;
+} else {
+   [self.installedView addConstraint:layoutConstraint];
+   self.layoutConstraint = layoutConstraint;
+}
+
+[firstLayoutItem.mas_installedConstraints addObject:self];
+</code></pre>
+
+<p>如果原来的 <code class="highlighter-rouge">view</code> 中不存在可以升级的约束, 或者没有调用 <code class="highlighter-rouge">mas_updateConstraint:</code> 方法, 那么就会在上一步寻找到的 <code class="highlighter-rouge">installedView</code> 上面添加约束.</p>
+
+<pre><code class="language-objectivec">[self.installedView addConstraint:layoutConstraint];
+</code></pre>
+
+<h2 id="其他问题">其他问题</h2>
+
+<p>到现在为止整个 Masonry 为视图添加约束的过程就已经完成了, 然而我们还有一些待解决的其它问题.</p>
+
+<h3 id="makeleftequalviewwithoffset30">make.left.equal(view).with.offset(30)</h3>
+
+<p>我们在前面的讨论中已经讨论了这个链式语法的前半部分, 但是在使用中也会”延长”这个链式语句, 比如添加 <code class="highlighter-rouge">with</code> <code class="highlighter-rouge">offset</code>.</p>
+
+<p>其实在 Masonry 中使用 <code class="highlighter-rouge">with</code> 并不是必须的, 它的作用仅仅是使代码更加的易读.</p>
+
+<blockquote>
+  <p>Optional semantic property which has no effect but improves the readability of constraint</p>
+</blockquote>
+
+<pre><code class="language-objectivec">// MASConstraint.m
+- (MASConstraint *)with {
+    return self;
+}
+
+- (MASConstraint *)and {
+    return self;
+}
+</code></pre>
+
+<p>与 <code class="highlighter-rouge">with</code> 有着相同作用的还有 <code class="highlighter-rouge">and</code>, 这两个方法都会直接返回 <code class="highlighter-rouge">MASConstraint</code>, 方法本身不做任何的修改.</p>
+
+<p>而 <code class="highlighter-rouge">offset</code> 方法其实是修改 <code class="highlighter-rouge">layoutConstraint</code> 中的常量, 因为 <code class="highlighter-rouge">self.layoutConstant</code> 在初始化时会被设置为 0, 我们可以通过修改 <code class="highlighter-rouge">offset</code> 属性来改变它.</p>
+
+<pre><code class="language-objectivec">// MASViewConstraint.m
+
+- (void)setOffset:(CGFloat)offset {
+    self.layoutConstant = offset;
+}
+</code></pre>
+
+<h3 id="mascompositeconstraint">MASCompositeConstraint</h3>
+
+<p><code class="highlighter-rouge">MASCompositeConstraint</code> 是一些 <code class="highlighter-rouge">MASConstraint</code> 的集合, 它能够提供一种更加便捷的方法同时为一个视图来添加多个约束.</p>
+
+<blockquote>
+  <p>A group of MASConstraint objects</p>
+</blockquote>
+
+<p>通过 <code class="highlighter-rouge">make</code> 直接调用 <code class="highlighter-rouge">edges</code> <code class="highlighter-rouge">size</code> <code class="highlighter-rouge">center</code> 时, 就会产生一个 <code class="highlighter-rouge">MASCompositeConstraint</code> 的实例, 而这个实例会初始化所有对应的单独的约束.</p>
+
+<pre><code class="language-objectivec">// MASConstraintMaker.m
+
+- (MASConstraint *)edges {
+    return [self addConstraintWithAttributes:MASAttributeTop | MASAttributeLeft | MASAttributeRight | MASAttributeBottom];
+}
+
+- (MASConstraint *)size {
+    return [self addConstraintWithAttributes:MASAttributeWidth | MASAttributeHeight];
+}
+
+- (MASConstraint *)center {
+    return [self addConstraintWithAttributes:MASAttributeCenterX | MASAttributeCenterY];
+}
+</code></pre>
+
+<p>这些属性都会调用 <code class="highlighter-rouge">addConstraintWithAttributes:</code> 方法, 生成多个属于 <code class="highlighter-rouge">MASCompositeConstraint</code> 的实例.</p>
+
+<pre><code class="language-objectivec">// MASConstraintMaker.m
+
+NSMutableArray *children = [NSMutableArray arrayWithCapacity:attributes.count];
+
+for (MASViewAttribute *a in attributes) {
+   [children addObject:[[MASViewConstraint alloc] initWithFirstViewAttribute:a]];
+}
+
+MASCompositeConstraint *constraint = [[MASCompositeConstraint alloc] initWithChildren:children];
+constraint.delegate = self;
+[self.constraints addObject:constraint];
+return constraint;
+</code></pre>
+
+<h3 id="mas_equalto">mas_equalTo</h3>
+
+<p>Masonry 中还有一个类似与 magic 的宏, 这个宏将 C 和 Objective-C 语言中的一些基本数据结构比如说 <code class="highlighter-rouge">double</code> <code class="highlighter-rouge">CGPoint</code> <code class="highlighter-rouge">CGSize</code> 这些值用 <code class="highlighter-rouge">NSValue</code> 进行包装.</p>
+
+<p>这是一种非常简洁的使用方式, 如果你对这个非常感兴趣, 可以看一下 <code class="highlighter-rouge">MASUtilities.h</code> 中的源代码, 在这里就不对这个做出解释了.</p>
+
+<h2 id="masonry-如何为视图添加约束面试回答">Masonry 如何为视图添加约束(面试回答)</h2>
+
+<p>Masonry 与其它的第三方开源框架一样选择了使用分类的方式为 UIKit 添加一个方法 <code class="highlighter-rouge">mas_makeConstraint</code>, 这个方法接受了一个 block, 这个 block 有一个 <code class="highlighter-rouge">MASConstraintMaker</code> 类型的参数, 这个 maker 会持有一个<strong>约束的数组</strong>, 这里保存着所有将被加入到视图中的约束.</p>
+
+<p>我们通过链式的语法配置 maker, 设置它的 <code class="highlighter-rouge">left</code> <code class="highlighter-rouge">right</code> 等属性, 比如说 <code class="highlighter-rouge">make.left.equalTo(view)</code>, 其实这个 <code class="highlighter-rouge">left</code> <code class="highlighter-rouge">equalTo</code> 还有像 <code class="highlighter-rouge">with</code> <code class="highlighter-rouge">offset</code> 之类的方法都会返回一个 <code class="highlighter-rouge">MASConstraint</code> 的实例, 所以在这里才可以用类似 Ruby 中链式的语法.</p>
+
+<p>在配置结束后, 首先会调用 maker 的 <code class="highlighter-rouge">install</code> 方法, 而这个 maker 的 <code class="highlighter-rouge">install</code> 方法会遍历其持有的约束数组, 对其中的每一个约束发送 <code class="highlighter-rouge">install</code> 消息. 在这里就会使用到在上一步中配置的属性, 初始化 <code class="highlighter-rouge">NSLayoutConstraint</code> 的子类 <code class="highlighter-rouge">MASLayoutConstraint</code> 并添加到合适的视图上.</p>
+
+<p>视图的选择会通过调用一个方法 <code class="highlighter-rouge">mas_closestCommonSuperview:</code> 来返回两个视图的<strong>最近公共父视图</strong>.</p>
+
+<h2 id="总结">总结</h2>
+
+<p>虽然 Masonry 这个框架中的代码并不是非常的多, 只有 1,2 万行的代码, 但是感觉这个项目阅读起来十分的困难, 没有 SDWebImage 清晰, 因为代码中类的属性非常的多, 而且有很多相似的属性会干扰我们对这个项目的阅读, 整个框架运用了大量的 block 语法进行回调.</p>
+
+<p>虽然代码十分整洁不过我觉得却降低了可读性, 但是还是那句话, 把简洁留给别人复杂留给自己, 只要为开发者提供简洁的接口就可以了.</p>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=iOS 源代码分析----Masonry&amp;url=ios-yuan-dai-ma-fen-xi-masonry"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=ios-yuan-dai-ma-fen-xi-masonry"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=ios-yuan-dai-ma-fen-xi-masonry"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-1">
+            <section class="post">
+                <h2>StackOverflow 黑魔法系列 <1></h2>
+                <p>最近看到了很多关于 iOS 开发的黑魔法, 发现最终的链接都是来自与 [stackoverflow](http://stackoverflow.com/), 我感觉需要在 stackoverflow 上这个社区逛一逛, 找一些比较~~屌~~神奇的黑魔法来分享一下, 也能够~~多两篇水文~~提高一下自己的水平, 当然我会在每一条"咒语"的后面加上原文的链接. ## 原子(atomic)和非原子(nonatomic)的区别是什么? ~~~objectivec @property(nonatomic,...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/guan-yu-xie-ios-wen-ti-de-jie-da">
+            <section class="post">
+                <h2>关于一些 iOS 面试问题的解答</h2>
+                <p>这篇 post 主要是对知乎上 iOS程序员的问题列表 的回答, 也算是对自己已有的知识进行整理. 如果你对本篇 post 中的回答有所疑问, 可以在下面留言. 如果有问题, 我一定会修改的 :-) 问题以及回答 1....</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>
