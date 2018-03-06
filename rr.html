@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>黑箱中的 retain 和 release</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//rr" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="黑箱中的 retain 和 release" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//rr" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="黑箱中的 retain 和 release" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//rr" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "黑箱中的 retain 和 release",
+    "url": "/reprinted//rr",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">黑箱中的 retain 和 release</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-05-30">30 May 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/rr">黑箱中的 retain 和 release</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+  <p>由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 <code class="highlighter-rouge">autorelease</code> 方法，另一部分分析 <code class="highlighter-rouge">retain</code>、<code class="highlighter-rouge">release</code> 方法的实现以及自动引用计数。</p>
+</blockquote>
+
+<ul>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/自动释放池的前世今生.md">自动释放池的前世今生</a></li>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/黑箱中的%20retain%20和%20release.md">黑箱中的 retain 和 release</a></li>
+</ul>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>在接口设计时，我们经常要考虑某些意义上的平衡。在内存管理中也是这样，Objective-C 同时为我们提供了增加引用计数的 <code class="highlighter-rouge">retain</code> 和减少引用计数的 <code class="highlighter-rouge">release</code> 方法。</p>
+
+<p>这篇文章会在源代码层面介绍 Objective-C 中 <code class="highlighter-rouge">retain</code> 和 <code class="highlighter-rouge">release</code> 的实现，它们是如何达到平衡的。</p>
+
+<h2 id="从-retain-开始">从 retain 开始</h2>
+
+<p>如今我们已经进入了全面使用 ARC 的时代，几年前还经常使用的 <code class="highlighter-rouge">retain</code> 和 <code class="highlighter-rouge">release</code> 方法已经很难出现于我们的视野中了，绝大多数内存管理的实现细节都由编译器代劳。</p>
+
+<p>在这里，我们还要从 <code class="highlighter-rouge">retain</code> 方法开始，对内存管理的实现细节一探究竟。</p>
+
+<p>下面是 <code class="highlighter-rouge">retain</code> 方法的调用栈：</p>
+
+<pre><code class="language-objectivec">- [NSObject retain]
+└── id objc_object::rootRetain()
+    └── id objc_object::rootRetain(bool tryRetain, bool handleOverflow)
+        ├── uintptr_t LoadExclusive(uintptr_t *src)
+        ├── uintptr_t addc(uintptr_t lhs, uintptr_t rhs, uintptr_t carryin, uintptr_t *carryout)
+        ├── uintptr_t bits
+        │   └── uintptr_t has_sidetable_rc  
+        ├── bool StoreExclusive(uintptr_t *dst, uintptr_t oldvalue, uintptr_t value)
+        └── bool objc_object::sidetable_addExtraRC_nolock(size_t delta_rc)                
+            └── uintptr_t addc(uintptr_t lhs, uintptr_t rhs, uintptr_t carryin, uintptr_t *carryout)
+</code></pre>
+
+<p>调用栈中的前两个方法的实现直接调用了下一个方法：</p>
+
+<pre><code class="language-objectivec">- (id)retain {
+    return ((id)self)-&gt;rootRetain();
+}
+
+id objc_object::rootRetain() {
+    return rootRetain(false, false);
+}
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">id objc_object::rootRetain(bool tryRetain, bool handleOverflow)</code> 方法是调用栈中最重要的方法，其原理就是将 <code class="highlighter-rouge">isa</code> 结构体中的 <code class="highlighter-rouge">extra_rc</code> 的值加一。</p>
+
+<p><code class="highlighter-rouge">extra_rc</code> 就是用于保存自动引用计数的标志位，下面就是 <code class="highlighter-rouge">isa</code> 结构体中的结构：</p>
+
+<p><img src="https://img.draveness.me/2016-05-27-objc-rr-isa-struct.png-1000width" alt="objc-rr-isa-struct" /></p>
+
+<p>接下来我们会分三种情况对 <code class="highlighter-rouge">rootRetain</code> 进行分析。</p>
+
+<h3 id="正常的-rootretain">正常的 rootRetain</h3>
+
+<p>这是简化后的 <code class="highlighter-rouge">rootRetain</code> 方法的实现，其中只有处理一般情况的代码：</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain(bool tryRetain, bool handleOverflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);
+    } while (!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    return (id)this;
+}
+</code></pre>
+
+<blockquote>
+  <p>在这里我们假设的条件是 <code class="highlighter-rouge">isa</code> 中的 <code class="highlighter-rouge">extra_rc</code> 的位数足以存储 <code class="highlighter-rouge">retainCount</code>。</p>
+</blockquote>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">LoadExclusive</code> 加载 <code class="highlighter-rouge">isa</code> 的值</li>
+  <li>调用 <code class="highlighter-rouge">addc(newisa.bits, RC_ONE, 0, &amp;carry)</code> 方法将 <code class="highlighter-rouge">isa</code> 的值加一</li>
+  <li>调用 <code class="highlighter-rouge">StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)</code> 更新 <code class="highlighter-rouge">isa</code> 的值</li>
+  <li>返回当前对象</li>
+</ol>
+
+<h3 id="有进位版本的-rootretain">有进位版本的 rootRetain</h3>
+
+<p>在这里调用 <code class="highlighter-rouge">addc</code> 方法为 <code class="highlighter-rouge">extra_rc</code> 加一时，8 位的 <code class="highlighter-rouge">extra_rc</code> 可能不足以保存引用计数。</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain(bool tryRetain, bool handleOverflow) {
+    transcribeToSideTable = false;
+    isa_t oldisa = LoadExclusive(&amp;isa.bits);
+    isa_t newisa = oldisa;
+
+    uintptr_t carry;
+    newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);
+
+    if (carry &amp;&amp; !handleOverflow)
+        return rootRetain_overflow(tryRetain);
+}
+</code></pre>
+
+<blockquote>
+  <p><code class="highlighter-rouge">extra_rc</code> 不足以保存引用计数，并且 <code class="highlighter-rouge">handleOverflow = false</code>。</p>
+</blockquote>
+
+<p>当方法传入的 <code class="highlighter-rouge">handleOverflow = false</code> 时（这也是通常情况），我们会调用 <code class="highlighter-rouge">rootRetain_overflow</code> 方法：</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain_overflow(bool tryRetain) {
+    return rootRetain(tryRetain, true);
+}
+</code></pre>
+
+<p>这个方法其实就是重新执行 <code class="highlighter-rouge">rootRetain</code> 方法，并传入 <code class="highlighter-rouge">handleOverflow = true</code>。</p>
+
+<h3 id="有进位版本的-rootretain处理溢出">有进位版本的 rootRetain（处理溢出）</h3>
+
+<p>当传入的 <code class="highlighter-rouge">handleOverflow = true</code> 时，我们就会在 <code class="highlighter-rouge">rootRetain</code> 方法中处理引用计数的溢出。</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain(bool tryRetain, bool handleOverflow) {
+    bool sideTableLocked = false;
+
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+        uintptr_t carry;
+        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);
+
+        if (carry) {
+            newisa.extra_rc = RC_HALF;
+            newisa.has_sidetable_rc = true;
+        }
+    } while (!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    sidetable_addExtraRC_nolock(RC_HALF);
+
+    return (id)this;
+}
+</code></pre>
+
+<p>当调用这个方法，并且 <code class="highlighter-rouge">handleOverflow = true</code> 时，我们就可以确定 <code class="highlighter-rouge">carry</code> 一定是存在的了，</p>
+
+<p>因为 <code class="highlighter-rouge">extra_rc</code> 已经溢出了，所以要更新它的值为 <code class="highlighter-rouge">RC_HALF</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define RC_HALF (1ULL&lt;&lt;7)
+</span></code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">extra_rc</code> 总共为 8 位，<code class="highlighter-rouge">RC_HALF = 0b10000000</code>。</p>
+</blockquote>
+
+<p>然后设置 <code class="highlighter-rouge">has_sidetable_rc</code> 为真，存储新的 <code class="highlighter-rouge">isa</code> 的值之后，调用 <code class="highlighter-rouge">sidetable_addExtraRC_nolock</code> 方法。</p>
+
+<pre><code class="language-objectivec">bool objc_object::sidetable_addExtraRC_nolock(size_t delta_rc) {
+    SideTable&amp; table = SideTables()[this];
+
+    size_t&amp; refcntStorage = table.refcnts[this];
+    size_t oldRefcnt = refcntStorage;
+
+    if (oldRefcnt &amp; SIDE_TABLE_RC_PINNED) return true;
+
+    uintptr_t carry;
+    size_t newRefcnt =
+        addc(oldRefcnt, delta_rc &lt;&lt; SIDE_TABLE_RC_SHIFT, 0, &amp;carry);
+    if (carry) {
+        refcntStorage = SIDE_TABLE_RC_PINNED | (oldRefcnt &amp; SIDE_TABLE_FLAG_MASK);
+        return true;
+    } else {
+        refcntStorage = newRefcnt;
+        return false;
+    }
+}
+</code></pre>
+
+<p>这里我们将溢出的一位 <code class="highlighter-rouge">RC_HALF</code> 添加到 <code class="highlighter-rouge">oldRefcnt</code> 中，其中的各种 <code class="highlighter-rouge">SIDE_TABLE</code> 宏定义如下：</p>
+
+<pre><code class="language-objectivec">#define SIDE_TABLE_WEAKLY_REFERENCED (1UL&lt;&lt;0)
+#define SIDE_TABLE_DEALLOCATING      (1UL&lt;&lt;1)
+#define SIDE_TABLE_RC_ONE            (1UL&lt;&lt;2)
+#define SIDE_TABLE_RC_PINNED         (1UL&lt;&lt;(WORD_BITS-1))
+
+#define SIDE_TABLE_RC_SHIFT 2
+#define SIDE_TABLE_FLAG_MASK (SIDE_TABLE_RC_ONE-1)
+</code></pre>
+
+<p>因为 <code class="highlighter-rouge">refcnts</code> 中的 64 为的最低两位是有意义的标志位，所以在使用 <code class="highlighter-rouge">addc</code> 时要将 <code class="highlighter-rouge">delta_rc</code> 左移两位，获得一个新的引用计数 <code class="highlighter-rouge">newRefcnt</code>。</p>
+
+<p>如果这时出现了溢出，那么就会撤销这次的行为。否则，会将新的引用计数存储到 <code class="highlighter-rouge">refcntStorage</code> 指针中。</p>
+
+<hr />
+
+<p>也就是说，在 iOS 的内存管理中，我们使用了 <code class="highlighter-rouge">isa</code> 结构体中的 <code class="highlighter-rouge">extra_rc</code> 和 <code class="highlighter-rouge">SideTable</code> 来存储某个对象的自动引用计数。</p>
+
+<p>更重要的是，<strong>如果自动引用计数为 1，<code class="highlighter-rouge">extra_rc</code> 实际上为 0</strong>，因为它保存的是额外的引用计数，我们通过这个行为能够减少很多不必要的函数调用。</p>
+
+<p>到目前为止，我们已经从头梳理了 <code class="highlighter-rouge">retain</code> 方法的调用栈及其实现。下面要介绍的是在内存管理中，我们是如何使用 <code class="highlighter-rouge">release</code> 方法平衡这个方法的。</p>
+
+<h2 id="以-release-结束">以 release 结束</h2>
+
+<p>与 release 方法相似，我们看一下这个方法简化后的调用栈：</p>
+
+<pre><code class="language-objectivec">- [NSObject release]
+└── id objc_object::rootRelease()
+    └── id objc_object::rootRetain(bool performDealloc, bool handleUnderflow)
+</code></pre>
+
+<p>前面的两个方法的实现和 <code class="highlighter-rouge">retain</code> 中的相差无几，这里就直接跳过了。</p>
+
+<p>同样，在分析 <code class="highlighter-rouge">release</code> 方法时，我们也根据上下文的不同，将 <code class="highlighter-rouge">release</code> 方法的实现拆分为三部分，说明它到底是如何调用的。</p>
+
+<h3 id="正常的-release">正常的 release</h3>
+
+<p>这一个版本的方法调用可以说是最简版本的方法调用了：</p>
+
+<pre><code class="language-objectivec">bool objc_object::rootRelease(bool performDealloc, bool handleUnderflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);
+    } while (!StoreReleaseExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    return false;
+}
+</code></pre>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">LoadExclusive</code> 获取 <code class="highlighter-rouge">isa</code> 内容</li>
+  <li>将 <code class="highlighter-rouge">isa</code> 中的引用计数减一</li>
+  <li>调用 <code class="highlighter-rouge">StoreReleaseExclusive</code> 方法保存新的 <code class="highlighter-rouge">isa</code></li>
+</ol>
+
+<h3 id="从-sidetable-借位">从 SideTable 借位</h3>
+
+<p>接下来，我们就要看两种相对比较复杂的情况了，首先是从 <code class="highlighter-rouge">SideTable</code> 借位的版本：</p>
+
+<pre><code class="language-objectivec">bool objc_object::rootRelease(bool performDealloc, bool handleUnderflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);
+        if (carry) goto underflow;
+    } while (!StoreReleaseExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    ...
+
+ underflow:
+    newisa = oldisa;
+
+    if (newisa.has_sidetable_rc) {
+        if (!handleUnderflow) {
+            return rootRelease_underflow(performDealloc);
+        }
+
+        size_t borrowed = sidetable_subExtraRC_nolock(RC_HALF);
+
+        if (borrowed &gt; 0) {
+            newisa.extra_rc = borrowed - 1;
+            bool stored = StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits);
+
+            return false;
+        }
+    }
+}
+</code></pre>
+
+<blockquote>
+  <p>这里省去了使用锁来<strong>防止竞争条件</strong>以及<strong>调用 <code class="highlighter-rouge">StoreExclusive</code> 失败后恢复现场</strong>的代码。
+我们会默认这里存在 <code class="highlighter-rouge">SideTable</code>，也就是 <code class="highlighter-rouge">has_sidetable_rc = true</code>。</p>
+</blockquote>
+
+<p>你可以看到，这里也有一个 <code class="highlighter-rouge">handleUnderflow</code>，与 retain 中的相同，如果发生了 <code class="highlighter-rouge">underflow</code>，会重新调用该 <code class="highlighter-rouge">rootRelease</code> 方法，并传入 <code class="highlighter-rouge">handleUnderflow = true</code>。</p>
+
+<p>在调用 <code class="highlighter-rouge">sidetable_subExtraRC_nolock</code> 成功借位之后，我们会重新设置 <code class="highlighter-rouge">newisa</code> 的值 <code class="highlighter-rouge">newisa.extra_rc = borrowed - 1</code> 并更新 <code class="highlighter-rouge">isa</code>。</p>
+
+<h3 id="release-中调用-dealloc">release 中调用 dealloc</h3>
+
+<p>如果在 <code class="highlighter-rouge">SideTable</code> 中也没有获取到借位的话，就说明没有任何的变量引用了当前对象（即 <code class="highlighter-rouge">retainCount = 0</code>），就需要向它发送 <code class="highlighter-rouge">dealloc</code> 消息了。</p>
+
+<pre><code class="language-objectivec">bool objc_object::rootRelease(bool performDealloc, bool handleUnderflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+ retry:
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);
+        if (carry) goto underflow;
+    } while (!StoreReleaseExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    ...
+
+ underflow:
+    newisa = oldisa;
+
+    if (newisa.deallocating) {
+        return overrelease_error();
+    }
+    newisa.deallocating = true;
+    StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits);
+
+    if (performDealloc) {
+        ((void(*)(objc_object *, SEL))objc_msgSend)(this, SEL_dealloc);
+    }
+    return true;
+}
+</code></pre>
+
+<p>上述代码会直接调用 <code class="highlighter-rouge">objc_msgSend</code> 向当前对象发送 <code class="highlighter-rouge">dealloc</code> 消息。</p>
+
+<p>不过为了确保消息只会发送一次，我们使用 <code class="highlighter-rouge">deallocating</code> 标记位。</p>
+
+<h2 id="获取自动引用计数">获取自动引用计数</h2>
+
+<p>在文章的最结尾，笔者想要介绍一下 <code class="highlighter-rouge">retainCount</code> 的值是怎么计算的，我们直接来看 <code class="highlighter-rouge">retainCount</code> 方法的实现：</p>
+
+<pre><code class="language-objectivec">- (NSUInteger)retainCount {
+    return ((id)self)-&gt;rootRetainCount();
+}
+
+inline uintptr_t objc_object::rootRetainCount() {
+    isa_t bits = LoadExclusive(&amp;isa.bits);
+    uintptr_t rc = 1 + bits.extra_rc;
+    if (bits.has_sidetable_rc) {
+        rc += sidetable_getExtraRC_nolock();
+    }
+    return rc;
+}
+</code></pre>
+
+<p>根据方法的实现，retainCount 有三部分组成：</p>
+
+<ul>
+  <li>1</li>
+  <li><code class="highlighter-rouge">extra_rc</code> 中存储的值</li>
+  <li><code class="highlighter-rouge">sidetable_getExtraRC_nolock</code> 返回的值</li>
+</ul>
+
+<p>这也就证明了我们之前得到的结论。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>我们在这篇文章中已经介绍了 <code class="highlighter-rouge">retain</code> 和 <code class="highlighter-rouge">release</code> 这一对用于内存管理的方法是如何实现的，这里总结一下文章一下比较重要的问题。</p>
+
+<ul>
+  <li><code class="highlighter-rouge">extra_rc</code> 只会保存额外的自动引用计数，对象实际的引用计数会在这个基础上 +1</li>
+  <li>Objective-C 使用 <code class="highlighter-rouge">isa</code> 中的 <code class="highlighter-rouge">extra_rc</code> 和 <code class="highlighter-rouge">SideTable</code> 来存储对象的引用计数</li>
+  <li>在对象的引用计数归零时，会调用 <code class="highlighter-rouge">dealloc</code> 方法回收对象</li>
+</ul>
+
+<p>有关于自动释放池实现的介绍，可以看<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/自动释放池的前世今生.md">自动释放池的前世今生</a>。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=黑箱中的 retain 和 release&amp;url=rr"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=rr"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=rr"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/ao">
+            <section class="post">
+                <h2>关联对象 AssociatedObject 完全解析</h2>
+                <p>> 转自：[关联对象 AssociatedObject 完全解析](https://draveness.me/ao) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > 我们在 iOS 开发中经常需要使用分类（Category），为已经存在的类添加属性的需求，但是使用 `@property` 并不能在分类中**正确**创建实例变量和存取方法。 不过，通过 Objective-C 运行时中的关联对象，也就是...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/autoreleasepool">
+            <section class="post">
+                <h2>自动释放池的前世今生 ---- 深入解析 autoreleasepool</h2>
+                <p>转自：自动释放池的前世今生 —- 深入解析 autoreleasepool 关注仓库，及时获得更新：iOS-Source-Code-Analyze 由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 autorelease 方法，另一部分分析 retain、release 方法的实现以及自动引用计数。 写在前面 这篇文章会在源代码层面介绍 Objective-C...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

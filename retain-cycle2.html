@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>检测 NSObject 对象持有的强指针</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//retain-cycle2" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="检测 NSObject 对象持有的强指针" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//retain-cycle2" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="检测 NSObject 对象持有的强指针" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//retain-cycle2" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "检测 NSObject 对象持有的强指针",
+    "url": "/reprinted//retain-cycle2",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">检测 NSObject 对象持有的强指针</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-08-01">01 Aug 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/retain-cycle2">检测 NSObject 对象持有的强指针</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>在上一篇文章中介绍了 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的基本工作原理，这一篇文章中我们开始分析它是如何从每一个对象中获得它持有的强指针的。</p>
+
+<blockquote>
+  <p>如果没有看第一篇文章这里还是最好看一下，了解一下 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的工作原理，<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/FBRetainCycleDetector/如何在%20iOS%20中解决循环引用的问题.md">如何在 iOS 中解决循环引用的问题</a>。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">FBRetainCycleDetector</code> 获取对象的强指针是通过 <code class="highlighter-rouge">FBObjectiveCObject</code> 类的 <code class="highlighter-rouge">- allRetainedObjects</code> 方法，这一方法是通过其父类 <code class="highlighter-rouge">FBObjectiveCGraphElement</code> 继承过来的，只是内部有着不同的实现。</p>
+
+<h2 id="allretainedobjects-方法">allRetainedObjects 方法</h2>
+
+<p>我们会以 <code class="highlighter-rouge">XXObject</code> 为例演示 <code class="highlighter-rouge">- allRetainedObjects</code> 方法的调用过程：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+
+@interface XXObject : NSObject
+
+@property (nonatomic, strong) id first;
+@property (nonatomic, weak)   id second;
+@property (nonatomic, strong) id third;
+@property (nonatomic, strong) id forth;
+@property (nonatomic, weak)   id fifth;
+@property (nonatomic, strong) id sixth;
+
+@end
+</code></pre>
+
+<p>使用 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的代码如下：</p>
+
+<pre><code class="language-objectivec">XXObject *object = [[XXObject alloc] init];
+
+FBRetainCycleDetector *detector = [FBRetainCycleDetector new];
+[detector addCandidate:object];
+__unused NSSet *cycles = [detector findRetainCycles];
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">FBObjectiveCObject</code> 中，<code class="highlighter-rouge">- allRetainedObjects</code> 方法只是调用了 <code class="highlighter-rouge">- _unfilteredRetainedObjects</code>，然后进行了过滤，文章主要会对 <code class="highlighter-rouge">- _unfilteredRetainedObjects</code> 的实现进行分析：</p>
+
+<pre><code class="language-objectivec">- (NSSet *)allRetainedObjects {
+	NSArray *unfiltered = [self _unfilteredRetainedObjects];
+	return [self filterObjects:unfiltered];
+}
+</code></pre>
+
+<p>方法 <code class="highlighter-rouge">- _unfilteredRetainedObjects</code> 的实现代码还是比较多的，这里会将代码分成几个部分，首先是最重要的部分：如何得到对象持有的强引用：</p>
+
+<pre><code class="language-objectivec">- (NSArray *)_unfilteredRetainedObjects
+	NSArray *strongIvars = FBGetObjectStrongReferences(self.object, self.configuration.layoutCache);
+
+	NSMutableArray *retainedObjects = [[[super allRetainedObjects] allObjects] mutableCopy];
+
+	for (id&lt;FBObjectReference&gt; ref in strongIvars) {
+		id referencedObject = [ref objectReferenceFromObject:self.object];
+
+		if (referencedObject) {
+			NSArray&lt;NSString *&gt; *namePath = [ref namePath];
+			FBObjectiveCGraphElement *element = FBWrapObjectGraphElementWithContext(self,
+																					referencedObject,
+																					self.configuration,
+																					namePath);
+			if (element) {
+				[retainedObjects addObject:element];
+			}
+		}
+	}
+
+	...
+}
+</code></pre>
+
+<p>获取强引用是通过 <code class="highlighter-rouge">FBGetObjectStrongReferences</code> 这一函数：</p>
+
+<pre><code class="language-objectivec">NSArray&lt;id&lt;FBObjectReference&gt;&gt; *FBGetObjectStrongReferences(id obj,
+															NSMutableDictionary&lt;Class, NSArray&lt;id&lt;FBObjectReference&gt;&gt; *&gt; *layoutCache) {
+	NSMutableArray&lt;id&lt;FBObjectReference&gt;&gt; *array = [NSMutableArray new];
+
+	__unsafe_unretained Class previousClass = nil;
+	__unsafe_unretained Class currentClass = object_getClass(obj);
+
+	while (previousClass != currentClass) {
+		NSArray&lt;id&lt;FBObjectReference&gt;&gt; *ivars;
+
+		if (layoutCache &amp;&amp; currentClass) {
+			ivars = layoutCache[currentClass];
+		}
+
+		if (!ivars) {
+			ivars = FBGetStrongReferencesForClass(currentClass);
+			if (layoutCache &amp;&amp; currentClass) {
+				layoutCache[(id&lt;NSCopying&gt;)currentClass] = ivars;
+			}
+		}
+		[array addObjectsFromArray:ivars];
+
+		previousClass = currentClass;
+		currentClass = class_getSuperclass(currentClass);
+	}
+
+	return [array copy];
+}
+</code></pre>
+
+<p>上面代码的核心部分是执行 <code class="highlighter-rouge">FBGetStrongReferencesForClass</code> 返回 <code class="highlighter-rouge">currentClass</code> 中的强引用，只是在这里我们递归地查找了所有父类的指针，并且加入了缓存以加速查找强引用的过程，接下来就是从对象的结构中获取强引用的过程了：</p>
+
+<pre><code class="language-objectivec">static NSArray&lt;id&lt;FBObjectReference&gt;&gt; *FBGetStrongReferencesForClass(Class aCls) {
+	NSArray&lt;id&lt;FBObjectReference&gt;&gt; *ivars = [FBGetClassReferences(aCls) filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+		if ([evaluatedObject isKindOfClass:[FBIvarReference class]]) {
+			FBIvarReference *wrapper = evaluatedObject;
+			return wrapper.type != FBUnknownType;
+		}
+		return YES;
+	}]];
+
+	const uint8_t *fullLayout = class_getIvarLayout(aCls);
+
+	if (!fullLayout) {
+		return nil;
+	}
+
+	NSUInteger minimumIndex = FBGetMinimumIvarIndex(aCls);
+	NSIndexSet *parsedLayout = FBGetLayoutAsIndexesForDescription(minimumIndex, fullLayout);
+
+	NSArray&lt;id&lt;FBObjectReference&gt;&gt; *filteredIvars =
+	[ivars filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id&lt;FBObjectReference&gt; evaluatedObject,
+																			 NSDictionary *bindings) {
+		return [parsedLayout containsIndex:[evaluatedObject indexInIvarLayout]];
+	}]];
+
+	return filteredIvars;
+}
+</code></pre>
+
+<p>该方法的实现大约有三个部分：</p>
+
+<ol>
+  <li>调用 <code class="highlighter-rouge">FBGetClassReferences</code> 从类中获取它指向的所有引用，无论是强引用或者是弱引用</li>
+  <li>调用 <code class="highlighter-rouge">FBGetLayoutAsIndexesForDescription</code> 从类的变量布局中获取强引用的位置信息</li>
+  <li>使用 <code class="highlighter-rouge">NSPredicate</code> 过滤数组中的弱引用</li>
+</ol>
+
+<h3 id="获取类的-ivar-数组">获取类的 Ivar 数组</h3>
+
+<p><code class="highlighter-rouge">FBGetClassReferences</code> 方法主要调用 runtime 中的 <code class="highlighter-rouge">class_copyIvarList</code> 得到类的所有 <code class="highlighter-rouge">ivar</code>：</p>
+
+<blockquote>
+  <p>这里省略对结构体属性的处理，因为太过复杂，并且涉及大量的C++ 代码，有兴趣的读者可以查看 <code class="highlighter-rouge">FBGetReferencesForObjectsInStructEncoding</code> 方法的实现。</p>
+</blockquote>
+
+<pre><code class="language-objectivec">NSArray&lt;id&lt;FBObjectReference&gt;&gt; *FBGetClassReferences(Class aCls) {
+	NSMutableArray&lt;id&lt;FBObjectReference&gt;&gt; *result = [NSMutableArray new];
+
+	unsigned int count;
+	Ivar *ivars = class_copyIvarList(aCls, &amp;count);
+
+	for (unsigned int i = 0; i &lt; count; ++i) {
+		Ivar ivar = ivars[i];
+		FBIvarReference *wrapper = [[FBIvarReference alloc] initWithIvar:ivar];
+		[result addObject:wrapper];
+	}
+	free(ivars);
+
+	return [result copy];
+}
+</code></pre>
+
+<p>上述实现还是非常直接的，遍历 <code class="highlighter-rouge">ivars</code> 数组，使用 <code class="highlighter-rouge">FBIvarReference</code> 将其包装起来然后加入 <code class="highlighter-rouge">result</code> 中，其中的类 <code class="highlighter-rouge">FBIvarReference</code> 仅仅起到了一个包装的作用，将 Ivar 中保存的各种属性全部保存起来：</p>
+
+<pre><code class="language-objectivec">typedef NS_ENUM(NSUInteger, FBType) {
+  FBObjectType,
+  FBBlockType,
+  FBStructType,
+  FBUnknownType,
+};
+
+@interface FBIvarReference : NSObject &lt;FBObjectReference&gt;
+
+@property (nonatomic, copy, readonly, nullable) NSString *name;
+@property (nonatomic, readonly) FBType type;
+@property (nonatomic, readonly) ptrdiff_t offset;
+@property (nonatomic, readonly) NSUInteger index;
+@property (nonatomic, readonly, nonnull) Ivar ivar;
+
+- (nonnull instancetype)initWithIvar:(nonnull Ivar)ivar;
+
+@end
+</code></pre>
+
+<p>包括属性的名称、类型、偏移量以及索引，类型是通过<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html">类型编码</a>来获取的，在 <code class="highlighter-rouge">FBIvarReference</code> 的实例初始化时，会通过私有方法 <code class="highlighter-rouge">- _convertEncodingToType:</code> 将类型编码转换为枚举类型：</p>
+
+<pre><code class="language-objectivec">- (FBType)_convertEncodingToType:(const char *)typeEncoding {
+	if (typeEncoding[0] == '{') return FBStructType;
+
+	if (typeEncoding[0] == '@') {
+		if (strncmp(typeEncoding, "@?", 2) == 0) return FBBlockType;
+		return FBObjectType;
+	}
+
+	return FBUnknownType;
+}
+</code></pre>
+
+<p>当代码即将从 <code class="highlighter-rouge">FBGetClassReferences</code> 方法中返回时，使用 lldb 打印 <code class="highlighter-rouge">result</code> 中的所有元素：</p>
+
+<p><img src="https://img.draveness.me/2016-08-01-get-ivars.png-1000width" alt="get-ivars" /></p>
+
+<p>上述方法成功地从 <code class="highlighter-rouge">XXObject</code> 类中获得了正确的属性数组，不过这些数组中不止包含了强引用，还有被 <code class="highlighter-rouge">weak</code> 标记的弱引用：</p>
+
+<pre><code class="language-objectivec">&lt;__NSArrayM 0x7fdac0f31860&gt;(
+	[_first,  index: 1],
+	[_second, index: 2],
+	[_third,  index: 3],
+	[_forth,  index: 4],
+	[_fifth,  index: 5],
+	[_sixth,  index: 6]
+)
+</code></pre>
+
+<h3 id="获取-ivar-layout">获取 Ivar Layout</h3>
+
+<p>当我们取出了 <code class="highlighter-rouge">XXObject</code> 中所有的属性之后，还需要对其中的属性进行过滤；那么我们如何判断一个属性是强引用还是弱引用呢？Objective-C 中引入了 Ivar Layout 的概念，对类中的各种属性的强弱进行描述。</p>
+
+<p>它是如何工作的呢，我们先继续执行 <code class="highlighter-rouge">FBGetStrongReferencesForClass</code> 方法：</p>
+
+<p><img src="https://img.draveness.me/2016-08-01-get-ivar-layout.png-1000width" alt="get-ivar-layout" /></p>
+
+<p>在 ObjC 运行时中的 <code class="highlighter-rouge">class_getIvarLayout</code> 可以获取某一个类的 Ivar Layout，而 <code class="highlighter-rouge">XXObject</code> 的 Ivar Layout 是什么样的呢？</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">lldb</span><span class="p">)</span> <span class="n">po</span> <span class="n">fullLayout</span>
+<span class="s">"</span><span class="se">\x01\x12\x11</span><span class="s">"</span>
+</code></pre></div></div>
+
+<p>Ivar Layout 就是一系列的字符，每两个一组，比如 <code class="highlighter-rouge">\xmn</code>，每一组 Ivar Layout 中第一位表示有 <code class="highlighter-rouge">m</code> 个非强属性，第二位表示接下来有 <code class="highlighter-rouge">n</code> 个强属性；如果没有明白，我们以 <code class="highlighter-rouge">XXObject</code> 为例演示一下：</p>
+
+<pre><code class="language-objectivec">@interface XXObject : NSObject
+
+@property (nonatomic, strong) id first;
+@property (nonatomic, weak)   id second;
+@property (nonatomic, strong) id third;
+@property (nonatomic, strong) id forth;
+@property (nonatomic, weak)   id fifth;
+@property (nonatomic, strong) id sixth;
+
+@end
+</code></pre>
+
+<ul>
+  <li>第一组的 <code class="highlighter-rouge">\x01</code> 表示有 0 个非强属性，然后有 1 个强属性 <code class="highlighter-rouge">first</code></li>
+  <li>第二组的 <code class="highlighter-rouge">\x12</code> 表示有 1 个非强属性 <code class="highlighter-rouge">second</code>，然后有 2 个强属性 <code class="highlighter-rouge">third</code> <code class="highlighter-rouge">forth</code></li>
+  <li>第三组的 <code class="highlighter-rouge">\x11</code> 表示有 1 个非强属性 <code class="highlighter-rouge">fifth</code>, 然后有 1 个强属性 <code class="highlighter-rouge">sixth</code></li>
+</ul>
+
+<p>在对 Ivar Layout 有一定了解之后，我们可以继续对 <code class="highlighter-rouge">FBGetStrongReferencesForClass</code> 分析了，下面要做的就是使用 Ivar Layout 提供的信息过滤其中的所有非强引用，而这就需要两个方法的帮助，首先需要 <code class="highlighter-rouge">FBGetMinimumIvarIndex</code> 方法获取变量索引的最小值：</p>
+
+<pre><code class="language-objectivec">static NSUInteger FBGetMinimumIvarIndex(__unsafe_unretained Class aCls) {
+	NSUInteger minimumIndex = 1;
+	unsigned int count;
+	Ivar *ivars = class_copyIvarList(aCls, &amp;count);
+
+	if (count &gt; 0) {
+		Ivar ivar = ivars[0];
+		ptrdiff_t offset = ivar_getOffset(ivar);
+		minimumIndex = offset / (sizeof(void *));
+	}
+
+	free(ivars);
+
+	return minimumIndex;
+}
+</code></pre>
+
+<p>然后执行 <code class="highlighter-rouge">FBGetLayoutAsIndexesForDescription(minimumIndex, fullLayout)</code> 获取所有强引用的 <code class="highlighter-rouge">NSRange</code>：</p>
+
+<pre><code class="language-objectivec">static NSIndexSet *FBGetLayoutAsIndexesForDescription(NSUInteger minimumIndex, const uint8_t *layoutDescription) {
+	NSMutableIndexSet *interestingIndexes = [NSMutableIndexSet new];
+	NSUInteger currentIndex = minimumIndex;
+
+	while (*layoutDescription != '\x00') {
+		int upperNibble = (*layoutDescription &amp; 0xf0) &gt;&gt; 4;
+		int lowerNibble = *layoutDescription &amp; 0xf;
+
+		currentIndex += upperNibble;
+		[interestingIndexes addIndexesInRange:NSMakeRange(currentIndex, lowerNibble)];
+		currentIndex += lowerNibble;
+
+		++layoutDescription;
+	}
+
+	return interestingIndexes;
+}
+</code></pre>
+
+<p>因为高位表示非强引用的数量，所以我们要加上 <code class="highlighter-rouge">upperNibble</code>，然后 <code class="highlighter-rouge">NSMakeRange(currentIndex, lowerNibble)</code> 就是强引用的范围；略过 <code class="highlighter-rouge">lowerNibble</code> 长度的索引，移动 <code class="highlighter-rouge">layoutDescription</code> 指针，直到所有的 <code class="highlighter-rouge">NSRange</code> 都加入到了 <code class="highlighter-rouge">interestingIndexes</code> 这一集合中，就可以返回了。</p>
+
+<h3 id="过滤数组中的弱引用">过滤数组中的弱引用</h3>
+
+<p>在上一阶段由于已经获取了强引用的范围，在这里我们直接使用 <code class="highlighter-rouge">NSPredicate</code> 谓词来进行过滤就可以了：</p>
+
+<pre><code class="language-objectivec">NSArray&lt;id&lt;FBObjectReference&gt;&gt; *filteredIvars =
+[ivars filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id&lt;FBObjectReference&gt; evaluatedObject,
+																		 NSDictionary *bindings) {
+	return [parsedLayout containsIndex:[evaluatedObject indexInIvarLayout]];
+}]];
+</code></pre>
+
+<p><img src="https://img.draveness.me/2016-08-01-filtered-ivars.png-1000width" alt="filtered-ivars" /></p>
+
+<p>====</p>
+
+<p>接下来，我们回到文章开始的 <code class="highlighter-rouge">- _unfilteredRetainedObjects</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (NSSet *)allRetainedObjects {
+	NSArray *strongIvars = FBGetObjectStrongReferences(self.object, self.configuration.layoutCache);
+
+	NSMutableArray *retainedObjects = [[[super allRetainedObjects] allObjects] mutableCopy];
+
+	for (id&lt;FBObjectReference&gt; ref in strongIvars) {
+		id referencedObject = [ref objectReferenceFromObject:self.object];
+
+		if (referencedObject) {
+			NSArray&lt;NSString *&gt; *namePath = [ref namePath];
+			FBObjectiveCGraphElement *element = FBWrapObjectGraphElementWithContext(self,
+																					referencedObject,
+																					self.configuration,
+																					namePath);
+			if (element) {
+				[retainedObjects addObject:element];
+			}
+		}
+	}
+
+	...
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">FBGetObjectStrongReferences</code> 只是返回 <code class="highlighter-rouge">id&lt;FBObjectReference&gt;</code> 对象，还需要 <code class="highlighter-rouge">FBWrapObjectGraphElementWithContext</code> 把它进行包装成 <code class="highlighter-rouge">FBObjectiveCGraphElement</code>：</p>
+
+<pre><code class="language-objectivec">FBObjectiveCGraphElement *FBWrapObjectGraphElementWithContext(id object,
+															  FBObjectGraphConfiguration *configuration,
+															  NSArray&lt;NSString *&gt; *namePath) {
+	if (FBObjectIsBlock((__bridge void *)object)) {
+		return [[FBObjectiveCBlock alloc] initWithObject:object
+										   configuration:configuration
+												namePath:namePath];
+	} else {
+		if ([object_getClass(object) isSubclassOfClass:[NSTimer class]] &amp;&amp;
+			configuration.shouldInspectTimers) {
+			return [[FBObjectiveCNSCFTimer alloc] initWithObject:object
+												   configuration:configuration
+														namePath:namePath];
+		} else {
+			return [[FBObjectiveCObject alloc] initWithObject:object
+												configuration:configuration
+													 namePath:namePath];
+		}
+	}
+}
+</code></pre>
+
+<p>最后会把封装好的实例添加到 <code class="highlighter-rouge">retainedObjects</code> 数组中。</p>
+
+<p><code class="highlighter-rouge">- _unfilteredRetainedObjects</code> 同时也要处理集合类，比如数组或者字典，但是如果是无缝桥接的 CF 集合，或者是元类，虽然它们可能遵循 <code class="highlighter-rouge">NSFastEnumeration</code> 协议，但是在这里并不会对它们进行处理：</p>
+
+<pre><code class="language-objectivec">- (NSArray *)_unfilteredRetainedObjects {
+	...
+
+	if ([NSStringFromClass(aCls) hasPrefix:@"__NSCF"]) {
+		return retainedObjects;
+	}
+
+	if (class_isMetaClass(aCls)) {
+		return nil;
+	}
+
+	...
+}
+</code></pre>
+
+<p>在遍历内容时，Mutable 的集合类中的元素可能会改变，所以会重试多次以确保集合类中的所有元素都被获取到了：</p>
+
+<pre><code class="language-objectivec">- (NSArray *)_unfilteredRetainedObjects {
+	...
+
+	if ([aCls conformsToProtocol:@protocol(NSFastEnumeration)]) {
+
+		NSInteger tries = 10;
+		for (NSInteger i = 0; i &lt; tries; ++i) {
+			NSMutableSet *temporaryRetainedObjects = [NSMutableSet new];
+			@try {
+				for (id subobject in self.object) {
+					[temporaryRetainedObjects addObject:FBWrapObjectGraphElement(subobject, self.configuration)];
+					[temporaryRetainedObjects addObject:FBWrapObjectGraphElement([self.object objectForKey:subobject], self.configuration)];
+				}
+			}
+			@catch (NSException *exception) {
+				continue;
+			}
+
+			[retainedObjects addObjectsFromArray:[temporaryRetainedObjects allObjects]];
+			break;
+		}
+	}
+
+	return retainedObjects;
+}
+</code></pre>
+
+<p>这里将遍历集合中的元素的代码放入了 <code class="highlighter-rouge">@try</code> 中，如果在遍历时插入了其它元素，就会抛出异常，然后 <code class="highlighter-rouge">continue</code> 重新遍历集合，最后返回所有持有的对象。</p>
+
+<p>最后的过滤部分会使用 <code class="highlighter-rouge">FBObjectGraphConfiguration</code> 中的 <code class="highlighter-rouge">filterBlocks</code> 将不需要加入集合中的元素过滤掉：</p>
+
+<pre><code class="language-objectivec">- (NSSet *)filterObjects:(NSArray *)objects {
+	NSMutableSet *filtered = [NSMutableSet new];
+
+	for (FBObjectiveCGraphElement *reference in objects) {
+		if (![self _shouldBreakGraphEdgeFromObject:self toObject:reference]) {
+			[filtered addObject:reference];
+		}
+	}
+
+	return filtered;
+}
+
+- (BOOL)_shouldBreakGraphEdgeFromObject:(FBObjectiveCGraphElement *)fromObject
+							   toObject:(FBObjectiveCGraphElement *)toObject {
+	for (FBGraphEdgeFilterBlock filterBlock in _configuration.filterBlocks) {
+		if (filterBlock(fromObject, toObject) == FBGraphEdgeInvalid) return YES;
+	}
+
+	return NO;
+}
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p><code class="highlighter-rouge">FBRetainCycleDetector</code> 在对象中查找强引用取决于类的 Ivar Layout，它为我们提供了与属性引用强弱有关的信息，帮助筛选强引用。</p>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=检测 NSObject 对象持有的强指针&amp;url=retain-cycle2"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=retain-cycle2"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=retain-cycle2"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/retain-cycle3">
+            <section class="post">
+                <h2>如何实现 iOS 中的 Associated Object</h2>
+                <p>> 转自：[如何实现 iOS 中的 Associated Object](https://draveness.me/retain-cycle3) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > 这一篇文章是对 [FBRetainCycleDetector]([https://github.com/facebook/FBRetainCycleDetector]) 中实现的关联对象机制的分析；因为追踪的需要， FBRetainCycleDetector 重新实现了关联对象，本文主要就是对其实现关联对象的方法进行分析。 文章中涉及的类主要就是...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/retain-cycle1">
+            <section class="post">
+                <h2>如何在 iOS 中解决循环引用的问题</h2>
+                <p>转自：如何在 iOS 中解决循环引用的问题 关注仓库，及时获得更新：iOS-Source-Code-Analyze 稍有常识的人都知道在 iOS 开发时，我们经常会遇到循环引用的问题，比如两个强指针相互引用，但是这种简单的情况作为稍有经验的开发者都会轻松地查找出来。 但是遇到下面这样的情况，如果只看其实现代码，也很难仅仅凭借肉眼上的观察以及简单的推理就能分析出其中存在的循环引用问题，更何况真实情况往往比这复杂的多： testObject1.object = testObject2; testObject1.secondObject = testObject3; testObject2.object...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

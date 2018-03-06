@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>动态修改 C 语言函数的实现</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//fishhook" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="动态修改 C 语言函数的实现" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//fishhook" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="动态修改 C 语言函数的实现" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//fishhook" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "动态修改 C 语言函数的实现",
+    "url": "/reprinted//fishhook",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">动态修改 C 语言函数的实现</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-07-26">26 Jul 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/fishhook">动态修改 C 语言函数的实现</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>Objective-C 作为基于 Runtime 的语言，它有非常强大的动态特性，可以在运行期间自省、进行方法调剂、为类增加属性、修改消息转发链路，在代码运行期间通过 Runtime 几乎可以修改 Objecitve-C 层的一切类、方法以及属性。</p>
+
+<blockquote>
+  <p>真正绝对意义上的动态语言或者静态语言是不存在的。</p>
+</blockquote>
+
+<p>C 语言往往会给我们留下<strong>不可修改</strong>的这一印象；在之前的几年时间里，笔者确实也是这么认为的，然而最近接触到的 <a href="https://github.com/facebook/fishhook">fishhook</a> 使我对 <strong>C 语言的不可修改</strong>有了更加深刻的理解。</p>
+
+<blockquote>
+  <p>在文章中涉及到一个比较重要的概念，就是镜像（image）；在 Mach-O 文件系统中，所有的可执行文件、dylib 以及 Bundle 都是镜像。</p>
+</blockquote>
+
+<h2 id="fishhook-简介">fishhook 简介</h2>
+
+<p>到这里，我们该简单介绍一下今天分享的 fishhook；fishhook 是一个由 facebook 开源的第三方框架，其主要作用就是<strong>动态修改 C 语言函数实现</strong>。</p>
+
+<p>这个框架的代码其实非常的简单，只包含两个文件：<code class="highlighter-rouge">fishhook.c</code> 以及 <code class="highlighter-rouge">fishhook.h</code>；两个文件所有的代码加起来也不超过 300 行。</p>
+
+<p>不过它的实现原理是非常有意思并且精妙的，我们可以从 <code class="highlighter-rouge">fishhook</code> 提供的接口中入手。</p>
+
+<h2 id="从接口开始">从接口开始</h2>
+
+<p>fishhook 提供非常简单的两个接口以及一个结构体：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">rebinding</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+	<span class="kt">void</span> <span class="o">*</span><span class="n">replacement</span><span class="p">;</span>
+	<span class="kt">void</span> <span class="o">**</span><span class="n">replaced</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">rebind_symbols</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebinding</span> <span class="n">rebindings</span><span class="p">[],</span> <span class="kt">size_t</span> <span class="n">rebindings_nel</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">rebind_symbols_image</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span>
+						 <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">,</span>
+						 <span class="k">struct</span> <span class="n">rebinding</span> <span class="n">rebindings</span><span class="p">[],</span>
+						 <span class="kt">size_t</span> <span class="n">rebindings_nel</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>其中 <code class="highlighter-rouge">rebind_symbols</code> 接收一个 <code class="highlighter-rouge">rebindings</code> 数组，也就是重新绑定信息，还有就是 <code class="highlighter-rouge">rebindings_nel</code>，也就是 <code class="highlighter-rouge">rebindings</code> 的个数。</p>
+
+<h2 id="使用-fishhook-修改-c-函数">使用 fishhook 修改 C 函数</h2>
+
+<p>使用 fishhook 修改 C 函数很容易，我们使用它提供的几个范例来介绍它的使用方法。</p>
+
+<p>这里要修改的是底层的 <code class="highlighter-rouge">open</code> 函数的实现，首先在工程中引入 <code class="highlighter-rouge">fishhook.h</code> 头文件，然后声明一个与原函数签名相同的函数指针：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import "fishhook.h"
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">origianl_open</span><span class="p">)(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="p">...);</span>
+</code></pre></div></div>
+
+<p>然后重新实现 <code class="highlighter-rouge">new_open</code> 函数：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">new_open</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="kt">int</span> <span class="n">oflag</span><span class="p">,</span> <span class="p">...)</span> <span class="p">{</span>
+	<span class="kt">va_list</span> <span class="n">ap</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+	<span class="n">mode_t</span> <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+	<span class="k">if</span> <span class="p">((</span><span class="n">oflag</span> <span class="o">&amp;</span> <span class="n">O_CREAT</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+		<span class="c1">// mode only applies to O_CREAT
+</span>		<span class="n">va_start</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">oflag</span><span class="p">);</span>
+		<span class="n">mode</span> <span class="o">=</span> <span class="n">va_arg</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+		<span class="n">va_end</span><span class="p">(</span><span class="n">ap</span><span class="p">);</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"Calling real open('%s', %d, %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+		<span class="k">return</span> <span class="n">orig_open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"Calling real open('%s', %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">);</span>
+		<span class="k">return</span> <span class="n">orig_open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里调用的 <code class="highlighter-rouge">original_open</code> 其实相当于执行原 <code class="highlighter-rouge">open</code>；最后，在 main 函数中使用 <code class="highlighter-rouge">rebind_symbols</code> 对符号进行重绑定：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 初始化一个 rebinding 结构体
+</span><span class="k">struct</span> <span class="n">rebinding</span> <span class="n">open_rebinding</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"open"</span><span class="p">,</span> <span class="n">new_open</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">original_open</span> <span class="p">};</span>
+
+<span class="c1">// 将结构体包装成数组，并传入数组的大小，对原符号 open 进行重绑定
+</span><span class="n">rebind_symbols</span><span class="p">((</span><span class="k">struct</span> <span class="n">rebinding</span><span class="p">[</span><span class="mi">1</span><span class="p">]){</span><span class="n">open_rebinding</span><span class="p">},</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// 调用 open 函数
+</span><span class="n">__unused</span> <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>在对符号进行重绑定之后，所有调用 <code class="highlighter-rouge">open</code> 函数的地方实际上都会执行 <code class="highlighter-rouge">new_open</code> 的实现，也就完成了对 <code class="highlighter-rouge">open</code> 的修改。</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-result.png-1000width" alt="fishhook-result" /></p>
+
+<p>程序运行之后打印了 <code class="highlighter-rouge">Calling real open('/Users/apple/Library/Developer/Xcode/DerivedData/Demo-cdnoozusghmqtubdnbzedzdwaagp/Build/Products/Debug/Demo', 0)</code> 说明我们的对 <code class="highlighter-rouge">open</code> 函数的修改达到了预期的效果。</p>
+
+<blockquote>
+  <p>整个 main.m 文件中的代码在文章的最后面 <a href="#main.m">main.m</a></p>
+</blockquote>
+
+<h2 id="fishhook-的原理以及实现">fishhook 的原理以及实现</h2>
+
+<p>在介绍 fishhook 具体实现原理之前，有几个非常重要的知识需要我们了解，那就是 <strong>dyld</strong>、动态链接以及 Mach-O 文件系统。</p>
+
+<h3 id="dyld-与动态链接">dyld 与动态链接</h3>
+
+<p>dyld 是 the dynamic link editor 的缩写<del>（笔者并不知道为什么要这么缩写）</del>。至于它的作用，简单一点说，就是负责将各种各样程序需要的<strong>镜像</strong>加载到程序运行的内存空间中，<strong>这个过程发生的时间非常早 — 在 objc 运行时初始化之前</strong>。</p>
+
+<p>在 dyld 加载镜像时，会执行注册过的回调函数；当然，我们也可以使用下面的方法注册自定义的回调函数，<strong>同时也会为所有已经加载的镜像执行回调</strong>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">extern</span> <span class="kt">void</span> <span class="n">_dyld_register_func_for_add_image</span><span class="p">(</span>
+	<span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">func</span><span class="p">)(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span><span class="o">*</span> <span class="n">mh</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">vmaddr_slide</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre></div></div>
+
+<p>对于每一个已经存在的镜像，当它被<strong>动态链接</strong>时，都会执行回调 <code class="highlighter-rouge">void (*func)(const struct mach_header* mh, intptr_t vmaddr_slide)</code>，传入文件的 <code class="highlighter-rouge">mach_header</code> 以及一个虚拟内存地址 <code class="highlighter-rouge">intptr_t</code>。</p>
+
+<p>以一个最简单的 Hello World 程序为例：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"Hello, World!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>代码中只引用了一个 <code class="highlighter-rouge">stdio</code> 库中的函数 <code class="highlighter-rouge">printf</code>；我们如果 Build 这段代码，生成可执行文件之后，使用下面的命令 <code class="highlighter-rouge">nm</code>：</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>nm <span class="nt">-nm</span> HelloWorld
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">nm</code> 命令可以查看可执行文件中的符号（对 <code class="highlighter-rouge">nm</code> 不熟悉的读者可以在终端中使用 <code class="highlighter-rouge">man nm</code> 查看手册）：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>				 <span class="p">(</span><span class="n">undefined</span><span class="p">)</span> <span class="n">external</span> <span class="n">_printf</span> <span class="p">(</span><span class="n">from</span> <span class="n">libSystem</span><span class="p">)</span>
+				 <span class="p">(</span><span class="n">undefined</span><span class="p">)</span> <span class="n">external</span> <span class="n">dyld_stub_binder</span> <span class="p">(</span><span class="n">from</span> <span class="n">libSystem</span><span class="p">)</span>
+<span class="mo">0000000100000000</span> <span class="p">(</span><span class="n">__TEXT</span><span class="p">,</span><span class="n">__text</span><span class="p">)</span> <span class="p">[</span><span class="n">referenced</span> <span class="n">dynamically</span><span class="p">]</span> <span class="n">external</span> <span class="n">__mh_execute_header</span>
+<span class="mo">0000000100000</span><span class="n">f50</span> <span class="p">(</span><span class="n">__TEXT</span><span class="p">,</span><span class="n">__text</span><span class="p">)</span> <span class="n">external</span> <span class="n">_main</span>
+</code></pre></div></div>
+
+<p>在可执行文件中的符号列表中，<code class="highlighter-rouge">_printf</code> 这个符号是未定义（undefined）的，换句话说，编译器还不知道这个符号对应什么东西。</p>
+
+<p>但是，如果在文件中加入一个 C 函数 <code class="highlighter-rouge">hello_world</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">void</span> <span class="nf">hello_world</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"Hello, World!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"Hello, World!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在构建之后，同样使用 <code class="highlighter-rouge">nm</code> 查看其中的符号：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>				 <span class="p">(</span><span class="n">undefined</span><span class="p">)</span> <span class="n">external</span> <span class="n">_printf</span> <span class="p">(</span><span class="n">from</span> <span class="n">libSystem</span><span class="p">)</span>
+				 <span class="p">(</span><span class="n">undefined</span><span class="p">)</span> <span class="n">external</span> <span class="n">dyld_stub_binder</span> <span class="p">(</span><span class="n">from</span> <span class="n">libSystem</span><span class="p">)</span>
+<span class="mo">0000000100000000</span> <span class="p">(</span><span class="n">__TEXT</span><span class="p">,</span><span class="n">__text</span><span class="p">)</span> <span class="p">[</span><span class="n">referenced</span> <span class="n">dynamically</span><span class="p">]</span> <span class="n">external</span> <span class="n">__mh_execute_header</span>
+<span class="mo">0000000100000</span><span class="n">f30</span> <span class="p">(</span><span class="n">__TEXT</span><span class="p">,</span><span class="n">__text</span><span class="p">)</span> <span class="n">external</span> <span class="n">_hello_world</span>
+<span class="mo">0000000100000</span><span class="n">f50</span> <span class="p">(</span><span class="n">__TEXT</span><span class="p">,</span><span class="n">__text</span><span class="p">)</span> <span class="n">external</span> <span class="n">_main</span>
+</code></pre></div></div>
+
+<p>我们的符号 <code class="highlighter-rouge">_hello_world</code> 并不是未定义的（undefined），它包含一个内存地址以及 <code class="highlighter-rouge">__TEXT</code> 段。也就是说<strong>手写的一些函数，在编译之后，其地址并不是未定义的</strong>，这一点对于之后分析 fishhook 有所帮助。</p>
+
+<p>使用 <code class="highlighter-rouge">nm</code> 打印出的另一个符号 <code class="highlighter-rouge">dyld_stub_binder</code> 对应另一个同名函数。<code class="highlighter-rouge">dyld_stub_binder</code> 会在目标符号（例如 <code class="highlighter-rouge">printf</code>）被调用时，将其链接到指定的动态链接库 <code class="highlighter-rouge">libSystem</code>，再执行 <code class="highlighter-rouge">printf</code> 的实现（<code class="highlighter-rouge">printf</code> 符号位于 <code class="highlighter-rouge">__DATA</code> 端中的 lazy 符号表中）：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-symbol.png-1000width" alt="fishhook-symbo" /></p>
+
+<p>每一个镜像中的 <code class="highlighter-rouge">__DATA</code> 端都包含两个与动态链接有关的表，其中一个是 <code class="highlighter-rouge">__nl_symbol_ptr</code>，另一个是 <code class="highlighter-rouge">__la_symbol_ptr</code>：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">__nl_symbol_ptr</code> 中的 non-lazy 符号是在动态链接库绑定的时候进行加载的</li>
+  <li><code class="highlighter-rouge">__la_symbol_ptr</code> 中的符号会在该符号被第一次调用时，通过 dyld 中的 <code class="highlighter-rouge">dyld_stub_binder</code> 过程来进行加载</li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mo">0000000100001010</span>    <span class="n">dq</span>  <span class="mh">0x0000000100000f9c</span>  <span class="p">;</span> <span class="n">XREF</span><span class="o">=</span><span class="mh">0x1000002f8</span><span class="p">,</span> <span class="n">imp___stubs__printf</span>
+</code></pre></div></div>
+
+<p>地址 <code class="highlighter-rouge">0x0000000100000f9c</code> 就是 <code class="highlighter-rouge">printf</code> 函数打印字符串实现的位置：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishbook-printf.png-1000width" alt="fishbook-printf" /></p>
+
+<p>在上述代码调用 <code class="highlighter-rouge">printf</code> 时，由于符号是没有被加载的，就会通过 <code class="highlighter-rouge">dyld_stub_binder</code> 动态绑定符号。</p>
+
+<h3 id="mach-o">Mach-O</h3>
+
+<p>由于文章中会涉及一些关于 Mach-O 文件格式的知识，所以在这里会简单介绍一下 Mach-O 文件格式的结构。</p>
+
+<p>每一个 Mach-O 文件都会被分为不同的 Segments，比如 <code class="highlighter-rouge">__TEXT</code>, <code class="highlighter-rouge">__DATA</code>, <code class="highlighter-rouge">__LINKEDIT</code>：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-mach-o.png-1000width" alt="fishhook-mach-o" /></p>
+
+<p>这也就是 Mach-O 中的 <code class="highlighter-rouge">segment_command</code>（32 位与 64 位不同）：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">segment_command_64</span> <span class="p">{</span> <span class="cm">/* for 64-bit architectures */</span>
+	<span class="kt">uint32_t</span>	<span class="n">cmd</span><span class="p">;</span>		<span class="cm">/* LC_SEGMENT_64 */</span>
+	<span class="kt">uint32_t</span>	<span class="n">cmdsize</span><span class="p">;</span>	<span class="cm">/* includes sizeof section_64 structs */</span>
+	<span class="kt">char</span>		<span class="n">segname</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>	<span class="cm">/* segment name */</span>
+	<span class="kt">uint64_t</span>	<span class="n">vmaddr</span><span class="p">;</span>		<span class="cm">/* memory address of this segment */</span>
+	<span class="kt">uint64_t</span>	<span class="n">vmsize</span><span class="p">;</span>		<span class="cm">/* memory size of this segment */</span>
+	<span class="kt">uint64_t</span>	<span class="n">fileoff</span><span class="p">;</span>	<span class="cm">/* file offset of this segment */</span>
+	<span class="kt">uint64_t</span>	<span class="n">filesize</span><span class="p">;</span>	<span class="cm">/* amount to map from the file */</span>
+	<span class="n">vm_prot_t</span>	<span class="n">maxprot</span><span class="p">;</span>	<span class="cm">/* maximum VM protection */</span>
+	<span class="n">vm_prot_t</span>	<span class="n">initprot</span><span class="p">;</span>	<span class="cm">/* initial VM protection */</span>
+	<span class="kt">uint32_t</span>	<span class="n">nsects</span><span class="p">;</span>		<span class="cm">/* number of sections in segment */</span>
+	<span class="kt">uint32_t</span>	<span class="n">flags</span><span class="p">;</span>		<span class="cm">/* flags */</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>而每一个 <code class="highlighter-rouge">segment_command</code> 中又包含了不同的 <code class="highlighter-rouge">section</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">section_64</span> <span class="p">{</span> <span class="cm">/* for 64-bit architectures */</span>
+	<span class="kt">char</span>		<span class="n">sectname</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>	<span class="cm">/* name of this section */</span>
+	<span class="kt">char</span>		<span class="n">segname</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>	<span class="cm">/* segment this section goes in */</span>
+	<span class="kt">uint64_t</span>	<span class="n">addr</span><span class="p">;</span>		<span class="cm">/* memory address of this section */</span>
+	<span class="kt">uint64_t</span>	<span class="n">size</span><span class="p">;</span>		<span class="cm">/* size in bytes of this section */</span>
+	<span class="kt">uint32_t</span>	<span class="n">offset</span><span class="p">;</span>		<span class="cm">/* file offset of this section */</span>
+	<span class="kt">uint32_t</span>	<span class="n">align</span><span class="p">;</span>		<span class="cm">/* section alignment (power of 2) */</span>
+	<span class="kt">uint32_t</span>	<span class="n">reloff</span><span class="p">;</span>		<span class="cm">/* file offset of relocation entries */</span>
+	<span class="kt">uint32_t</span>	<span class="n">nreloc</span><span class="p">;</span>		<span class="cm">/* number of relocation entries */</span>
+	<span class="kt">uint32_t</span>	<span class="n">flags</span><span class="p">;</span>		<span class="cm">/* flags (section type and attributes)*/</span>
+	<span class="kt">uint32_t</span>	<span class="n">reserved1</span><span class="p">;</span>	<span class="cm">/* reserved (for offset or index) */</span>
+	<span class="kt">uint32_t</span>	<span class="n">reserved2</span><span class="p">;</span>	<span class="cm">/* reserved (for count or sizeof) */</span>
+	<span class="kt">uint32_t</span>	<span class="n">reserved3</span><span class="p">;</span>	<span class="cm">/* reserved */</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>你只需要对这几个概念有一个简单的了解，知道它们有怎样的包含关系，当文章中挑出这个名字时，对它不是一无所知就足够了，这里并不会涉及太多相关的知识。</p>
+
+<h3 id="fishhook-的原理">fishhook 的原理</h3>
+
+<p>到目前为止，我们对 dyld 以及 Mach-O 有了一个初步的了解，而 fishhook 使用了前面章节提到的 <code class="highlighter-rouge">_dyld_register_func_for_add_image</code> 注册了一个回调，在每次加载镜像到程序中执行回调，动态修改 C 函数实现。</p>
+
+<p>在具体分析其源代码之前，先为各位读者详细地介绍它的实现原理：</p>
+
+<p>dyld 通过更新 Mach-O 二进制文件 <code class="highlighter-rouge">__DATA</code> 段中的一些指针来绑定 lazy 和 non-lazy 的符号；而 fishhook 先确定某一个符号在 <code class="highlighter-rouge">__DATA</code> 段中的位置，然后<strong>保存原符号对应的函数指针，并使用新的函数指针覆盖原有符号的函数指针</strong>，实现重绑定。</p>
+
+<p>整个过程可以用这么一张图来表示：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-before-after.png-1000width" alt="fishhook-before-afte" /></p>
+
+<p>原理看起来还是很简单的，其中最复杂的部分就是从二进制文件中寻找某个符号的位置，在 fishhook 的 README 中，有这样一张图：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-imp.png-1000width" alt="fishhook-imp" /></p>
+
+<p>这张图初看很复杂，不过它演示的是寻找符号的过程，我们根据这张图来分析一下这个过程：</p>
+
+<ol>
+  <li>从 <code class="highlighter-rouge">__DATA</code> 段中的 lazy 符号指针表中查找某个符号，获得这个符号的偏移量 <code class="highlighter-rouge">1061</code>，然后在每一个 <code class="highlighter-rouge">section_64</code> 中查找 <code class="highlighter-rouge">reserved1</code>，通过这两个值找到 Indirect Symbol Table 中符号对应的条目</li>
+  <li>在 Indirect Symbol Table 找到符号表指针以及对应的索引 <code class="highlighter-rouge">16343</code> 之后，就需要访问符号表</li>
+  <li>然后通过符号表中的偏移量，获取字符串表中的符号 <code class="highlighter-rouge">_close</code></li>
+</ol>
+
+<h3 id="fishhook-的实现">fishhook 的实现</h3>
+
+<p>上面梳理了寻找符号的过程，现在，我们终于要开始分析 fishhook 的源代码，看它是如何一步一步替换原有函数实现的。</p>
+
+<p>对实现的分析会 <code class="highlighter-rouge">rebind_symbols</code> 函数为入口，首先看一下函数的调用栈：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">rebind_symbols</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebinding</span> <span class="n">rebindings</span><span class="p">[],</span> <span class="kt">size_t</span> <span class="n">rebindings_nel</span><span class="p">);</span>
+<span class="err">└──</span> <span class="k">extern</span> <span class="kt">void</span> <span class="n">_dyld_register_func_for_add_image</span><span class="p">(</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">func</span><span class="p">)(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span><span class="o">*</span> <span class="n">mh</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">vmaddr_slide</span><span class="p">));</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">_rebind_symbols_for_image</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">)</span>
+<span class="err">└──</span> <span class="k">static</span> <span class="kt">void</span> <span class="n">rebind_symbols_for_image</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">rebindings</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">)</span>
+	<span class="err">└──</span> <span class="k">static</span> <span class="kt">void</span> <span class="n">perform_rebinding_with_section</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">rebindings</span><span class="p">,</span> <span class="n">section_t</span> <span class="o">*</span><span class="n">section</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">,</span> <span class="n">nlist_t</span> <span class="o">*</span><span class="n">symtab</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">strtab</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="o">*</span><span class="n">indirect_symtab</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>其实函数调用栈非常简单，因为整个库中也没有几个函数，<code class="highlighter-rouge">rebind_symbols</code> 作为接口，其主要作用就是注册一个函数并在镜像加载时回调：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">rebind_symbols</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebinding</span> <span class="n">rebindings</span><span class="p">[],</span> <span class="kt">size_t</span> <span class="n">rebindings_nel</span><span class="p">)</span> <span class="p">{</span>
+	<span class="kt">int</span> <span class="n">retval</span> <span class="o">=</span> <span class="n">prepend_rebindings</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_rebindings_head</span><span class="p">,</span> <span class="n">rebindings</span><span class="p">,</span> <span class="n">rebindings_nel</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">retval</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">retval</span><span class="p">;</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">_rebindings_head</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">_dyld_register_func_for_add_image</span><span class="p">(</span><span class="n">_rebind_symbols_for_image</span><span class="p">);</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="kt">uint32_t</span> <span class="n">c</span> <span class="o">=</span> <span class="n">_dyld_image_count</span><span class="p">();</span>
+		<span class="k">for</span> <span class="p">(</span><span class="kt">uint32_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">c</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">_rebind_symbols_for_image</span><span class="p">(</span><span class="n">_dyld_get_image_header</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">_dyld_get_image_vmaddr_slide</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">retval</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在 <code class="highlighter-rouge">rebind_symbols</code> 最开始执行时，会先调用一个 <code class="highlighter-rouge">prepend_rebindings</code> 的函数，将整个 <code class="highlighter-rouge">rebindings</code> 数组添加到 <code class="highlighter-rouge">_rebindings_head</code> 这个私有数据结构的头部：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">int</span> <span class="nf">prepend_rebindings</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">**</span><span class="n">rebindings_head</span><span class="p">,</span>
+							  <span class="k">struct</span> <span class="n">rebinding</span> <span class="n">rebindings</span><span class="p">[],</span>
+							  <span class="kt">size_t</span> <span class="n">nel</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">new_entry</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span><span class="p">));</span>
+	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">new_entry</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+	<span class="n">new_entry</span><span class="o">-&gt;</span><span class="n">rebindings</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebinding</span><span class="p">)</span> <span class="o">*</span> <span class="n">nel</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">new_entry</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">free</span><span class="p">(</span><span class="n">new_entry</span><span class="p">);</span>
+		<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+	<span class="n">memcpy</span><span class="p">(</span><span class="n">new_entry</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">,</span> <span class="n">rebindings</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebinding</span><span class="p">)</span> <span class="o">*</span> <span class="n">nel</span><span class="p">);</span>
+	<span class="n">new_entry</span><span class="o">-&gt;</span><span class="n">rebindings_nel</span> <span class="o">=</span> <span class="n">nel</span><span class="p">;</span>
+	<span class="n">new_entry</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="o">*</span><span class="n">rebindings_head</span><span class="p">;</span>
+	<span class="o">*</span><span class="n">rebindings_head</span> <span class="o">=</span> <span class="n">new_entry</span><span class="p">;</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>也就是说每次调用的 <code class="highlighter-rouge">rebind_symbols</code> 方法传入的 <code class="highlighter-rouge">rebindings</code> 数组以及数组的长度都会以 <code class="highlighter-rouge">rebindings_entry</code> 的形式添加到 <code class="highlighter-rouge">_rebindings_head</code> 这个私有链表的首部：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">rebinding</span> <span class="o">*</span><span class="n">rebindings</span><span class="p">;</span>
+	<span class="kt">size_t</span> <span class="n">rebindings_nel</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">_rebindings_head</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>这样可以通过判断 <code class="highlighter-rouge">_rebindings_head-&gt;next</code> 的值来判断是否为第一次调用，然后使用 <code class="highlighter-rouge">_dyld_register_func_for_add_image</code> 将 <code class="highlighter-rouge">_rebind_symbols_for_image</code> 注册为回调或者为所有存在的镜像单独调用 <code class="highlighter-rouge">_rebind_symbols_for_image</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">void</span> <span class="nf">_rebind_symbols_for_image</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">rebind_symbols_for_image</span><span class="p">(</span><span class="n">_rebindings_head</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">slide</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">_rebind_symbols_for_image</code> 只是对另一个名字非常相似的函数 <code class="highlighter-rouge">rebind_symbols_for_image</code> 的封装，从这个函数开始，就到了重绑定符号的过程；不过由于这个方法的实现比较长，具体分析会分成三个部分并省略一些不影响理解的代码：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">void</span> <span class="nf">rebind_symbols_for_image</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">rebindings</span><span class="p">,</span>
+									 <span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span>
+									 <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">segment_command_t</span> <span class="o">*</span><span class="n">cur_seg_cmd</span><span class="p">;</span>
+	<span class="n">segment_command_t</span> <span class="o">*</span><span class="n">linkedit_segment</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">symtab_command</span><span class="o">*</span> <span class="n">symtab_cmd</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">dysymtab_command</span><span class="o">*</span> <span class="n">dysymtab_cmd</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+	<span class="kt">uintptr_t</span> <span class="n">cur</span> <span class="o">=</span> <span class="p">(</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="n">header</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">mach_header_t</span><span class="p">);</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">uint</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">header</span><span class="o">-&gt;</span><span class="n">ncmds</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">,</span> <span class="n">cur</span> <span class="o">+=</span> <span class="n">cur_seg_cmd</span><span class="o">-&gt;</span><span class="n">cmdsize</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">cur_seg_cmd</span> <span class="o">=</span> <span class="p">(</span><span class="n">segment_command_t</span> <span class="o">*</span><span class="p">)</span><span class="n">cur</span><span class="p">;</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">cur_seg_cmd</span><span class="o">-&gt;</span><span class="n">cmd</span> <span class="o">==</span> <span class="n">LC_SEGMENT_ARCH_DEPENDENT</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">cur_seg_cmd</span><span class="o">-&gt;</span><span class="n">segname</span><span class="p">,</span> <span class="n">SEG_LINKEDIT</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">linkedit_segment</span> <span class="o">=</span> <span class="n">cur_seg_cmd</span><span class="p">;</span>
+			<span class="p">}</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">cur_seg_cmd</span><span class="o">-&gt;</span><span class="n">cmd</span> <span class="o">==</span> <span class="n">LC_SYMTAB</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">symtab_cmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">symtab_command</span><span class="o">*</span><span class="p">)</span><span class="n">cur_seg_cmd</span><span class="p">;</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">cur_seg_cmd</span><span class="o">-&gt;</span><span class="n">cmd</span> <span class="o">==</span> <span class="n">LC_DYSYMTAB</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">dysymtab_cmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">dysymtab_command</span><span class="o">*</span><span class="p">)</span><span class="n">cur_seg_cmd</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这部分的代码主要功能是从镜像中查找 <code class="highlighter-rouge">linkedit_segment</code> <code class="highlighter-rouge">symtab_command</code> 和 <code class="highlighter-rouge">dysymtab_command</code>；在开始查找之前，要先跳过 <code class="highlighter-rouge">mach_header_t</code> 长度的位置，然后将当前指针强转成 <code class="highlighter-rouge">segment_command_t</code>，通过对比 <code class="highlighter-rouge">cmd</code> 的值，来找到需要的 <code class="highlighter-rouge">segment_command_t</code>。</p>
+
+<p>在查找了几个关键的 segment 之后，我们可以根据几个 segment 获取对应表的内存地址：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">void</span> <span class="nf">rebind_symbols_for_image</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">rebindings</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">mach_header</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">)</span> <span class="p">{</span>
+	<span class="p">...</span>
+
+	<span class="kt">uintptr_t</span> <span class="n">linkedit_base</span> <span class="o">=</span> <span class="p">(</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="n">slide</span> <span class="o">+</span> <span class="n">linkedit_segment</span><span class="o">-&gt;</span><span class="n">vmaddr</span> <span class="o">-</span> <span class="n">linkedit_segment</span><span class="o">-&gt;</span><span class="n">fileoff</span><span class="p">;</span>
+	<span class="n">nlist_t</span> <span class="o">*</span><span class="n">symtab</span> <span class="o">=</span> <span class="p">(</span><span class="n">nlist_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">linkedit_base</span> <span class="o">+</span> <span class="n">symtab_cmd</span><span class="o">-&gt;</span><span class="n">symoff</span><span class="p">);</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">strtab</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)(</span><span class="n">linkedit_base</span> <span class="o">+</span> <span class="n">symtab_cmd</span><span class="o">-&gt;</span><span class="n">stroff</span><span class="p">);</span>
+
+	<span class="kt">uint32_t</span> <span class="o">*</span><span class="n">indirect_symtab</span> <span class="o">=</span> <span class="p">(</span><span class="kt">uint32_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">linkedit_base</span> <span class="o">+</span> <span class="n">dysymtab_cmd</span><span class="o">-&gt;</span><span class="n">indirectsymoff</span><span class="p">);</span>
+
+	<span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在 <code class="highlighter-rouge">linkedit_segment</code> 结构体中获得其虚拟地址以及文件偏移量，然后通过一下公式来计算当前 <code class="highlighter-rouge">__LINKEDIT</code> 段的位置：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>slide + vmaffr - fileoff
+</code></pre></div></div>
+
+<p>类似地，在 <code class="highlighter-rouge">symtab_command</code> 中获取符号表偏移量和字符串表偏移量，从 <code class="highlighter-rouge">dysymtab_command</code> 中获取间接符号表（indirect symbol table）偏移量，就能够获得_符号表_、_字符串表_以及_间接符号表_的引用了。</p>
+
+<ul>
+  <li>间接符号表中的元素都是 <code class="highlighter-rouge">uint32_t *</code>，指针的值是对应条目 <code class="highlighter-rouge">n_list</code> 在符号表中的位置</li>
+  <li>
+    <p>符号表中的元素都是 <code class="highlighter-rouge">nlist_t</code> 结构体，其中包含了当前符号在字符串表中的下标</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  struct nlist_64 {
+      union {
+      	uint32_t  n_strx; /* index into the string table */
+  	} n_un;
+  	uint8_t n_type;        /* type flag, see below */
+  	uint8_t n_sect;        /* section number or NO_SECT */
+  	uint16_t n_desc;       /* see &lt;mach-o/stab.h&gt; */
+  	uint64_t n_value;      /* value of this symbol (or stab offset) */
+  };
+</code></pre></div>    </div>
+  </li>
+  <li>字符串表中的元素是 <code class="highlighter-rouge">char</code> 字符</li>
+</ul>
+
+<p>该函数的最后一部分就开启了遍历模式，查找整个镜像中的 <code class="highlighter-rouge">SECTION_TYPE</code> 为 <code class="highlighter-rouge">S_LAZY_SYMBOL_POINTERS</code> 或者 <code class="highlighter-rouge">S_NON_LAZY_SYMBOL_POINTERS</code> 的 section，然后调用下一个函数 <code class="highlighter-rouge">perform_rebinding_with_section</code> 来对 section 中的符号进行处理：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">void</span> <span class="nf">perform_rebinding_with_section</span><span class="p">(</span><span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">rebindings</span><span class="p">,</span> <span class="n">section_t</span> <span class="o">*</span><span class="n">section</span><span class="p">,</span> <span class="kt">intptr_t</span> <span class="n">slide</span><span class="p">,</span> <span class="n">nlist_t</span> <span class="o">*</span><span class="n">symtab</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">strtab</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="o">*</span><span class="n">indirect_symtab</span><span class="p">)</span> <span class="p">{</span>
+	<span class="kt">uint32_t</span> <span class="o">*</span><span class="n">indirect_symbol_indices</span> <span class="o">=</span> <span class="n">indirect_symtab</span> <span class="o">+</span> <span class="n">section</span><span class="o">-&gt;</span><span class="n">reserved1</span><span class="p">;</span>
+	<span class="kt">void</span> <span class="o">**</span><span class="n">indirect_symbol_bindings</span> <span class="o">=</span> <span class="p">(</span><span class="kt">void</span> <span class="o">**</span><span class="p">)((</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="n">slide</span> <span class="o">+</span> <span class="n">section</span><span class="o">-&gt;</span><span class="n">addr</span><span class="p">);</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">uint</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">section</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="kt">uint32_t</span> <span class="n">symtab_index</span> <span class="o">=</span> <span class="n">indirect_symbol_indices</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+		<span class="kt">uint32_t</span> <span class="n">strtab_offset</span> <span class="o">=</span> <span class="n">symtab</span><span class="p">[</span><span class="n">symtab_index</span><span class="p">].</span><span class="n">n_un</span><span class="p">.</span><span class="n">n_strx</span><span class="p">;</span>
+		<span class="kt">char</span> <span class="o">*</span><span class="n">symbol_name</span> <span class="o">=</span> <span class="n">strtab</span> <span class="o">+</span> <span class="n">strtab_offset</span><span class="p">;</span>
+
+		<span class="k">struct</span> <span class="n">rebindings_entry</span> <span class="o">*</span><span class="n">cur</span> <span class="o">=</span> <span class="n">rebindings</span><span class="p">;</span>
+		<span class="k">while</span> <span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">for</span> <span class="p">(</span><span class="n">uint</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings_nel</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">symbol_name</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replaced</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span>
+						<span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replacement</span><span class="p">)</span> <span class="p">{</span>
+						<span class="o">*</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replaced</span><span class="p">)</span> <span class="o">=</span> <span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+					<span class="p">}</span>
+					<span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replacement</span><span class="p">;</span>
+					<span class="k">goto</span> <span class="n">symbol_loop</span><span class="p">;</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+			<span class="n">cur</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="nl">symbol_loop:</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>该函数的实现的核心内容就是将符号表中的 <code class="highlighter-rouge">symbol_name</code> 与 <code class="highlighter-rouge">rebinding</code> 中的名字 <code class="highlighter-rouge">name</code> 进行比较，如果出现了匹配，就会将原函数的实现传入 <code class="highlighter-rouge">origian_open</code> 函数指针的地址，并使用新的函数实现 <code class="highlighter-rouge">new_open</code> 代替原实现：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replaced</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span>
+	<span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replacement</span><span class="p">)</span> <span class="p">{</span>
+	<span class="o">*</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replaced</span><span class="p">)</span> <span class="o">=</span> <span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">];</span> <span class="c1">// 将原函数的实现传入 original_open 函数指针的地址
+</span><span class="p">}</span>
+<span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replacement</span><span class="p">;</span> <span class="c1">// 使用新的函数实现 new_open 替换原实现
+</span></code></pre></div></div>
+
+<p>如果你理解了上面的实现代码，该函数的其它代码就很好理解了：</p>
+
+<ol>
+  <li>通过 <code class="highlighter-rouge">indirect_symtab + section-&gt;reserved1</code> 获取 <code class="highlighter-rouge">indirect_symbol_indices *</code>，也就是符号表的数组</li>
+  <li>通过 <code class="highlighter-rouge">(void **)((uintptr_t)slide + section-&gt;addr)</code> 获取函数指针列表 <code class="highlighter-rouge">indirect_symbol_bindings</code></li>
+  <li>遍历符号表数组 <code class="highlighter-rouge">indirect_symbol_indices *</code> 中的所有符号表中，获取其中的符号表索引 <code class="highlighter-rouge">symtab_index</code></li>
+  <li>通过符号表索引 <code class="highlighter-rouge">symtab_index</code> 获取符号表中某一个 <code class="highlighter-rouge">n_list</code> 结构体，得到字符串表中的索引 <code class="highlighter-rouge">symtab[symtab_index].n_un.n_strx</code></li>
+  <li>最后在字符串表中获得符号的名字 <code class="highlighter-rouge">char *symbol_name</code></li>
+</ol>
+
+<p>到这里比较前的准备工作就完成了，剩下的代码会遍历整个 <code class="highlighter-rouge">rebindings_entry</code> 数组，在其中查找匹配的符号，完成函数实现的替换：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while</span> <span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">uint</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings_nel</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">symbol_name</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replaced</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span>
+				<span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replacement</span><span class="p">)</span> <span class="p">{</span>
+				<span class="o">*</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replaced</span><span class="p">)</span> <span class="o">=</span> <span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+			<span class="p">}</span>
+			<span class="n">indirect_symbol_bindings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">rebindings</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">replacement</span><span class="p">;</span>
+			<span class="k">goto</span> <span class="n">symbol_loop</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">cur</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在之后对某一函数的调用（例如 <code class="highlighter-rouge">open</code>），当查找其函数实现时，都会查找到 <code class="highlighter-rouge">new_open</code> 的函数指针；在 <code class="highlighter-rouge">new_open</code> 调用 <code class="highlighter-rouge">origianl_open</code> 时，同样也会执行原有的函数实现，因为我们通过 <code class="highlighter-rouge">*(cur-&gt;rebindings[j].replaced) = indirect_symbol_bindings[i]</code> 将原函数实现绑定到了新的函数指针上。</p>
+
+<h2 id="实验">实验</h2>
+
+<p>fishhook 在 <code class="highlighter-rouge">dyld</code> 加载镜像时，插入了一个回调函数，交换了原有函数的实现；但是 fishhook 能否修改非动态链接库，比如开发人员自己手写的函数呢？我们可以做一个非常简单的小实验，下面是我们的 <code class="highlighter-rouge">main.m</code> 文件：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import &lt;Foundation/Foundation.h&gt;
+#import "fishhook.h"
+</span>
+<span class="kt">void</span> <span class="nf">hello</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"hello</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">original_hello</span><span class="p">)();</span>
+
+<span class="kt">void</span> <span class="nf">new_hello</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"New_hello</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+	<span class="n">original_hello</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+	<span class="err">@</span><span class="n">autoreleasepool</span> <span class="p">{</span>
+		<span class="k">struct</span> <span class="n">rebinding</span> <span class="n">open_rebinding</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"hello"</span><span class="p">,</span> <span class="n">new_hello</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">original_hello</span> <span class="p">};</span>
+		<span class="n">rebind_symbols</span><span class="p">((</span><span class="k">struct</span> <span class="n">rebinding</span><span class="p">[</span><span class="mi">1</span><span class="p">]){</span><span class="n">open_rebinding</span><span class="p">},</span> <span class="mi">1</span><span class="p">);</span>
+		<span class="n">hello</span><span class="p">();</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里的函数实现非常的简单，相信也不需要笔者过多解释了，我们直接运行这份代码：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-hello.png-1000width" alt="fishhook-hello" /></p>
+
+<p>代码中只打印了 <code class="highlighter-rouge">hello</code>，说明 fishhook 对这种手写的函数是没有作用的，如果在下面这里打一个断点：</p>
+
+<p><img src="https://img.draveness.me/2016-07-26-fishhook-hello-breakpoint.png-1000width" alt="fishhook-hello-breakpoint" /></p>
+
+<p>代码并不会进这里，因为 <code class="highlighter-rouge">hello</code> 这个函数是包含在当前镜像的，它只是从其它代码地址跳转到了当前函数实现，这与我们调用外部库时有很大的不同，当调用外部库时，我们需要 dyld 解决函数地址的问题，但是函数在当前镜像中却并不需要 <a href="https://github.com/facebook/fishhook/issues/25">issue #25</a>。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>fishhook 的实现非常的巧妙，但是它的使用也有一定的局限性，在接触到 fishhook 之前，从没有想到过可以通过一种方式修改 C 函数的实现。</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://objccn.io/issue-6-3/">Mach-O 可执行文件</a></li>
+  <li><a href="http://stackoverflow.com/questions/1993390/static-linking-vs-dynamic-linking">Static linking vs dynamic linking</a></li>
+</ul>
+
+<h2 id="其它">其它</h2>
+
+<h3 id="mainm">main.m</h3>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import &lt;Foundation/Foundation.h&gt;
+</span>
+<span class="cp">#import "fishhook.h"
+</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">original_open</span><span class="p">)(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="p">...);</span>
+
+<span class="kt">int</span> <span class="nf">new_open</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="kt">int</span> <span class="n">oflag</span><span class="p">,</span> <span class="p">...)</span> <span class="p">{</span>
+	<span class="kt">va_list</span> <span class="n">ap</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+	<span class="n">mode_t</span> <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+	<span class="k">if</span> <span class="p">((</span><span class="n">oflag</span> <span class="o">&amp;</span> <span class="n">O_CREAT</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+		<span class="c1">// mode only applies to O_CREAT
+</span>		<span class="n">va_start</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">oflag</span><span class="p">);</span>
+		<span class="n">mode</span> <span class="o">=</span> <span class="n">va_arg</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+		<span class="n">va_end</span><span class="p">(</span><span class="n">ap</span><span class="p">);</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"Calling real open('%s', %d, %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+		<span class="k">return</span> <span class="n">original_open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"Calling real open('%s', %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">);</span>
+		<span class="k">return</span> <span class="n">original_open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+	<span class="err">@</span><span class="n">autoreleasepool</span> <span class="p">{</span>
+		<span class="k">struct</span> <span class="n">rebinding</span> <span class="n">open_rebinding</span> <span class="o">=</span> <span class="p">{</span> <span class="s">"open"</span><span class="p">,</span> <span class="n">new_open</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">original_open</span> <span class="p">};</span>
+		<span class="n">rebind_symbols</span><span class="p">((</span><span class="k">struct</span> <span class="n">rebinding</span><span class="p">[</span><span class="mi">1</span><span class="p">]){</span><span class="n">open_rebinding</span><span class="p">},</span> <span class="mi">1</span><span class="p">);</span>
+		<span class="n">__unused</span> <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=动态修改 C 语言函数的实现&amp;url=fishhook"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=fishhook"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=fishhook"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/retain-cycle1">
+            <section class="post">
+                <h2>如何在 iOS 中解决循环引用的问题</h2>
+                <p>> 转自：[如何在 iOS 中解决循环引用的问题](https://draveness.me/retain-cycle1) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > 稍有常识的人都知道在 iOS 开发时，我们经常会遇到循环引用的问题，比如两个强指针相互引用，但是这种简单的情况作为稍有经验的开发者都会轻松地查找出来。 但是遇到下面这样的情况，如果只看其实现代码，也很难仅仅凭借肉眼上的观察以及简单的推理就能分析出其中存在的循环引用问题，更何况真实情况往往比这复杂的多： ~~~objectivec testObject1.object = testObject2;...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/defer">
+            <section class="post">
+                <h2>如何在 Objective-C 的环境下实现 defer</h2>
+                <p>转自：如何在 Objective-C 的环境下实现 defer 关注仓库，及时获得更新：iOS-Source-Code-Analyze 这篇文章会对 libextobjc 中的一小部分代码进行分析，也是如何扩展 Objective-C 语言系列文章的第一篇，笔者会从 libextobjc 中选择一些黑魔法进行介绍。 对 Swift 稍有了解的人都知道，defer...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

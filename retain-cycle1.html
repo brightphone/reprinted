@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>如何在 iOS 中解决循环引用的问题</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//retain-cycle1" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="如何在 iOS 中解决循环引用的问题" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//retain-cycle1" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="如何在 iOS 中解决循环引用的问题" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//retain-cycle1" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "如何在 iOS 中解决循环引用的问题",
+    "url": "/reprinted//retain-cycle1",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">如何在 iOS 中解决循环引用的问题</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-07-30">30 Jul 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/retain-cycle1">如何在 iOS 中解决循环引用的问题</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>稍有常识的人都知道在 iOS 开发时，我们经常会遇到循环引用的问题，比如两个强指针相互引用，但是这种简单的情况作为稍有经验的开发者都会轻松地查找出来。</p>
+
+<p>但是遇到下面这样的情况，如果只看其实现代码，也很难仅仅凭借肉眼上的观察以及简单的推理就能分析出其中存在的循环引用问题，更何况真实情况往往比这复杂的多：</p>
+
+<pre><code class="language-objectivec">testObject1.object = testObject2;
+testObject1.secondObject = testObject3;
+testObject2.object = testObject4;
+testObject2.secondObject = testObject5;
+testObject3.object = testObject1;
+testObject5.object = testObject6;
+testObject4.object = testObject1;
+testObject5.secondObject = testObject7;
+testObject7.object = testObject2;
+</code></pre>
+
+<p>上述代码确实是存在循环引用的问题：</p>
+
+<p><img src="https://img.draveness.me/2016-07-30-detector-retain-objects.png-1000width" alt="detector-retain-objects" /></p>
+
+<p>这一次分享的内容就是用于检测循环引用的框架 <a href="[https://github.com/facebook/FBRetainCycleDetector]">FBRetainCycleDetector</a> 我们会分几个部分来分析 FBRetainCycleDetector 是如何工作的：</p>
+
+<ol>
+  <li>检测循环引用的基本原理以及过程</li>
+  <li>检测涉及 NSObject 对象的循环引用问题</li>
+  <li>检测涉及 Associated Object 关联对象的循环引用问题</li>
+  <li>检测涉及 Block 的循环引用问题</li>
+</ol>
+
+<p>这是四篇文章中的第一篇，我们会以类 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的 <code class="highlighter-rouge">- findRetainCycles</code> 方法为入口，分析其实现原理以及运行过程。</p>
+
+<p>简单介绍一下 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的使用方法：</p>
+
+<pre><code class="language-objectivec">_RCDTestClass *testObject = [_RCDTestClass new];
+testObject.object = testObject;
+
+FBRetainCycleDetector *detector = [FBRetainCycleDetector new];
+[detector addCandidate:testObject];
+NSSet *retainCycles = [detector findRetainCycles];
+
+NSLog(@"%@", retainCycles);
+</code></pre>
+
+<ol>
+  <li>初始化一个 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的实例</li>
+  <li>调用 <code class="highlighter-rouge">- addCandidate:</code> 方法添加潜在的泄露对象</li>
+  <li>执行 <code class="highlighter-rouge">- findRetainCycles</code> 返回 <code class="highlighter-rouge">retainCycles</code></li>
+</ol>
+
+<p>在控制台中的输出是这样的：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">2016</span><span class="o">-</span><span class="mo">07</span><span class="o">-</span><span class="mi">29</span> <span class="mi">15</span><span class="o">:</span><span class="mi">26</span><span class="o">:</span><span class="mi">42</span><span class="p">.</span><span class="mo">043</span> <span class="n">xctest</span><span class="p">[</span><span class="mi">30610</span><span class="o">:</span><span class="mi">1003493</span><span class="p">]</span> <span class="p">{(</span>
+		<span class="p">(</span>
+		<span class="s">"-&gt; _object -&gt; _RCDTestClass "</span>
+	<span class="p">)</span>
+<span class="p">)}</span>
+</code></pre></div></div>
+
+<p>说明 <code class="highlighter-rouge">FBRetainCycleDetector</code> 在代码中发现了循环引用。</p>
+
+<h2 id="findretaincycles-的实现">findRetainCycles 的实现</h2>
+
+<p>在具体开始分析 <code class="highlighter-rouge">FBRetainCycleDetector</code> 代码之前，我们可以先观察一下方法 <code class="highlighter-rouge">findRetainCycles</code> 的调用栈：</p>
+
+<pre><code class="language-objectivec">- (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)findRetainCycles
+└── - (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)findRetainCyclesWithMaxCycleLength:(NSUInteger)length
+    └── - (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)_findRetainCyclesInObject:(FBObjectiveCGraphElement *)graphElement stackDepth:(NSUInteger)stackDepth
+        └── - (instancetype)initWithObject:(FBObjectiveCGraphElement *)object
+            └── - (FBNodeEnumerator *)nextObject
+                ├── - (NSArray&lt;FBObjectiveCGraphElement *&gt; *)_unwrapCycle:(NSArray&lt;FBNodeEnumerator *&gt; *)cycle
+                ├── - (NSArray&lt;FBObjectiveCGraphElement *&gt; *)_shiftToUnifiedCycle:(NSArray&lt;FBObjectiveCGraphElement *&gt; *)array
+                └── - (void)addObject:(ObjectType)anObject;
+</code></pre>
+
+<p>调用栈中最上面的两个简单方法的实现都是比较容易理解的：</p>
+
+<pre><code class="language-objectivec">- (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)findRetainCycles {
+	return [self findRetainCyclesWithMaxCycleLength:kFBRetainCycleDetectorDefaultStackDepth];
+}
+
+- (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)findRetainCyclesWithMaxCycleLength:(NSUInteger)length {
+	NSMutableSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *allRetainCycles = [NSMutableSet new];
+	for (FBObjectiveCGraphElement *graphElement in _candidates) {
+		NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *retainCycles = [self _findRetainCyclesInObject:graphElement
+																						  stackDepth:length];
+		[allRetainCycles unionSet:retainCycles];
+	}
+	[_candidates removeAllObjects];
+
+	return allRetainCycles;
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">- findRetainCycles</code> 调用了 <code class="highlighter-rouge">- findRetainCyclesWithMaxCycleLength:</code> 传入了 <code class="highlighter-rouge">kFBRetainCycleDetectorDefaultStackDepth</code> 参数来限制查找的深度，如果超过该深度（默认为 10）就不会继续处理下去了（查找的深度的增加会对性能有非常严重的影响）。</p>
+
+<p>在 <code class="highlighter-rouge">- findRetainCyclesWithMaxCycleLength:</code> 中，我们会遍历所有潜在的内存泄露对象 <code class="highlighter-rouge">candidate</code>，执行整个框架中最核心的方法 <code class="highlighter-rouge">- _findRetainCyclesInObject:stackDepth:</code>，由于这个方法的实现太长，这里会分几块对其进行介绍，并会省略其中的注释：</p>
+
+<pre><code class="language-objectivec">- (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)_findRetainCyclesInObject:(FBObjectiveCGraphElement *)graphElement
+																 stackDepth:(NSUInteger)stackDepth {
+	NSMutableSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *retainCycles = [NSMutableSet new];
+	FBNodeEnumerator *wrappedObject = [[FBNodeEnumerator alloc] initWithObject:graphElement];
+
+	NSMutableArray&lt;FBNodeEnumerator *&gt; *stack = [NSMutableArray new];
+
+	NSMutableSet&lt;FBNodeEnumerator *&gt; *objectsOnPath = [NSMutableSet new];
+
+	...
+}
+</code></pre>
+
+<p>其实整个对象的相互引用情况可以看做一个<strong>有向图</strong>，对象之间的引用就是图的 <code class="highlighter-rouge">Edge</code>，每一个对象就是 <code class="highlighter-rouge">Vertex</code>，<strong>查找循环引用的过程就是在整个有向图中查找环的过程</strong>，所以在这里我们使用 DFS 来扫面图中的环，这些环就是对象之间的循环引用。</p>
+
+<blockquote>
+  <p>文章中并不会介绍 DFS 的原理，如果对 DFS 不了解的读者可以看一下这个<a href="[https://www.youtube.com/watch?v=tlPuVe5Otio]">视频</a>，或者找以下相关资料了解一下 DFS 的实现。</p>
+</blockquote>
+
+<p>接下来就是 DFS 的实现：</p>
+
+<pre><code class="language-objectivec">- (NSSet&lt;NSArray&lt;FBObjectiveCGraphElement *&gt; *&gt; *)_findRetainCyclesInObject:(FBObjectiveCGraphElement *)graphElement
+																 stackDepth:(NSUInteger)stackDepth {
+	...
+	[stack addObject:wrappedObject];
+
+	while ([stack count] &gt; 0) {
+		@autoreleasepool {
+			FBNodeEnumerator *top = [stack lastObject];
+			[objectsOnPath addObject:top];
+
+			FBNodeEnumerator *firstAdjacent = [top nextObject];
+			if (firstAdjacent) {
+
+				BOOL shouldPushToStack = NO;
+
+				if ([objectsOnPath containsObject:firstAdjacent]) {
+					NSUInteger index = [stack indexOfObject:firstAdjacent];
+					NSInteger length = [stack count] - index;
+
+					if (index == NSNotFound) {
+						shouldPushToStack = YES;
+					} else {
+						NSRange cycleRange = NSMakeRange(index, length);
+						NSMutableArray&lt;FBNodeEnumerator *&gt; *cycle = [[stack subarrayWithRange:cycleRange] mutableCopy];
+						[cycle replaceObjectAtIndex:0 withObject:firstAdjacent];
+
+						[retainCycles addObject:[self _shiftToUnifiedCycle:[self _unwrapCycle:cycle]]];
+					}
+				} else {
+					shouldPushToStack = YES;
+				}
+
+				if (shouldPushToStack) {
+					if ([stack count] &lt; stackDepth) {
+						[stack addObject:firstAdjacent];
+					}
+				}
+			} else {
+				[stack removeLastObject];
+				[objectsOnPath removeObject:top];
+			}
+		}
+	}
+	return retainCycles;
+}
+</code></pre>
+
+<p>这里其实就是对 DFS 的具体实现，其中比较重要的有两点，一是使用 <code class="highlighter-rouge">nextObject</code> 获取下一个需要遍历的对象，二是对查找到的环进行处理和筛选；在这两点之中，第一点相对重要，因为 <code class="highlighter-rouge">nextObject</code> 的实现是调用 <code class="highlighter-rouge">allRetainedObjects</code> 方法获取被当前对象持有的对象，如果没有这个方法，我们就无法获取当前对象的邻接结点，更无从谈起遍历了：</p>
+
+<pre><code class="language-objectivec">- (FBNodeEnumerator *)nextObject {
+	if (!_object) {
+		return nil;
+	} else if (!_retainedObjectsSnapshot) {
+		_retainedObjectsSnapshot = [_object allRetainedObjects];
+		_enumerator = [_retainedObjectsSnapshot objectEnumerator];
+	}
+
+	FBObjectiveCGraphElement *next = [_enumerator nextObject];
+
+	if (next) {
+		return [[FBNodeEnumerator alloc] initWithObject:next];
+	}
+
+	return nil;
+}
+</code></pre>
+
+<p>基本上所有图中的对象 <code class="highlighter-rouge">FBObjectiveCGraphElement</code> 以及它的子类 <code class="highlighter-rouge">FBObjectiveCBlock</code> <code class="highlighter-rouge">FBObjectiveCObject</code> 和 <code class="highlighter-rouge">FBObjectiveCNSCFTimer</code> 都实现了这个方法返回其持有的对象数组。获取数组之后，就再把其中的对象包装成新的 <code class="highlighter-rouge">FBNodeEnumerator</code> 实例，也就是下一个 <code class="highlighter-rouge">Vertex</code>。</p>
+
+<p>因为使用 <code class="highlighter-rouge">- subarrayWithRange:</code> 方法获取的数组中的对象都是 <code class="highlighter-rouge">FBNodeEnumerator</code> 的实例，还需要一定的处理才能返回：</p>
+
+<ol>
+  <li>
+    <ul>
+      <li>(NSArray&lt;FBObjectiveCGraphElement *&gt; *)_unwrapCycle:(NSArray&lt;FBNodeEnumerator *&gt; *)cycle</li>
+    </ul>
+  </li>
+  <li>
+    <ul>
+      <li>(NSArray&lt;FBObjectiveCGraphElement *&gt; *)_shiftToUnifiedCycle:(NSArray&lt;FBObjectiveCGraphElement *&gt; *)array</li>
+    </ul>
+  </li>
+</ol>
+
+<p><code class="highlighter-rouge">- _unwrapCycle:</code> 的作用是将数组中的每一个 <code class="highlighter-rouge">FBNodeEnumerator</code> 实例转换成 <code class="highlighter-rouge">FBObjectiveCGraphElement</code>：</p>
+
+<pre><code class="language-objectivec">- (NSArray&lt;FBObjectiveCGraphElement *&gt; *)_unwrapCycle:(NSArray&lt;FBNodeEnumerator *&gt; *)cycle {
+	NSMutableArray *unwrappedArray = [NSMutableArray new];
+	for (FBNodeEnumerator *wrapped in cycle) {
+		[unwrappedArray addObject:wrapped.object];
+	}
+
+	return unwrappedArray;
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">- _shiftToUnifiedCycle:</code> 方法将每一个环中的元素按照<strong>地址递增以及字母顺序</strong>来排序，方法签名很好的说明了它们的功能，两个方法的代码就不展示了，它们的实现没有什么值得注意的地方：</p>
+
+<pre><code class="language-objectivec">- (NSArray&lt;FBObjectiveCGraphElement *&gt; *)_shiftToUnifiedCycle:(NSArray&lt;FBObjectiveCGraphElement *&gt; *)array {
+	return [self _shiftToLowestLexicographically:[self _shiftBufferToLowestAddress:array]];
+}
+</code></pre>
+
+<p>方法的作用是防止出现<strong>相同环的不同表示方式</strong>，比如说下面的两个环其实是完全相同的：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-&gt; object1 -&gt; object2
+-&gt; object2 -&gt; object1
+</code></pre></div></div>
+
+<p>在获取图中的环并排序好之后，就可以讲这些环 union 一下，去除其中重复的元素，最后返回所有查找到的循环引用了。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>到目前为止整个 <code class="highlighter-rouge">FBRetainCycleDetector</code> 的原理介绍大概就结束了，其原理完全是基于 DFS 算法：把整个对象的之间的引用情况当做图进行处理，查找其中的环，就找到了循环引用。不过原理真的很简单，如果这个 lib 的实现仅仅是这样的话，我也不会写几篇文章来专门分析这个框架，真正让我感兴趣的还是 <code class="highlighter-rouge">- allRetainedObjects</code> 方法<strong>在各种对象以及 block 中获得它们强引用的对象的过程</strong>，这也是之后的文章要分析的主要内容。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=如何在 iOS 中解决循环引用的问题&amp;url=retain-cycle1"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=retain-cycle1"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=retain-cycle1"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/retain-cycle2">
+            <section class="post">
+                <h2>检测 NSObject 对象持有的强指针</h2>
+                <p>> 转自：[检测 NSObject 对象持有的强指针](https://draveness.me/retain-cycle2) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > 在上一篇文章中介绍了 `FBRetainCycleDetector` 的基本工作原理，这一篇文章中我们开始分析它是如何从每一个对象中获得它持有的强指针的。 > 如果没有看第一篇文章这里还是最好看一下，了解一下 `FBRetainCycleDetector` 的工作原理，[如何在 iOS...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/fishhook">
+            <section class="post">
+                <h2>动态修改 C 语言函数的实现</h2>
+                <p>转自：动态修改 C 语言函数的实现 关注仓库，及时获得更新：iOS-Source-Code-Analyze Objective-C 作为基于 Runtime 的语言，它有非常强大的动态特性，可以在运行期间自省、进行方法调剂、为类增加属性、修改消息转发链路，在代码运行期间通过 Runtime 几乎可以修改 Objecitve-C 层的一切类、方法以及属性。 真正绝对意义上的动态语言或者静态语言是不存在的。 C 语言往往会给我们留下不可修改的这一印象；在之前的几年时间里，笔者确实也是这么认为的，然而最近接触到的...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

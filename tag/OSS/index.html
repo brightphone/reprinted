@@ -103,7 +103,7 @@
             <h1 class="page-title">OSS</h1>
             <h2 class="page-description">
             
-			    A 24-post collection
+			    A 23-post collection
             
             </h2>
         </div>
@@ -128,41 +128,6 @@
     </div>
 
     <!-- This is the post loop - each post will be output using this markup -->
-    
-    <article class="post">
-        <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/message">从源代码看 ObjC 中消息的发送</a></h2>
-        </header>
-        <section class="post-excerpt">
-            <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64 架构下运行的，对于在 arm64 中运行的代码会特别说明。 写在前面 如果你点开这篇文章，相信你对 Objective-C 比较熟悉，并且有多年使用 Objective-C 编程的经验，这篇文章会假设你知道： 在 Objective-C 中的“方法调用”其实应该叫做消息传递... <a class="read-more" href="/reprinted/message">&raquo;</a></p>
-        </section>
-        <footer class="post-meta">
-            
-                
-
-                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
-                <!-- author -->
-                <a href='/reprinted/author/Draveness'>Draveness</a>
-
-                
-            
-
-            <!-- [[tags prefix=" on "]] -->
-            
-                on
-                
-                    
-                       <a href='/reprinted/tag/iOS'>iOS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/OSS'>OSS</a>
-                    
-                
-            
-            <time class="post-date" datetime="2016-04-25">25 Apr 2016</time>
-        </footer>
-    </article>
     
     <article class="post">
         <header class="post-header">
@@ -454,6 +419,45 @@
         </header>
         <section class="post-excerpt">
             <p>关注仓库，及时获得更新：iOS-Source-Code-Analyze 高能预警：本篇文章非常长，因为 BlocksKit 的实现还是比较复杂和有意的。这篇文章不是为了剖析 iOS 开发中的 block 的实现以及它是如何组成甚至使用的，如果你想通过这篇文章来了解 block 的实现，它并不能帮到你。 Block 到底是什么？这可能是困扰很多 iOS 初学者的一个问题。如果你在 Google 上搜索类似的问题时，可以查找到几十万条结果，block 在 iOS 开发中有着非常重要的地位，而且它的作用也越来越重要。 概述 这篇文章仅对 BlocksKit v2.2.5 的源代码进行分析，从框架的内部理解下面的功能是如何实现的： 为 NSArray、... <a class="read-more" href="/reprinted/blockskit-1">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">iOS 开发中的重构</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 DRY 的原则, 使得项目难以维护. 为什么要重构 为什么要重构, 重构其实是一件持续性的工作, 工程师在进行开发的过程中难免会有无法考虑周全的地方, 而目前的很多 iOS, Android 项目其实都是业务驱动的, 而业务和需求的更改导致原来模块的设计不再适用于当前的状况. 而大多数工程师是懒惰的. 因为没有足够的推动力去修改当前模块的设计, 所以通过打补丁的方式实现需求, 最终可能会导致整个项目代码的失控, 陷入焦油坑. 重构,... <a class="read-more" href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             

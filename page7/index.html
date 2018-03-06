@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>Brightness</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//page7/" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Brightness" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//page7/" />
+    <meta property="og:image" content="/reprinted/assets/images/cover1.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Brightness" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//page7/" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover1.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "Brightness",
+    "url": "/reprinted//page7/",
+    "image": "/reprinted/assets/images/cover1.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="paged archive-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home  nav-current" role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- < default -->
+<!-- The tag above means - insert everything in this file into the [body] of the default.hbs template -->
+
+<!-- The big featured header  -->
+<header class="main-header "
+        style="background-image: url(/reprinted/assets/images/cover1.jpg) ">
+    <nav class="main-nav overlay clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+    <div class="vertical">
+        <div class="main-header-content inner">
+            <h1 class="page-title"></h1>
+            <h2 class="page-description"></h2>
+        </div>
+    </div>
+    <a class="scroll-down icon-arrow-left" href="#content" data-offset="-45"><span class="hidden">Scroll Down</span></a>
+</header>
+
+<!-- The main content area on the homepage -->
+<main id="content" class="content" role="main">
+
+    <!-- The tag below includes the post loop - partials/loop.hbs -->
+        <!-- Previous/next page links - only displayed on page 2+ -->
+    <div class="extra-pagination inner">
+        
+            <nav class="pagination" role="pagination">
+    
+        
+            <a class="newer-posts" href="/reprinted/page6/" title="Previous Page">&laquo; Newer Posts</a>
+      
+    
+    <span class="page-number"> Page 7 of 7 </span>
+     
+</nav>
+        
+    </div>
+
+    <!-- This is the post loop - each post will be output using this markup -->
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/swift-zhong-init-de-shi-yong">Swift 类构造器的使用</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>这几天在使用 Swift 重写原来的一个运动社交应用 SportJoin. 为什么要重写呢? 首先因为实在找不到设计师给我作图; 其次, 原来写的代码太烂了我也闲不下来, 想找一些项目做, 所以只好将原来的代码重写了. 原来的代码大约是一年半以前写的, 我现在真的不想吐槽当时写的代码有多烂, 有一句话怎么说来着: 程序员连自己写的源代码都不想读, 怎么可能看别人写的源代码! 每半年获得的知识相当于之前获得的全部知识的总和. 个人觉得这句话还是蛮有道理的. 反正对于我来说, 每过一段的时间回过头来看自己写的代码都感觉有很大的重构空间, 很多地方写的不够 PERFECT, 虽然我不是一个处女座, 但是对于代码的健壮和整洁还是很注意的. 接下来, 我来扯一扯谈一谈最近写 Swift... <a class="read-more" href="/reprinted/swift-zhong-init-de-shi-yong">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/Swift'>Swift</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-04-22">22 Apr 2015</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/ios-swizillingzeng-jia-gou-zi-fang-fa">iOS 为 UIKit 属性增加钩子方法</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>最近在做一个用于实现夜间模式的开源框架, 需监听 UIKit 中的属性, 而这个监听的通知者就是 UIKit 实例本身, 当我最开始想要做的时候, 我感觉这个东西实在太简单了, 不过之后… ##KVO 我想到的第一个解决方案是使用 KVO 来解决. KVO 是一个很好的方式来为已有的属性添加观察者. ###继承 or 分类? 但是因为要实现的夜间模式要在工程中引入, 而不是使一个已经完成大半的项目重新继承所有的 UIKit 类, 所以使用分类的方式而不是继承的方式引入夜间模式, 而且大部分开源的框架都是以分类的形式来引入以减少使用者的工作量. 由于在分类中无法调用... <a class="read-more" href="/reprinted/ios-swizillingzeng-jia-gou-zi-fang-fa">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-04-15">15 Apr 2015</time>
+        </footer>
+    </article>
+    
+    <article class="post">
+        <header class="post-header">
+            <h2 class="post-title"><a href="/reprinted/ios-yuan-dai-ma-jie-xi-sdwebimage">iOS 源代码分析----SDWebImage</a></h2>
+        </header>
+        <section class="post-excerpt">
+            <p>世人都说阅读源代码对于功力的提升是十分显著的, 但是很多的著名开源框架源代码动辄上万行, 复杂度实在太高, 在暑假的时候我曾经试图读一些开源框架的源代码, 比如说 AFNetworking, SDWebImage, ReactiveCocoa 但是由于当时比较浮躁, 实在没法静下心来看, 而且有一些急功近利, 所以面对宝藏实在无力挖掘. 而最近, 由于时间比较充裕, 也终于能静下心来一段一段分析这些著名项目的源代码, 也准备开始写一些关于 iOS 源代码分析的 post. 第一篇文章为什么选择 SDWebImage, 原因其实我也忘了…. :( ##简洁的接口 首先来介绍一下这个 SDWebImage... <a class="read-more" href="/reprinted/ios-yuan-dai-ma-jie-xi-sdwebimage">&raquo;</a></p>
+        </section>
+        <footer class="post-meta">
+            
+                
+
+                <img class="author-thumb" src="/reprinted/assets/images/draven.png" alt="Author image" nopin="nopin" />
+                <!-- author -->
+                <a href='/reprinted/author/Draveness'>Draveness</a>
+
+                
+            
+
+            <!-- [[tags prefix=" on "]] -->
+            
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/OSS'>OSS</a>
+                    
+                
+            
+            <time class="post-date" datetime="2015-04-12">12 Apr 2015</time>
+        </footer>
+    </article>
+    
+
+    <!-- Previous/next page links - displayed on every page -->
+    
+        <nav class="pagination" role="pagination">
+    
+        
+            <a class="newer-posts" href="/reprinted/page6/" title="Previous Page">&laquo; Newer Posts</a>
+      
+    
+    <span class="page-number"> Page 7 of 7 </span>
+     
+</nav>
+    
+
+
+</main>
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

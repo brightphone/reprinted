@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>自动释放池的前世今生 ---- 深入解析 autoreleasepool</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//autoreleasepool" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="自动释放池的前世今生 ---- 深入解析 autoreleasepool" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//autoreleasepool" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="自动释放池的前世今生 ---- 深入解析 autoreleasepool" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//autoreleasepool" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "自动释放池的前世今生 ---- 深入解析 autoreleasepool",
+    "url": "/reprinted//autoreleasepool",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">自动释放池的前世今生 ---- 深入解析 autoreleasepool</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-05-16">15 May 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/autoreleasepool">自动释放池的前世今生 —- 深入解析 autoreleasepool</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+  <p>由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 <code class="highlighter-rouge">autorelease</code> 方法，另一部分分析 <code class="highlighter-rouge">retain</code>、<code class="highlighter-rouge">release</code> 方法的实现以及自动引用计数。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>这篇文章会在源代码层面介绍 Objective-C 中自动释放池，以及方法的 <code class="highlighter-rouge">autorelease</code> 的具体实现。</p>
+
+<h2 id="从-main-函数开始">从 main 函数开始</h2>
+
+<p><code class="highlighter-rouge">main</code> 函数可以说是在整个 iOS 开发中非常不起眼的一个函数，它很好地隐藏在 <code class="highlighter-rouge">Supporting Files</code> 文件夹中，却是整个 iOS 应用的入口。
+<img src="https://img.draveness.me/2016-05-16-objc-autorelease-main.png-1000width" alt="objc-autorelease-main" /></p>
+
+<p><code class="highlighter-rouge">main.m</code> 文件中的内容是这样的：</p>
+
+<pre><code class="language-objectivec">int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
+    }
+}
+</code></pre>
+
+<p>在这个 <code class="highlighter-rouge">@autoreleasepool</code> block 中只包含了一行代码，这行代码将所有的事件、消息全部交给了 <code class="highlighter-rouge">UIApplication</code> 来处理，但是这不是本文关注的重点。</p>
+
+<p>需要注意的是：<strong>整个 iOS 的应用都是包含在一个自动释放池 block 中的</strong>。</p>
+
+<h2 id="autoreleasepool">@autoreleasepool</h2>
+
+<p><code class="highlighter-rouge">@autoreleasepool</code> 到底是什么？我们在命令行中使用 <code class="highlighter-rouge">clang -rewrite-objc main.m</code> 让编译器重新改写这个文件：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="n">clang</span> <span class="o">-</span><span class="n">rewrite</span><span class="o">-</span><span class="n">objc</span> <span class="n">main</span><span class="p">.</span><span class="n">m</span>
+</code></pre></div></div>
+
+<p>在生成了一大堆警告之后，当前目录下多了一个 <code class="highlighter-rouge">main.cpp</code> 文件</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-main-cpp.png-1000width" alt="objc-autorelease-main-cpp" /></p>
+
+<blockquote>
+  <p>这里删除了 <code class="highlighter-rouge">main</code> 函数中其他无用的代码。</p>
+</blockquote>
+
+<p>在这个文件中，有一个非常奇怪的 <code class="highlighter-rouge">__AtAutoreleasePool</code> 的结构体，前面的注释写到 <code class="highlighter-rouge">/* @autoreleasepopl */</code>。也就是说 <code class="highlighter-rouge">@autoreleasepool {}</code> 被转换为一个 <code class="highlighter-rouge">__AtAutoreleasePool</code> 结构体：</p>
+
+<pre><code class="language-objectivec">{
+    __AtAutoreleasePool __autoreleasepool;
+}
+</code></pre>
+
+<p>想要弄清楚这行代码的意义，我们要在 <code class="highlighter-rouge">main.cpp</code> 中查找名为 <code class="highlighter-rouge">__AtAutoreleasePool</code> 的结构体：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-main-cpp-struct.png-1000width" alt="objc-autorelease-main-cpp-struct" /></p>
+
+<pre><code class="language-objectivec">struct __AtAutoreleasePool {
+  __AtAutoreleasePool() {atautoreleasepoolobj = objc_autoreleasePoolPush();}
+  ~__AtAutoreleasePool() {objc_autoreleasePoolPop(atautoreleasepoolobj);}
+  void * atautoreleasepoolobj;
+};
+</code></pre>
+
+<p>这个结构体会在初始化时调用 <code class="highlighter-rouge">objc_autoreleasePoolPush()</code> 方法，会在析构时调用 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 方法。</p>
+
+<p>这表明，我们的 <code class="highlighter-rouge">main</code> 函数在实际工作时其实是这样的：</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    {
+        void * atautoreleasepoolobj = objc_autoreleasePoolPush();
+
+        // do whatever you want
+
+        objc_autoreleasePoolPop(atautoreleasepoolobj);
+    }
+    return 0;
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">@autoreleasepool</code> 只是帮助我们少写了这两行代码而已，让代码看起来更美观，然后要根据上述两个方法来分析自动释放池的实现。</p>
+
+<h2 id="autoreleasepool-是什么">AutoreleasePool 是什么</h2>
+
+<p>这一节开始分析方法 <code class="highlighter-rouge">objc_autoreleasePoolPush</code> 和 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 的实现：</p>
+
+<pre><code class="language-objectivec">void *objc_autoreleasePoolPush(void) {
+    return AutoreleasePoolPage::push();
+}
+
+void objc_autoreleasePoolPop(void *ctxt) {
+    AutoreleasePoolPage::pop(ctxt);
+}
+</code></pre>
+
+<p>上面的方法看上去是对 <code class="highlighter-rouge">AutoreleasePoolPage</code> 对应<strong>静态方法</strong> <code class="highlighter-rouge">push</code> 和 <code class="highlighter-rouge">pop</code> 的封装。</p>
+
+<p>这一小节会按照下面的顺序逐步解析代码中的内容：</p>
+
+<ul>
+  <li><a href="#AutoreleasePoolPage">AutoreleasePoolPage 的结构</a></li>
+  <li><a href="#objc_autoreleasePoolPush">objc_autoreleasePoolPush 方法</a></li>
+  <li><a href="#objc_autoreleasePoolPop">objc_autoreleasePoolPop 方法</a></li>
+</ul>
+
+<h3 id="autoreleasepoolpage-的结构">AutoreleasePoolPage 的结构</h3>
+
+<p><code class="highlighter-rouge">AutoreleasePoolPage</code> 是一个 C++ 中的类：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-AutoreleasePoolPage.png-1000width" alt="objc-autorelease-AutoreleasePoolPage" /></p>
+
+<p>它在 <code class="highlighter-rouge">NSObject.mm</code> 中的定义是这样的：</p>
+
+<pre><code class="language-objectivec">class AutoreleasePoolPage {
+    magic_t const magic;
+    id *next;
+    pthread_t const thread;
+    AutoreleasePoolPage * const parent;
+    AutoreleasePoolPage *child;
+    uint32_t const depth;
+    uint32_t hiwat;
+};
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">magic</code> 用于对当前 <code class="highlighter-rouge">AutoreleasePoolPage</code> <strong>完整性</strong>的校验</li>
+  <li><code class="highlighter-rouge">thread</code> 保存了当前页所在的线程</li>
+</ul>
+
+<p><strong>每一个自动释放池都是由一系列的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 组成的，并且每一个 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的大小都是 <code class="highlighter-rouge">4096</code> 字节（16 进制 0x1000）</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define I386_PGBYTES 4096
+#define PAGE_SIZE I386_PGBYTES
+</span></code></pre></div></div>
+
+<h4 id="双向链表">双向链表</h4>
+
+<p>自动释放池中的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 是以<strong>双向链表</strong>的形式连接起来的：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-AutoreleasePoolPage-linked-list.png-1000width" alt="objc-autorelease-AutoreleasePoolPage-linked-list" /></p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">parent</code> 和 <code class="highlighter-rouge">child</code> 就是用来构造双向链表的指针。</p>
+</blockquote>
+
+<h4 id="自动释放池中的栈">自动释放池中的栈</h4>
+
+<p>如果我们的一个 <code class="highlighter-rouge">AutoreleasePoolPage</code> 被初始化在内存的 <code class="highlighter-rouge">0x100816000 ~ 0x100817000</code> 中，它在内存中的结构如下：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-page-in-memory.png-1000width" alt="objc-autorelease-page-in-memory" /></p>
+
+<p>其中有 56 bit 用于存储 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的成员变量，剩下的 <code class="highlighter-rouge">0x100816038 ~ 0x100817000</code> 都是用来存储<strong>加入到自动释放池中的对象</strong>。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">begin()</code> 和 <code class="highlighter-rouge">end()</code> 这两个类的实例方法帮助我们快速获取 <code class="highlighter-rouge">0x100816038 ~ 0x100817000</code> 这一范围的边界地址。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">next</code> 指向了下一个为空的内存地址，如果 <code class="highlighter-rouge">next</code> 指向的地址加入一个 <code class="highlighter-rouge">object</code>，它就会如下图所示<strong>移动到下一个为空的内存地址中</strong>：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-after-insert-to-page.png-1000width" alt="objc-autorelease-after-insert-to-page" /></p>
+
+<blockquote>
+  <p>关于 <code class="highlighter-rouge">hiwat</code> 和 <code class="highlighter-rouge">depth</code> 在文章中并不会进行介绍，因为它们并不影响整个自动释放池的实现，也不在关键方法的调用栈中。</p>
+</blockquote>
+
+<h4 id="pool_sentinel哨兵对象">POOL_SENTINEL（哨兵对象）</h4>
+
+<p>到了这里，你可能想要知道 <code class="highlighter-rouge">POOL_SENTINEL</code> 到底是什么，还有它为什么在栈中。</p>
+
+<p>首先回答第一个问题： <code class="highlighter-rouge">POOL_SENTINEL</code> 只是 <code class="highlighter-rouge">nil</code> 的别名。</p>
+
+<pre><code class="language-objectivec">#define POOL_SENTINEL nil
+</code></pre>
+
+<p>在每个自动释放池初始化调用 <code class="highlighter-rouge">objc_autoreleasePoolPush</code> 的时候，都会把一个 <code class="highlighter-rouge">POOL_SENTINEL</code> push 到自动释放池的栈顶，并且返回这个 <code class="highlighter-rouge">POOL_SENTINEL</code> 哨兵对象。</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    {
+        void * atautoreleasepoolobj = objc_autoreleasePoolPush();
+
+        // do whatever you want
+
+        objc_autoreleasePoolPop(atautoreleasepoolobj);
+    }
+    return 0;
+}
+</code></pre>
+
+<blockquote>
+  <p>上面的 <code class="highlighter-rouge">atautoreleasepoolobj</code> 就是一个 <code class="highlighter-rouge">POOL_SENTINEL</code>。</p>
+</blockquote>
+
+<p>而当方法 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 调用时，就会向自动释放池中的对象发送 <code class="highlighter-rouge">release</code> 消息，直到第一个 <code class="highlighter-rouge">POOL_SENTINEL</code>：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-pop-stack.png-1000width" alt="objc-autorelease-pop-stack" /></p>
+
+<h3 id="objc_autoreleasepoolpush-方法"><a id="objc_autoreleasePoolPush"></a>objc_autoreleasePoolPush 方法</h3>
+
+<p>了解了 <code class="highlighter-rouge">POOL_SENTINEL</code>，我们来重新回顾一下 <code class="highlighter-rouge">objc_autoreleasePoolPush</code> 方法：</p>
+
+<pre><code class="language-objectivec">void *objc_autoreleasePoolPush(void) {
+    return AutoreleasePoolPage::push();
+}
+</code></pre>
+
+<p>它调用 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的类方法 <code class="highlighter-rouge">push</code>，也非常简单：</p>
+
+<pre><code class="language-objectivec">static inline void *push() {
+   return autoreleaseFast(POOL_SENTINEL);
+}
+</code></pre>
+
+<p><a id="autoreleaseFast"></a>在这里会进入一个比较关键的方法 <code class="highlighter-rouge">autoreleaseFast</code>，并传入哨兵对象 <code class="highlighter-rouge">POOL_SENTINEL</code>：</p>
+
+<pre><code class="language-objectivec">static inline id *autoreleaseFast(id obj)
+{
+   AutoreleasePoolPage *page = hotPage();
+   if (page &amp;&amp; !page-&gt;full()) {
+       return page-&gt;add(obj);
+   } else if (page) {
+       return autoreleaseFullPage(obj, page);
+   } else {
+       return autoreleaseNoPage(obj);
+   }
+}
+</code></pre>
+
+<p>上述方法分三种情况选择不同的代码执行：</p>
+
+<ul>
+  <li>有 <code class="highlighter-rouge">hotPage</code> 并且当前 <code class="highlighter-rouge">page</code> 不满
+    <ul>
+      <li>调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 方法将对象添加至 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+    </ul>
+  </li>
+  <li>有 <code class="highlighter-rouge">hotPage</code> 并且当前 <code class="highlighter-rouge">page</code> 已满
+    <ul>
+      <li>调用 <code class="highlighter-rouge">autoreleaseFullPage</code> 初始化一个新的页</li>
+      <li>调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 方法将对象添加至 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+    </ul>
+  </li>
+  <li>无 <code class="highlighter-rouge">hotPage</code>
+    <ul>
+      <li>调用 <code class="highlighter-rouge">autoreleaseNoPage</code> 创建一个 <code class="highlighter-rouge">hotPage</code></li>
+      <li>调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 方法将对象添加至 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+    </ul>
+  </li>
+</ul>
+
+<p>最后的都会调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 将对象添加到自动释放池中。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">hotPage</code> 可以理解为当前正在使用的 <code class="highlighter-rouge">AutoreleasePoolPage</code>。</p>
+</blockquote>
+
+<h4 id="page-add-添加对象">page-&gt;add 添加对象</h4>
+
+<p><code class="highlighter-rouge">id *add(id obj)</code> 将对象添加到自动释放池页中：</p>
+
+<pre><code class="language-objectivec">id *add(id obj) {
+    id *ret = next;
+    *next = obj;
+    next++;
+    return ret;
+}
+</code></pre>
+
+<blockquote>
+  <p>笔者对这个方法进行了处理，更方便理解。</p>
+</blockquote>
+
+<p>这个方法其实就是一个压栈的操作，将对象加入 <code class="highlighter-rouge">AutoreleasePoolPage</code> 然后移动栈顶的指针。</p>
+
+<h4 id="autoreleasefullpage当前-hotpage-已满">autoreleaseFullPage（当前 hotPage 已满）</h4>
+
+<p><code class="highlighter-rouge">autoreleaseFullPage</code> 会在当前的 <code class="highlighter-rouge">hotPage</code> 已满的时候调用：</p>
+
+<pre><code class="language-objectivec">static id *autoreleaseFullPage(id obj, AutoreleasePoolPage *page) {
+    do {
+        if (page-&gt;child) page = page-&gt;child;
+        else page = new AutoreleasePoolPage(page);
+    } while (page-&gt;full());
+
+    setHotPage(page);
+    return page-&gt;add(obj);
+}
+</code></pre>
+
+<p>它会从传入的 <code class="highlighter-rouge">page</code> 开始遍历整个双向链表，直到：</p>
+
+<ol>
+  <li>查找到一个未满的 <code class="highlighter-rouge">AutoreleasePoolPage</code></li>
+  <li>使用构造器传入 <code class="highlighter-rouge">parent</code> 创建一个新的 <code class="highlighter-rouge">AutoreleasePoolPage</code></li>
+</ol>
+
+<p>在查找到一个可以使用的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 之后，会将该页面标记成 <code class="highlighter-rouge">hotPage</code>，然后调动上面分析过的 <code class="highlighter-rouge">page-&gt;add</code> 方法添加对象。</p>
+
+<h4 id="autoreleasenopage没有-hotpage">autoreleaseNoPage（没有 hotPage)</h4>
+
+<p>如果当前内存中不存在 <code class="highlighter-rouge">hotPage</code>，就会调用 <code class="highlighter-rouge">autoreleaseNoPage</code> 方法初始化一个 <code class="highlighter-rouge">AutoreleasePoolPage</code>：</p>
+
+<pre><code class="language-objectivec">static id *autoreleaseNoPage(id obj) {
+    AutoreleasePoolPage *page = new AutoreleasePoolPage(nil);
+    setHotPage(page);
+
+    if (obj != POOL_SENTINEL) {
+        page-&gt;add(POOL_SENTINEL);
+    }
+
+    return page-&gt;add(obj);
+}
+</code></pre>
+
+<p>既然当前内存中不存在 <code class="highlighter-rouge">AutoreleasePoolPage</code>，就要<strong>从头开始构建这个自动释放池的双向链表</strong>，也就是说，新的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 是没有 <code class="highlighter-rouge">parent</code> 指针的。</p>
+
+<p>初始化之后，将当前页标记为 <code class="highlighter-rouge">hotPage</code>，然后会先向这个 <code class="highlighter-rouge">page</code> 中添加一个 <code class="highlighter-rouge">POOL_SENTINEL</code> 对象，来确保在 <code class="highlighter-rouge">pop</code> 调用的时候，不会出现异常。</p>
+
+<p>最后，将 <code class="highlighter-rouge">obj</code> 添加到自动释放池中。</p>
+
+<h3 id="objc_autoreleasepoolpop-方法"><a id="objc_autoreleasePoolPop"></a>objc_autoreleasePoolPop 方法</h3>
+
+<p>同样，回顾一下上面提到的 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 方法：</p>
+
+<pre><code class="language-objectivec">void objc_autoreleasePoolPop(void *ctxt) {
+    AutoreleasePoolPage::pop(ctxt);
+}
+</code></pre>
+
+<blockquote>
+  <p>看起来传入任何一个指针都是可以的，但是在整个工程并没有发现传入其他对象的例子。不过在这个方法中<strong>传入其它的指针也是可行的</strong>，会将自动释放池释放到相应的位置。</p>
+</blockquote>
+
+<p>我们一般都会在这个方法中传入一个哨兵对象 <code class="highlighter-rouge">POOL_SENTINEL</code>，如下图一样释放对象：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-pop-stack.png-1000width" alt="objc-autorelease-pop-stack" /></p>
+
+<h4 id="对-objc_autoreleasepoolpop-行为的测试">对 objc_autoreleasePoolPop 行为的测试</h4>
+
+<p>在继续分析这个方法之前做一个小测试，在 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 传入非哨兵对象，测试一下这个方法的行为。</p>
+
+<p>下面是 <code class="highlighter-rouge">main.m</code> 文件中的源代码：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+
+        NSString *s = @"Draveness";
+        [s stringByAppendingString:@"-Suffix"];
+
+    }
+    return 0;
+}
+</code></pre>
+
+<p>在代码的这一行打一个断点，因为这里会调用 <code class="highlighter-rouge">autorelease</code> 方法，将字符串加入自动释放池：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-breakpoint-main.png-1000width" alt="objc-autorelease-breakpoint-main" /></p>
+
+<p>当代码运行到这里时，通过 lldb 打印出当前 <code class="highlighter-rouge">hotPage</code> 中的栈内容：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-print-pool-content.png-1000width" alt="objc-autorelease-print-pool-content" /></p>
+
+<ol>
+  <li>通过 <code class="highlighter-rouge">static</code> 方法获取当前 <code class="highlighter-rouge">hotPage</code></li>
+  <li>打印 <code class="highlighter-rouge">AutoreleasePoolPage</code> 中的内容</li>
+  <li>打印当前 <code class="highlighter-rouge">next</code> 指针指向的内容，以及之前的内容，<code class="highlighter-rouge">-2 </code>时已经到了 <code class="highlighter-rouge">begin()</code> 位置</li>
+  <li>使用 <code class="highlighter-rouge">print() </code>和 <code class="highlighter-rouge">printAll() </code>打印自动释放池中内容</li>
+</ol>
+
+<p>然后将字符串 <code class="highlighter-rouge">@"Draveness-Suffix"</code> 的指针传入 <code class="highlighter-rouge">pop</code> 方法，测试 <code class="highlighter-rouge">pop</code> 方法能否传入非哨兵参数。</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-pop-string.png-1000width" alt="objc-autorelease-pop-string" /></p>
+
+<p>再次打印当前 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的内容时，字符串已经不存在了，这说明<strong>向 <code class="highlighter-rouge">pop</code> 方法传入非哨兵参数是可行的</strong>，只是我们一般不会传入非哨兵对象。</p>
+
+<hr />
+
+<p>让我们重新回到对 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 方法的分析，也就是 <code class="highlighter-rouge">AutoreleasePoolPage::pop</code> 方法的调用：</p>
+
+<pre><code class="language-objectivec">static inline void pop(void *token) {
+    AutoreleasePoolPage *page = pageForPointer(token);
+    id *stop = (id *)token;
+
+    page-&gt;releaseUntil(stop);
+
+    if (page-&gt;child) {
+        if (page-&gt;lessThanHalfFull()) {
+            page-&gt;child-&gt;kill();
+        } else if (page-&gt;child-&gt;child) {
+            page-&gt;child-&gt;child-&gt;kill();
+        }
+    }
+}
+</code></pre>
+
+<blockquote>
+  <p>在这个方法中删除了大量无关的代码，以及对格式进行了调整。</p>
+</blockquote>
+
+<p>该静态方法总共做了三件事情：</p>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">pageForPointer</code> 获取当前 <code class="highlighter-rouge">token</code> 所在的 <code class="highlighter-rouge">AutoreleasePoolPage</code></li>
+  <li>调用 <code class="highlighter-rouge">releaseUntil</code> 方法释放<strong>栈中的</strong>对象，直到 <code class="highlighter-rouge">stop</code></li>
+  <li>调用 <code class="highlighter-rouge">child</code> 的 <code class="highlighter-rouge">kill</code> 方法</li>
+</ol>
+
+<blockquote>
+  <p>我到现在也不是很清楚为什么要根据当前页的不同状态 <code class="highlighter-rouge">kill</code> 掉不同 <code class="highlighter-rouge">child</code> 的页面。</p>
+</blockquote>
+
+<pre><code class="language-objectivec">if (page-&gt;lessThanHalfFull()) {
+    page-&gt;child-&gt;kill();
+} else if (page-&gt;child-&gt;child) {
+    page-&gt;child-&gt;child-&gt;kill();
+}
+</code></pre>
+
+<h4 id="pageforpointer-获取-autoreleasepoolpage">pageForPointer 获取 AutoreleasePoolPage</h4>
+
+<p><code class="highlighter-rouge">pageForPointer</code> 方法主要是通过内存地址的操作，获取当前指针所在页的首地址：</p>
+
+<pre><code class="language-objectivec">static AutoreleasePoolPage *pageForPointer(const void *p) {
+    return pageForPointer((uintptr_t)p);
+}
+
+static AutoreleasePoolPage *pageForPointer(uintptr_t p) {
+    AutoreleasePoolPage *result;
+    uintptr_t offset = p % SIZE;
+
+    assert(offset &gt;= sizeof(AutoreleasePoolPage));
+
+    result = (AutoreleasePoolPage *)(p - offset);
+    result-&gt;fastcheck();
+
+    return result;
+}
+</code></pre>
+
+<p>将指针与页面的大小，也就是 4096 取模，得到当前指针的偏移量，因为所有的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 在内存中都是对齐的：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>p = 0x100816048
+p % SIZE = 0x48
+result = 0x100816000
+</code></pre></div></div>
+
+<p>而最后调用的方法 <code class="highlighter-rouge">fastCheck()</code> 用来检查当前的 <code class="highlighter-rouge">result</code> 是不是一个 <code class="highlighter-rouge">AutoreleasePoolPage</code>。</p>
+
+<blockquote>
+  <p>通过检查 <code class="highlighter-rouge">magic_t</code> 结构体中的某个成员是否为 <code class="highlighter-rouge">0xA1A1A1A1</code>。</p>
+</blockquote>
+
+<h4 id="releaseuntil-释放对象">releaseUntil 释放对象</h4>
+
+<p><code class="highlighter-rouge">releaseUntil</code> 方法的实现如下：</p>
+
+<pre><code class="language-objectivec">void releaseUntil(id *stop) {
+    while (this-&gt;next != stop) {
+        AutoreleasePoolPage *page = hotPage();
+
+        while (page-&gt;empty()) {
+            page = page-&gt;parent;
+            setHotPage(page);
+        }
+
+        page-&gt;unprotect();
+        id obj = *--page-&gt;next;
+        memset((void*)page-&gt;next, SCRIBBLE, sizeof(*page-&gt;next));
+        page-&gt;protect();
+
+        if (obj != POOL_SENTINEL) {
+            objc_release(obj);
+        }
+    }
+
+    setHotPage(this);
+}
+</code></pre>
+
+<p>它的实现还是很容易的，用一个 <code class="highlighter-rouge">while</code> 循环持续释放 <code class="highlighter-rouge">AutoreleasePoolPage</code> 中的内容，直到 <code class="highlighter-rouge">next</code> 指向了 <code class="highlighter-rouge">stop</code> 。</p>
+
+<p>使用 <code class="highlighter-rouge">memset</code> 将内存的内容设置成 <code class="highlighter-rouge">SCRIBBLE</code>，然后使用 <code class="highlighter-rouge">objc_release</code> 释放对象。</p>
+
+<h4 id="kill-方法">kill() 方法</h4>
+
+<p>到这里，没有分析的方法就只剩下 <code class="highlighter-rouge">kill</code> 了，而它会将当前页面以及子页面全部删除：</p>
+
+<pre><code class="language-objectivec">void kill() {
+    AutoreleasePoolPage *page = this;
+    while (page-&gt;child) page = page-&gt;child;
+
+    AutoreleasePoolPage *deathptr;
+    do {
+        deathptr = page;
+        page = page-&gt;parent;
+        if (page) {
+            page-&gt;unprotect();
+            page-&gt;child = nil;
+            page-&gt;protect();
+        }
+        delete deathptr;
+    } while (deathptr != this);
+}
+</code></pre>
+
+<h3 id="autorelease-方法">autorelease 方法</h3>
+
+<p>我们已经对自动释放池生命周期有一个比较好的了解，最后需要了解的话题就是 <code class="highlighter-rouge">autorelease</code> 方法的实现，先来看一下方法的调用栈：</p>
+
+<pre><code class="language-objectivec">- [NSObject autorelease]
+└── id objc_object::rootAutorelease()
+    └── id objc_object::rootAutorelease2()
+        └── static id AutoreleasePoolPage::autorelease(id obj)
+            └── static id AutoreleasePoolPage::autoreleaseFast(id obj)
+                ├── id *add(id obj)
+                ├── static id *autoreleaseFullPage(id obj, AutoreleasePoolPage *page)
+                │   ├── AutoreleasePoolPage(AutoreleasePoolPage *newParent)
+                │   └── id *add(id obj)
+                └── static id *autoreleaseNoPage(id obj)
+                    ├── AutoreleasePoolPage(AutoreleasePoolPage *newParent)
+                    └── id *add(id obj)
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">autorelease</code> 方法的调用栈中，最终都会调用上面提到的 <a href="#autoreleaseFast">autoreleaseFast</a> 方法，将当前对象加到 <code class="highlighter-rouge">AutoreleasePoolPage</code> 中。</p>
+
+<p>这一小节中这些方法的实现都非常容易，只是进行了一些参数上的检查，最终还要调用 <a href="#autoreleaseFast">autoreleaseFast</a> 方法：</p>
+
+<pre><code class="language-objectivec">inline id objc_object::rootAutorelease() {
+    if (isTaggedPointer()) return (id)this;
+    if (prepareOptimizedReturn(ReturnAtPlus1)) return (id)this;
+
+    return rootAutorelease2();
+}
+
+__attribute__((noinline,used)) id objc_object::rootAutorelease2() {
+    return AutoreleasePoolPage::autorelease((id)this);
+}
+
+static inline id autorelease(id obj) {
+   id *dest __unused = autoreleaseFast(obj);
+   return obj;
+}
+</code></pre>
+
+<p>由于在上面已经分析过 <code class="highlighter-rouge">autoreleaseFast</code> 方法的实现，这里就不会多说了。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>整个自动释放池 <code class="highlighter-rouge">AutoreleasePool</code> 的实现以及 <code class="highlighter-rouge">autorelease</code> 方法都已经分析完了，我们再来回顾一下文章中的一些内容：</p>
+
+<ul>
+  <li>自动释放池是由 <code class="highlighter-rouge">AutoreleasePoolPage</code> 以双向链表的方式实现的</li>
+  <li>当对象调用 <code class="highlighter-rouge">autorelease</code> 方法时，会将对象加入 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+  <li>调用 <code class="highlighter-rouge">AutoreleasePoolPage::pop</code> 方法会向栈中的对象发送 <code class="highlighter-rouge">release</code> 消息</li>
+</ul>
+
+<h2 id="参考资料">参考资料</h2>
+
+<ul>
+  <li><a href="http://stackoverflow.com/questions/14677049/what-is-autoreleasepool-objective-c">What is autoreleasepool? - Objective-C</a></li>
+  <li><a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmAutoreleasePools.html">Using Autorelease Pool Blocks</a></li>
+  <li><a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSAutoreleasePool_Class/index.html#//apple_ref/occ/cl/NSAutoreleasePool">NSAutoreleasePool</a></li>
+  <li><a href="http://blog.sunnyxx.com/2014/10/15/behind-autorelease/">黑幕背后的 Autorelease</a></li>
+</ul>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=自动释放池的前世今生 ---- 深入解析 autoreleasepool&amp;url=autoreleasepool"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=autoreleasepool"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=autoreleasepool"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/rr">
+            <section class="post">
+                <h2>黑箱中的 retain 和 release</h2>
+                <p>> 转自：[黑箱中的 retain 和 release](https://draveness.me/rr) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > > 由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 `autorelease` 方法，另一部分分析 `retain`、`release`...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/hashtable">
+            <section class="post">
+                <h2>上古时代 Objective-C 中哈希表的实现</h2>
+                <p>转自：上古时代 Objective-C 中哈希表的实现 关注仓库，及时获得更新：iOS-Source-Code-Analyze 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

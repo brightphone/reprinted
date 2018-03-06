@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>理解 RACScheduler 的实现</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//racscheduler" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="理解 RACScheduler 的实现" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//racscheduler" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="理解 RACScheduler 的实现" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//racscheduler" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "理解 RACScheduler 的实现",
+    "url": "/reprinted//racscheduler",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">理解 RACScheduler 的实现</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2017-02-17">17 Feb 2017</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/RAC'>RAC</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/racscheduler">理解 RACScheduler 的实现</a></p>
+</blockquote>
+
+<p><code class="highlighter-rouge">RACScheduler</code> 是一个线性执行队列，ReactiveCocoa 中的信号可以在 <code class="highlighter-rouge">RACScheduler</code> 上执行任务、发送结果；它的实现并不复杂，由多个简单的方法和类组成整个 <code class="highlighter-rouge">RACScheduler</code> 模块，是整个 ReactiveCocoa 中非常易于理解的部分。</p>
+
+<h2 id="racscheduler-简介">RACScheduler 简介</h2>
+
+<p><code class="highlighter-rouge">RACScheduler</code> 作为 ReactiveCocoa 中唯一的用于调度的模块，它包含很多个性化的子类：</p>
+
+<p><img src="https://img.draveness.me/2017-02-17-RACScheduler-Subclasses.png-1000width" alt="RACScheduler-Subclasses" /></p>
+
+<p><code class="highlighter-rouge">RACScheduler</code> 类的内部只有一个用于追踪标记和 debug 的属性 <code class="highlighter-rouge">name</code>，头文件和实现文件中的其它内容都是各种各样的方法；我们可以把其中的方法分为两类，一类是用于初始化 <code class="highlighter-rouge">RACScheduler</code> 实例的初始化方法：</p>
+
+<p><img src="https://img.draveness.me/2017-02-17-RACScheduler-Initializers.png-1000width" alt="RACScheduler-Initializers" /></p>
+
+<p>另一类就是用于调度、执行任务的 <code class="highlighter-rouge">+schedule:</code> 等方法：</p>
+
+<p><img src="https://img.draveness.me/2017-02-17-RACScheduler-Schedule.png-1000width" alt="RACScheduler-Schedule" /></p>
+
+<p>在图中都省略了一些参数缺省的方法，以及一些调用其他方法的调度方法或者初始化方法，用以减少我们分析和理解整个 <code class="highlighter-rouge">RACScheduler</code> 类的难度。</p>
+
+<p>在 <code class="highlighter-rouge">RACScheduler</code> 中，大部分的调度方法都是需要子类覆写，它本身只提供少数的功能，比如递归 block 的执行：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)scheduleRecursiveBlock:(RACSchedulerRecursiveBlock)recursiveBlock {
+	RACCompoundDisposable *disposable = [RACCompoundDisposable compoundDisposable];
+	[self scheduleRecursiveBlock:[recursiveBlock copy] addingToDisposable:disposable];
+	return disposable;
+}
+</code></pre>
+
+<p>该方法会递归的执行传入的 <code class="highlighter-rouge">recursiveBlock</code>，使用的方式非常简单：</p>
+
+<pre><code class="language-objectivec">[scheduler scheduleRecursiveBlock:^(void (^reschedule)(void)) {
+    if (needTerminated) return;
+
+    // do something
+
+    reschedule();
+}];
+</code></pre>
+
+<p>如果需要递归就执行方法中的 <code class="highlighter-rouge">reschedule()</code>，就会再次执行当前的 block；<code class="highlighter-rouge">-scheduleRecursiveBlock:</code> 中调用的 <code class="highlighter-rouge">-scheduleRecursiveBlock:addingToDisposable:</code> 实现比较复杂：</p>
+
+<pre><code class="language-objectivec">- (void)scheduleRecursiveBlock:(RACSchedulerRecursiveBlock)recursiveBlock addingToDisposable:(RACCompoundDisposable *)disposable {
+    ...
+    RACDisposable *schedulingDisposable = [self schedule:^{
+        void (^reallyReschedule)(void) = ^{
+            [self scheduleRecursiveBlock:recursiveBlock addingToDisposable:disposable];
+        };
+
+        recursiveBlock(^{
+            reallyReschedule();
+        });
+    }];
+    ...
+}
+</code></pre>
+
+<blockquote>
+  <p>方法使用了 <code class="highlighter-rouge">NSLock</code> 保证在并发情况下并不会出现任何问题，不过在这里展示的代码中，我们将它省略了，一并省略的还有 <code class="highlighter-rouge">RACDisposable</code> 相关的代码，以保证整个方法逻辑的清晰，方法的原实现可以查看这里 <a href="https://github.com/ReactiveCocoa/ReactiveObjC/blob/9164a24abfbb7d6b2280d78f9c9308a9842bfcfe/ReactiveObjC/RACScheduler.m#L130-L187">RACScheduler.m#L130-L187</a>。</p>
+</blockquote>
+
+<p>在每次执行 <code class="highlighter-rouge">recursiveBlock</code> 时，都会传入一个 <code class="highlighter-rouge">reallyReschedule</code> 用于递归执行传入的 block。</p>
+
+<p>其他的方法包括 <code class="highlighter-rouge">+schedule:</code>、<code class="highlighter-rouge">+after:schedule:</code> 以及 <code class="highlighter-rouge">after:repeatingEvery:withLeeway:schedule:</code> 方法都需要子类覆写：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)schedule:(void (^)(void))block;
+- (RACDisposable *)after:(NSDate *)date schedule:(void (^)(void))block;
+- (RACDisposable *)after:(NSDate *)date repeatingEvery:(NSTimeInterval)interval withLeeway:(NSTimeInterval)leeway schedule:(void (^)(void))block {
+	NSCAssert(NO, @"%@ must be implemented by subclasses.", NSStringFromSelector(_cmd));
+	return nil;
+}
+</code></pre>
+
+<p>而接下来我们就按照初始化方法的顺序依次介绍 <code class="highlighter-rouge">RACScheduler</code> 的子类了。</p>
+
+<h3 id="racimmediatescheduler">RACImmediateScheduler</h3>
+
+<p><code class="highlighter-rouge">RACImmediateScheduler</code> 是一个会立即执行传入的代码块的调度器，我们可以使用 <code class="highlighter-rouge">RACScheduler</code> 的类方法 <code class="highlighter-rouge">+immediateScheduler</code> 返回一个它的实例：</p>
+
+<pre><code class="language-objectivec">+ (RACScheduler *)immediateScheduler {
+	static dispatch_once_t onceToken;
+	static RACScheduler *immediateScheduler;
+	dispatch_once(&amp;onceToken, ^{
+		immediateScheduler = [[RACImmediateScheduler alloc] init];
+	});
+	return immediateScheduler;
+}
+</code></pre>
+
+<p>由于 <code class="highlighter-rouge">RACImmediateScheduler</code> 是一个私有类，全局只能通过该方法返回它的实例，所以整个程序的运行周期内，我们通过『合法』手段只能获得唯一一个单例。</p>
+
+<p>作为 <code class="highlighter-rouge">RACScheduler</code> 的子类，它必须对父类的调度方法进行覆写，不过因为本身的职能原因，<code class="highlighter-rouge">RACImmediateScheduler</code> 对于父类的覆写还是非常简单的：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)schedule:(void (^)(void))block {
+	block();
+	return nil;
+}
+
+- (RACDisposable *)after:(NSDate *)date schedule:(void (^)(void))block {
+	[NSThread sleepUntilDate:date];
+	block();
+	return nil;
+}
+
+- (RACDisposable *)after:(NSDate *)date repeatingEvery:(NSTimeInterval)interval withLeeway:(NSTimeInterval)leeway schedule:(void (^)(void))block {
+	NSCAssert(NO, @"+[RACScheduler immediateScheduler] does not support %@.", NSStringFromSelector(_cmd));
+	return nil;
+}
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">+schedule</code> 方法会立刻执行传入的 block；</li>
+  <li><code class="highlighter-rouge">+after:schedule:</code> 方法会将当前线程休眠到指定时间后执行 block；</li>
+  <li>而对于 <code class="highlighter-rouge">+after:repeatingEvery:withLeeway:schedule:</code> 方法就干脆不支持。</li>
+</ul>
+
+<p>这确实非常符合 <code class="highlighter-rouge">RACImmediateScheduler</code> 类的名字以及功能，虽然没有要求对递归执行 block 的方法进行覆写，不过它依然做了这件事情：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)scheduleRecursiveBlock:(RACSchedulerRecursiveBlock)recursiveBlock {
+	for (__block NSUInteger remaining = 1; remaining &gt; 0; remaining--) {
+		recursiveBlock(^{
+			remaining++;
+		});
+	}
+	return nil;
+}
+</code></pre>
+
+<p>实现的过程非常简洁，甚至没有什么值得解释的地方了。</p>
+
+<h3 id="ractargetqueuescheduler">RACTargetQueueScheduler</h3>
+
+<p><code class="highlighter-rouge">RACTargetQueueScheduler</code> 继承自 <code class="highlighter-rouge">RACQueueScheduler</code>，但是由于后者是抽象类，我们并不会直接使用它，它只是为前者提供必要的方法支持，将一部分逻辑抽离出来：</p>
+
+<p><img src="https://img.draveness.me/2017-02-17-RACTargetQueueScheduler.png-1000width" alt="RACTargetQueueSchedule" /></p>
+
+<p>这里我们先简单看一下 <code class="highlighter-rouge">RACTargetQueueScheduler</code> 的实现，整个 <code class="highlighter-rouge">RACTargetQueueScheduler</code> 类中只有一个初始化方法：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithName:(NSString *)name targetQueue:(dispatch_queue_t)targetQueue {
+	dispatch_queue_t queue = dispatch_queue_create(name.UTF8String, DISPATCH_QUEUE_SERIAL);
+	dispatch_set_target_queue(queue, targetQueue);
+	return [super initWithName:name queue:queue];
+}
+</code></pre>
+
+<p>初始化方法 <code class="highlighter-rouge">-initWithName:targetQueue:</code> 使用 <code class="highlighter-rouge">dispatch_queue_create</code> 创建了一个串行队列，然后通过 <code class="highlighter-rouge">dispatch_set_target_queue</code>  根据传入的 <code class="highlighter-rouge">targetQueue</code> 设置队列的优先级，最后调用父类的指定构造器完成整个初始化过程。</p>
+
+<p><code class="highlighter-rouge">RACTargetQueueScheduler</code> 在使用时，将待执行的任务加入一个私有的串行队列中，其优先级与传入的 targetQueue 完全相同；不过提到 <code class="highlighter-rouge">RACTargetQueueScheduler</code> 中队列的优先级，对 GCD 稍有了解的人应该都知道在 GCD 中有着四种不同优先级的全局并行队列，而在 <code class="highlighter-rouge">RACScheduler</code> 中也有一一对应的枚举类型：</p>
+
+<p><img src="https://img.draveness.me/2017-02-17-RACScheduler-Priority.png-1000width" alt="RACScheduler-Priority" /></p>
+
+<p>在使用 <code class="highlighter-rouge">+schedulerWithPriority:</code> 方法创建 <code class="highlighter-rouge">RACTargetQueueScheduler</code> 时，就需要传入上面的优先级，方法会通过 GCD 的内置方法 <code class="highlighter-rouge">dispatch_get_global_queue</code> 获取全局的并行队列，最终返回一个新的实例。</p>
+
+<pre><code class="language-objectivec">+ (RACScheduler *)schedulerWithPriority:(RACSchedulerPriority)priority name:(NSString *)name {
+	return [[RACTargetQueueScheduler alloc] initWithName:name targetQueue:dispatch_get_global_queue(priority, 0)];
+}
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">RACScheduler</code> 接口中另一个获得主线程调度器的方法 <code class="highlighter-rouge">+mainThreadScheduler</code>，其实现也是返回一个 <code class="highlighter-rouge">RACTargetQueueScheduler</code> 对象：</p>
+
+<pre><code class="language-objectivec">+ (RACScheduler *)mainThreadScheduler {
+	static dispatch_once_t onceToken;
+	static RACScheduler *mainThreadScheduler;
+	dispatch_once(&amp;onceToken, ^{
+		mainThreadScheduler = [[RACTargetQueueScheduler alloc] initWithName:@"org.reactivecocoa.ReactiveObjC.RACScheduler.mainThreadScheduler" targetQueue:dispatch_get_main_queue()];
+	});
+
+	return mainThreadScheduler;
+}
+</code></pre>
+
+<p>与前者不同的是，后者通过单例模式每次调用时返回一个相同的主线程队列。</p>
+
+<h4 id="抽象类-racqueuescheduler">抽象类 RACQueueScheduler</h4>
+
+<p>在我们对 <code class="highlighter-rouge">RACTargetQueueScheduler</code> 有一定了解之后，再看它的抽象类就非常简单了；<code class="highlighter-rouge">RACImmediateScheduler</code> 会立即执行传入的任务，而 <code class="highlighter-rouge">RACQueueScheduler</code> 其实就是对 GCD 的封装，相信各位读者从它的子类的实现就可以看出来。</p>
+
+<p><code class="highlighter-rouge">RACQueueScheduler</code> 对三个需要覆写的方法都进行了重写，其实现完全基于 GCD，以 <code class="highlighter-rouge">-schedule:</code> 方法为例：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)schedule:(void (^)(void))block {
+	RACDisposable *disposable = [[RACDisposable alloc] init];
+
+	dispatch_async(self.queue, ^{
+		if (disposable.disposed) return;
+		[self performAsCurrentScheduler:block];
+	});
+
+	return disposable;
+}
+</code></pre>
+
+<p>使用 <code class="highlighter-rouge">dispatch_async</code> 方法直接将需要执行的任务<strong>异步派发</strong>到它所持有的队列上；而 <code class="highlighter-rouge">-after:schedule:</code> 方法的实现相信各位读者也能猜到：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)after:(NSDate *)date schedule:(void (^)(void))block {
+	RACDisposable *disposable = [[RACDisposable alloc] init];
+
+	dispatch_after([self.class wallTimeWithDate:date], self.queue, ^{
+		if (disposable.disposed) return;
+		[self performAsCurrentScheduler:block];
+	});
+
+	return disposable;
+}
+</code></pre>
+
+<p>哪怕不使用 <code class="highlighter-rouge">RACScheduler</code>，我们也能够想到利用 <code class="highlighter-rouge">dispatch_after</code> 完成一些需要延迟执行的任务，最后的 <code class="highlighter-rouge">+after:repeatingEvery:withLeeway:schedule:</code> 方法的实现就稍微复杂一些了：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)after:(NSDate *)date repeatingEvery:(NSTimeInterval)interval withLeeway:(NSTimeInterval)leeway schedule:(void (^)(void))block {
+	uint64_t intervalInNanoSecs = (uint64_t)(interval * NSEC_PER_SEC);
+	uint64_t leewayInNanoSecs = (uint64_t)(leeway * NSEC_PER_SEC);
+
+	dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.queue);
+	dispatch_source_set_timer(timer, [self.class wallTimeWithDate:date], intervalInNanoSecs, leewayInNanoSecs);
+	dispatch_source_set_event_handler(timer, block);
+	dispatch_resume(timer);
+
+	return [RACDisposable disposableWithBlock:^{
+		dispatch_source_cancel(timer);
+	}];
+}
+</code></pre>
+
+<p>方法使用 <code class="highlighter-rouge">dispatch_source_t</code> 以及定时器，完成了每隔一段时间需要执行任务的需求。</p>
+
+<h3 id="racsubscriptionscheduler">RACSubscriptionScheduler</h3>
+
+<p>最后的 <code class="highlighter-rouge">RACSubscriptionScheduler</code> 是 ReactiveCocoa 中一个比较特殊的调度器，所有 ReactiveCocoa 中的订阅事件都会在 <code class="highlighter-rouge">RACSubscriptionScheduler</code> 调度器上进行；而它是通过封装两个调度器实现的：</p>
+
+<p><img src="https://img.draveness.me/2017-02-17-RACSubscriptionScheduler.png-1000width" alt="RACSubscriptionSchedule" /></p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">backgroundScheduler</code> 是一个优先级为 <code class="highlighter-rouge">RACSchedulerPriorityDefault</code> 的串行队列。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">RACSubscriptionScheduler</code> 本身不提供任何的调度功能，它会根据当前状态选择持有的两个调度器中的一个执行任务；首先判断当前线程是否存在 <code class="highlighter-rouge">currentScheduler</code>，如果不存在的话才会在 <code class="highlighter-rouge">backgroundScheduler</code> 执行任务。</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)schedule:(void (^)(void))block {
+	if (RACScheduler.currentScheduler == nil) return [self.backgroundScheduler schedule:block];
+	block();
+	return nil;
+}
+
+- (RACDisposable *)after:(NSDate *)date schedule:(void (^)(void))block {
+	RACScheduler *scheduler = RACScheduler.currentScheduler ?: self.backgroundScheduler;
+	return [scheduler after:date schedule:block];
+}
+
+- (RACDisposable *)after:(NSDate *)date repeatingEvery:(NSTimeInterval)interval withLeeway:(NSTimeInterval)leeway schedule:(void (^)(void))block {
+	RACScheduler *scheduler = RACScheduler.currentScheduler ?: self.backgroundScheduler;
+	return [scheduler after:date repeatingEvery:interval withLeeway:leeway schedule:block];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">RACSubscriptionScheduler</code> 作为一个私有类，我们并不能直接在 ReactiveCocoa 外部使用它，需要通过私有方法 <code class="highlighter-rouge">+subscriptionScheduler</code> 获取这个调度器：</p>
+
+<pre><code class="language-objectivec">+ (RACScheduler *)subscriptionScheduler {
+	static dispatch_once_t onceToken;
+	static RACScheduler *subscriptionScheduler;
+	dispatch_once(&amp;onceToken, ^{
+		subscriptionScheduler = [[RACSubscriptionScheduler alloc] init];
+	});
+
+	return subscriptionScheduler;
+}
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p><code class="highlighter-rouge">RACScheduler</code> 在某些方面与 GCD 中的队列十分相似，与 GCD 中的队列不同的有两点，第一，它可以通过 <code class="highlighter-rouge">RACDisposable</code> 对执行中的任务进行取消，第二是 <code class="highlighter-rouge">RACScheduler</code> 中任务的执行都是线性的；与此同时 <code class="highlighter-rouge">RACScheduler</code> 也与 <code class="highlighter-rouge">NSOperationQueue</code> 非常类似，但是它并不支持对调度的任务进行<strong>重排序</strong>以及实现任务与任务之间的<strong>依赖</strong>关系。</p>
+
+<h2 id="references">References</h2>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/racscheduler</p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=理解 RACScheduler 的实现&amp;url=racscheduler"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=racscheduler"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=racscheduler"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racdelegateproxy">
+            <section class="post">
+                <h2>从代理到 RACSignal</h2>
+                <p>> 转自：[从代理到 RACSignal](https://draveness.me/racdelegateproxy) ReactiveCocoa 将 Cocoa 中的 Target-Action、KVO、通知中心以及代理等设计模式都桥接到了 RAC 的世界中，我们在随后的几篇文章中会介绍 RAC 如何做到了上面的这些事情，而本篇文章会介绍 ReactiveCocoa 是如何把**代理**转换为信号的。 ![Delegate-To-RACSigna](https://img.draveness.me/2017-02-25-Delegate-To-RACSignal.png-1000width)...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racchannel">
+            <section class="post">
+                <h2>RAC 中的双向数据绑定 RACChannel</h2>
+                <p>转自：RAC 中的双向数据绑定 RACChannel 之前讲过了 ReactiveCocoa 中的一对一的单向数据流 RACSignal 和一对多的单向数据流 RACMulticastConnection，这一篇文章分析的是一对一的双向数据流 RACChannel。 RACChannel 其实是一个相对比较复杂的类，但是，对其有一定了解之后合理运用的话，会在合适的业务中提供非常强大的支持能够极大的简化业务代码。 RACChannel 简介 RACChannel...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>懒惰的 initialize 方法</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//initialize" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="懒惰的 initialize 方法" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//initialize" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="懒惰的 initialize 方法" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//initialize" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "懒惰的 initialize 方法",
+    "url": "/reprinted//initialize",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">懒惰的 initialize 方法</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-04-30">30 Apr 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/initialize">懒惰的 initialize 方法</a></p>
+</blockquote>
+
+<blockquote>
+  <p>因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 <code class="highlighter-rouge">x86_64</code> 架构下运行的，对于在 arm64 中运行的代码会特别说明。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>这篇文章可能是对 Objective-C 源代码解析系列文章中最短的一篇了，在 Objective-C 中，我们总是会同时想到 <code class="highlighter-rouge">load</code>、<code class="highlighter-rouge">initialize</code> 这两个类方法。而这两个方法也经常在一起比较：</p>
+
+<p>在上一篇介绍 <code class="highlighter-rouge">load</code> 方法的<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/你真的了解%20load%20方法么？.md">文章</a>中，已经对 <code class="highlighter-rouge">load</code> 方法的调用时机、调用顺序进行了详细地分析，所以对于 <code class="highlighter-rouge">load</code> 方法，这里就不在赘述了。</p>
+
+<p>这篇文章会<del>假设你知道：</del>假设你是 iOS 开发者。</p>
+
+<p>本文会主要介绍：</p>
+
+<ol>
+  <li><code class="highlighter-rouge">initialize</code> 方法的调用为什么是惰性的</li>
+  <li>这货能干啥</li>
+</ol>
+
+<h2 id="initialize-的调用栈">initialize 的调用栈</h2>
+
+<p>在分析其调用栈之前，首先来解释一下，什么是惰性的。</p>
+
+<p>这是 <code class="highlighter-rouge">main.m</code> 文件中的代码：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+
+@interface XXObject : NSObject @end
+
+@implementation XXObject
+
++ (void)initialize {
+    NSLog(@"XXObject initialize");
+}
+
+@end
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool { }
+    return 0;
+}
+</code></pre>
+
+<p>主函数中的代码为空，如果我们运行这个程序：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-print-nothing.png" alt="objc-initialize-print-nothing" /></p>
+
+<p>你会发现与 <code class="highlighter-rouge">load</code> 方法不同的是，虽然我们在 <code class="highlighter-rouge">initialize</code> 方法中调用了 <code class="highlighter-rouge">NSLog</code>。但是程序运行之后没有任何输出。</p>
+
+<p>如果，我们在自动释放池中加入以下代码：</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        __unused XXObject *object = [[XXObject alloc] init];
+    }
+    return 0;
+}
+</code></pre>
+
+<p>再运行程序：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-print-initialize.png" alt="objc-initialize-print-initialize" /></p>
+
+<p>你会发现，虽然我们没有直接调用 <code class="highlighter-rouge">initialize</code> 方法。但是，这里也打印出了 <code class="highlighter-rouge">XXObject initialize</code> 字符串。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">initialize</code> <strong>只会在对应类的方法第一次被调用时，才会调用</strong>。</p>
+</blockquote>
+
+<p>我们在 <code class="highlighter-rouge">initialize</code> 方法中打一个断点，来查看这个方法的调用栈：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-breakpoint.png" alt="objc-initialize-breakpoint" /></p>
+
+<pre><code class="language-objectivec">0 +[XXObject initialize]
+1 _class_initialize
+2 lookUpImpOrForward
+3 _class_lookupMethodAndLoadCache3
+4 objc_msgSend
+5 main
+6 start
+</code></pre>
+
+<p>直接来看调用栈中的 <code class="highlighter-rouge">lookUpImpOrForward</code> 方法，<code class="highlighter-rouge">lookUpImpOrForward</code> 方法<strong>只会在向对象发送消息，并且在类的缓存中没有找到消息的选择子时</strong>才会调用，具体可以看这篇文章，<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/从源代码看%20ObjC%20中消息的发送.md">从源代码看 ObjC 中消息的发送</a>。</p>
+
+<p>在这里，我们知道 <code class="highlighter-rouge">lookUpImpOrForward</code> 方法是 <code class="highlighter-rouge">objc_msgSend</code> 触发的就够了。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-print-selector.png" alt="objc-initialize-print-selecto" /></p>
+
+<p>在 lldb 中输入 <code class="highlighter-rouge">p sel</code> 打印选择子，会发现当前调用的方法是 <code class="highlighter-rouge">alloc</code> 方法，也就是说，<code class="highlighter-rouge">initialize</code> 方法是在 <code class="highlighter-rouge">alloc</code> 方法之前调用的，<code class="highlighter-rouge">alloc</code> 的调用导致了前者的执行。</p>
+
+<p>其中，使用 <code class="highlighter-rouge">if (initialize  &amp;&amp;  !cls-&gt;isInitialized())</code> 来判断当前类是否初始化过：</p>
+
+<pre><code class="language-objectivec">bool isInitialized() {
+   return getMeta()-&gt;data()-&gt;flags &amp; RW_INITIALIZED;
+}
+</code></pre>
+
+<blockquote>
+  <p>当前类是否初始化过的信息就保存在<a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html">元类</a>的 <code class="highlighter-rouge">class_rw_t</code> 结构体中的 <code class="highlighter-rouge">flags</code> 中。</p>
+</blockquote>
+
+<p>这是 <code class="highlighter-rouge">flags</code> 中保存的信息，它记录着跟当前类的元数据，其中第 16-31 位有如下的作用：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-class_rw_t_-bits-flag.png" alt="objc-initialize-class_rw_t_-bits-flag" /></p>
+
+<p><code class="highlighter-rouge">flags</code> 的第 29 位 <code class="highlighter-rouge">RW_INITIALIZED</code> 就保存了当前类是否初始化过的信息。</p>
+
+<h2 id="_class_initialize-方法">_class_initialize 方法</h2>
+
+<p>在 <code class="highlighter-rouge">initialize</code> 的调用栈中，直接调用其方法的是下面的这个 C 语言函数：</p>
+
+<pre><code class="language-objectivec">void _class_initialize(Class cls)
+{
+    Class supercls;
+    BOOL reallyInitialize = NO;
+
+    // 1. 强制父类先调用 initialize 方法
+    supercls = cls-&gt;superclass;
+    if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) {
+        _class_initialize(supercls);
+    }
+
+    {
+        // 2. 通过加锁来设置 RW_INITIALIZING 标志位
+        monitor_locker_t lock(classInitLock);
+        if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) {
+            cls-&gt;setInitializing();
+            reallyInitialize = YES;
+        }
+    }
+
+    if (reallyInitialize) {
+        // 3. 成功设置标志位，向当前类发送 +initialize 消息
+        _setThisThreadIsInitializingClass(cls);
+
+        ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);
+
+        // 4. 完成初始化，如果父类已经初始化完成，设置 RW_INITIALIZED 标志位，
+        //    否则，在父类初始化完成之后再设置标志位。
+        monitor_locker_t lock(classInitLock);
+        if (!supercls  ||  supercls-&gt;isInitialized()) {
+            _finishInitializing(cls, supercls);
+        } else {
+            _finishInitializingAfter(cls, supercls);
+        }
+        return;
+    } else if (cls-&gt;isInitializing()) {
+        // 5. 当前线程正在初始化当前类，直接返回，否则，会等待其它线程初始化结束后，再返回
+        if (_thisThreadIsInitializingClass(cls)) {
+            return;
+        } else {
+            monitor_locker_t lock(classInitLock);
+            while (!cls-&gt;isInitialized()) {
+                classInitLock.wait();
+            }
+            return;
+        }
+    } else if (cls-&gt;isInitialized()) {
+        // 6. 初始化成功后，直接返回
+        return;
+    } else {
+        _objc_fatal("thread-safe class init in objc runtime is buggy!");
+    }
+}
+</code></pre>
+
+<p>方法的主要作用自然是向未初始化的类发送 <code class="highlighter-rouge">+initialize</code> 消息，不过会强制父类先发送 <code class="highlighter-rouge">+initialize</code>。</p>
+
+<ol>
+  <li>
+    <p>强制<strong>未初始化过的</strong>父类调用 <code class="highlighter-rouge">initialize</code> 方法</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) {
+     _class_initialize(supercls);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>通过加锁来设置 <code class="highlighter-rouge">RW_INITIALIZING</code> 标志位</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> monitor_locker_t lock(classInitLock);
+ if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) {
+     cls-&gt;setInitializing();
+     reallyInitialize = YES;
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>成功设置标志位、向当前类发送 <code class="highlighter-rouge">+initialize</code> 消息</p>
+
+    <pre><code class="language-objectivec"> ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);
+</code></pre>
+  </li>
+  <li>
+    <p>完成初始化，如果父类已经初始化完成，设置 <code class="highlighter-rouge">RW_INITIALIZED</code> 标志位。否则，在父类初始化完成之后再设置标志位</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> monitor_locker_t lock(classInitLock);
+ if (!supercls  ||  supercls-&gt;isInitialized()) {
+     _finishInitializing(cls, supercls);
+ } else {
+     _finishInitializingAfter(cls, supercls);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>如果当前线程正在初始化当前类，直接返回，否则，会等待其它线程初始化结束后，再返回，<strong>保证线程安全</strong></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (_thisThreadIsInitializingClass(cls)) {
+     return;
+ } else {
+     monitor_locker_t lock(classInitLock);
+     while (!cls-&gt;isInitialized()) {
+         classInitLock.wait();
+     }
+     return;
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>初始化成功后，直接返回</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> return;
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="管理初始化队列">管理初始化队列</h2>
+
+<p>因为我们始终要保证父类的初始化方法要在子类之前调用，所以我们需要维护一个 <code class="highlighter-rouge">PendingInitializeMap</code> 的数据结构来存储<strong>当前的类初始化需要哪个父类先初始化完成</strong>。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-PendingInitializeMap.png" alt="PendingInitializeMap" /></p>
+
+<p>这个数据结构中的信息会被两个方法改变：</p>
+
+<pre><code class="language-objectivec">if (!supercls  ||  supercls-&gt;isInitialized()) {
+  _finishInitializing(cls, supercls);
+} else {
+  _finishInitializingAfter(cls, supercls);
+}
+</code></pre>
+
+<p>分别是 <code class="highlighter-rouge">_finishInitializing</code> 以及 <code class="highlighter-rouge">_finishInitializingAfter</code>，先来看一下后者是怎么实现的，也就是<strong>在父类没有完成初始化的时候</strong>调用的方法：</p>
+
+<pre><code class="language-objectivec">static void _finishInitializingAfter(Class cls, Class supercls)
+{
+    PendingInitialize *pending;
+    pending = (PendingInitialize *)malloc(sizeof(*pending));
+    pending-&gt;subclass = cls;
+    pending-&gt;next = (PendingInitialize *)NXMapGet(pendingInitializeMap, supercls);
+    NXMapInsert(pendingInitializeMap, supercls, pending);
+}
+</code></pre>
+
+<p>因为当前类的父类没有初始化，所以会将子类加入一个数据结构 <code class="highlighter-rouge">PendingInitialize</code> 中，这个数据结构其实就类似于一个保存子类的链表。这个链表会以父类为键存储到 <code class="highlighter-rouge">pendingInitializeMap</code> 中。</p>
+
+<pre><code class="language-objective">NXMapInsert(pendingInitializeMap, supercls, pending);
+</code></pre>
+
+<p>而在<strong>父类已经调用了初始化方法</strong>的情况下，对应方法 <code class="highlighter-rouge">_finishInitializing</code> 的实现就稍微有些复杂了：</p>
+
+<pre><code class="language-objectivec">static void _finishInitializing(Class cls, Class supercls)
+{
+    PendingInitialize *pending;
+
+    cls-&gt;setInitialized();
+
+    if (!pendingInitializeMap) return;
+    pending = (PendingInitialize *)NXMapGet(pendingInitializeMap, cls);
+    if (!pending) return;
+
+    NXMapRemove(pendingInitializeMap, cls);
+
+    while (pending) {
+        PendingInitialize *next = pending-&gt;next;
+        if (pending-&gt;subclass) _finishInitializing(pending-&gt;subclass, cls);
+        free(pending);
+        pending = next;
+    }
+}
+</code></pre>
+
+<p>首先，由于父类已经完成了初始化，在这里直接将当前类标记成已经初始化，然后<strong>递归地将被当前类 block 的子类标记为已初始化</strong>，再把这些当类移除 <code class="highlighter-rouge">pendingInitializeMap</code>。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>到这里，我们对 <code class="highlighter-rouge">initialize</code> 方法的研究基本上已经结束了，这里会总结一下关于其方法的特性：</p>
+
+<ol>
+  <li><code class="highlighter-rouge">initialize</code> 的调用是惰性的，它会在第一次调用当前类的方法时被调用</li>
+  <li>与 <code class="highlighter-rouge">load</code> 不同，<code class="highlighter-rouge">initialize</code> 方法调用时，所有的类都<strong>已经加载</strong>到了内存中</li>
+  <li><code class="highlighter-rouge">initialize</code> 的运行是线程安全的</li>
+  <li>子类会<strong>继承</strong>父类的 <code class="highlighter-rouge">initialize</code> 方法</li>
+</ol>
+
+<p>而其作用也非常局限，一般我们只会在 <code class="highlighter-rouge">initialize</code> 方法中进行一些常量的初始化。</p>
+
+<h2 id="参考资料">参考资料</h2>
+
+<ul>
+  <li><a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html">What is a meta-class in Objective-C?</a></li>
+  <li><a href="http://stackoverflow.com/questions/13326435/nsobject-load-and-initialize-what-do-they-do">NSObject +load and +initialize - What do they do?</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=懒惰的 initialize 方法&amp;url=initialize"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=initialize"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=initialize"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/night">
+            <section class="post">
+                <h2>成熟的夜间模式解决方案</h2>
+                <p>> 转自：[成熟的夜间模式解决方案](https://draveness.me/night) > > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) 从开始写 [DKNightVersion](https://github.com/Draveness/DKNightVersion) 这个框架到现在已经将近一年了，目前整个框架的设计也趋于稳定。 其实夜间模式的实现就是相当于**多主题加颜色管理**。而最新版本的 [DKNightVersion](https://github.com/Draveness/DKNightVersion) 已经很好的解决了这个问题。 在正式介绍目前版本的实现之前，我会先简单介绍一下 1.0 时代的 DKNightVersion...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/load">
+            <section class="post">
+                <h2>你真的了解 load 方法么？</h2>
+                <p>转自：你真的了解 load 方法么？ 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64 架构下运行的，对于在...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

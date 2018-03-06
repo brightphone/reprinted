@@ -114,7 +114,7 @@
                     <span class="author-location icon-location">Beijing, China</span>
                     <span class="author-link icon-link"><a href="https://draveness.me/index">draveness.me/index</a></span>
                     <!-- <span class="author-stats"><i class="icon-stats"></i> [[plural ../pagination.total empty='No posts' singular='% post' plural='% posts']]</span> -->
-                    <span class="author-stats"><i class="icon-stats"></i>27 posts</span>
+                    <span class="author-stats"><i class="icon-stats"></i>63 posts</span>
                 </div>
             
         
@@ -134,7 +134,7 @@
             <a class="newer-posts" href="/reprinted/author/" title="Previous Page">&laquo; Newer Posts</a>
         
     
-    <span class="page-number"> Page 2 of 3 </span>
+    <span class="page-number"> Page 2 of 7 </span>
      
         <a class="older-posts" href="/reprinted/author//page3/" title="Next Page">Older Posts &raquo;</a>
      
@@ -146,10 +146,10 @@
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">iOS 开发中的重构</a></h2>
+            <h2 class="post-title"><a href="/reprinted/racsubject">『可变』的热信号 RACSubject</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>随着一个项目的开发的进行, 项目中代码行数会随着时间的推移, 而逐渐增长. 但是由于一些历史原因, 先人在软件开发的过程中, 没有注意到项目中可以复用的模块以及代码. 这样一个工程中就出现了很多复制粘贴产生的代码, 违反了 DRY 的原则, 使得项目难以维护. 为什么要重构 为什么要重构, 重构其实是一件持续性的工作, 工程师在进行开发的过程中难免会有无法考虑周全的地方, 而目前的很多 iOS, Android 项目其实都是业务驱动的, 而业务和需求的更改导致原来模块的设计不再适用于当前的状况. 而大多数工程师是懒惰的. 因为没有足够的推动力去修改当前模块的设计, 所以通过打补丁的方式实现需求, 最终可能会导致整个项目代码的失控, 陷入焦油坑. 重构,... <a class="read-more" href="/reprinted/ios-kai-fa-zhong-de-zhong-gou">&raquo;</a></p>
+            <p>转自：『可变』的热信号 RACSubject 在 ReactiveCocoa 中除了不可变的信号 RACSignal，也有用于桥接非 RAC 代码到 ReactiveCocoa 世界的『可变』信号 RACSubject。 RACSubject 到底是什么？根据其字面意思，可以将它理解为一个可以订阅的主题，我们在订阅主题之后，向主题发送新的消息时，所有的订阅者都会接收到最新的消息。 但是这么解释确实有点晦涩，也不易于理解，ReactiveCocoa 团队对 RACSubject 的解释是，RACSubject 其实就是一个可以手动控制的信号（感觉这么解释更难理解了）。 A subject, represented by the RACSubject class, is... <a class="read-more" href="/reprinted/racsubject">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -171,24 +171,20 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/RAC'>RAC</a>
                     
                 
             
-            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+            <time class="post-date" datetime="2017-02-07">07 Feb 2017</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/ios-yuan-dai-ma-fen-xi-alamofire">iOS 源代码分析 ---- Alamofire</a></h2>
+            <h2 class="post-title"><a href="/reprinted/racsequence">Pull-Driven 的数据流 RACSequence</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>已经有几个月没有阅读著名开源项目的源代码了, 最近才有时间来做这件事情. 下面是 Github 主页上对 Alamofire 的描述 Elegant HTTP Networking in Swift 为什么这次我选择阅读 Alamofire 的源代码而不是 AFNetworking 呢, 其实有两点原因. AFNetworking 作为一个有着很多年的历史的框架, 它虽然有着强大的社区, 不过因为时间太久了, 可能有一些历史上的包袱. 而 Alamofire 是在... <a class="read-more" href="/reprinted/ios-yuan-dai-ma-fen-xi-alamofire">&raquo;</a></p>
+            <p>转自：Pull-Driven 的数据流 RACSequence ReactiveCocoa 在设计上很大程度借鉴了 Reactive Extension 中的概念，可以说 ReactiveCocoa 是 Rx 在 Objective-C 语言中的实现。 在 Rx 中主要的两个概念信号和序列都在 ReactiveCocoa 中有着相对应的组件 RACSignal 和 RACSequence，上一篇文章已经对前者有一个简单的介绍，而这篇文章主要会介绍后者，也就是 RACSequence。 Push-Driven &amp; Pull-Driven... <a class="read-more" href="/reprinted/racsequence">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -210,24 +206,20 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/RAC'>RAC</a>
                     
                 
             
-            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+            <time class="post-date" datetime="2017-02-04">04 Feb 2017</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/ios-yuan-dai-ma-fen-xi-mbprogresshud">iOS 源代码分析 ---- MBProgressHUD</a></h2>
+            <h2 class="post-title"><a href="/reprinted/racsignal">『状态』驱动的世界：ReactiveCocoa</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>MBProgressHUD 是一个为 iOS app 添加透明浮层 HUD 的第三方框架. 作为一个 UI 层面的框架, 它的实现很简单, 但是其中也有一些非常有意思的代码. MBProgressHUD MBProgressHUD 是一个 UIView 的子类, 它提供了一系列的创建 HUD 的方法. 我们在这里会主要介绍三种使用 HUD 的方法. + showHUDAddedTo:animated: -... <a class="read-more" href="/reprinted/ios-yuan-dai-ma-fen-xi-mbprogresshud">&raquo;</a></p>
+            <p>转自：『状态』驱动的世界：ReactiveCocoa 这篇以及之后的文章主要会对 ReactiveObjc v2.1.2 的实现进行分析，从最简单的例子中了解 ReactiveCocoa 的工作原理以及概念，也是笔者个人对于 RAC 学习的总结与理解。本文主要会围绕 RAC 中核心概念 RACSignal 展开，详细了解其底层实现。 状态驱动 2015 年的夏天的时候，做了几个简单的开源框架，想做点其它更有意思的框架却没什么思路，就开始看一些跟编程没有太大关系的书籍。 其中一本叫做《失控》给了我很大的启发，其中有一则故事是这样的： 布鲁克斯开展了一个雄心勃勃的研究生课题项目，研发更接近昆虫而非恐龙的机器人。 布鲁克斯的设想在一个叫「成吉思」的机巧装置上成形。成吉思有橄榄球大小，像只蟑螂似的。布鲁克斯把他的精简理念发挥到了极致。小成吉思有 6 条腿却没有一丁点儿可以称为「脑」的东西。所有 12 个电机和 21 个传感器分布在没有中央处理器的可解耦网络上。然而这 12... <a class="read-more" href="/reprinted/racsignal">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -249,24 +241,20 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/RAC'>RAC</a>
                     
                 
             
-            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+            <time class="post-date" datetime="2017-01-30">30 Jan 2017</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo">Ouroboros 的实现 ---- 提供神奇的滚动效果</a></h2>
+            <h2 class="post-title"><a href="/reprinted/preload">预加载与智能预加载（iOS）</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>Ouroboros 是一个根据 scrollView 滚动的距离完成动画的一个仓库. 灵感来源于 javascript 的第三方框架 scrollMagic. 我在使用 scrollMagic 的过程中, 觉得这种根据当前滚动距离改变视图状态的方式非常的优雅, 而且这种动画是可以回退的, 在我看来, 这种动画的方式完全适合于在 iOS App 中完成引导界面的动画. 在以往的开发经验中, 经常需要根据 scrollView 的滚动距离完成一些相应的动画, 而 Ouroboros 就是 iOS... <a class="read-more" href="/reprinted/ouroboros-de-shi-xian-ti-gong-shen-qi-de-gun-dong-xiao-guo">&raquo;</a></p>
+            <p>转自：预加载与智能预加载（iOS） 前两次的分享分别介绍了 ASDK 对于渲染的优化以及 ASDK 中使用的另一种布局模型；这两个新机制的引入分别解决了 iOS 在主线程渲染视图以及 Auto Layout 的性能问题，而这一次讨论的主要内容是 ASDK 如何预先请求服务器数据，达到看似无限滚动列表的效果的。 这篇文章是 ASDK 系列中的最后一篇，文章会介绍 iOS 中几种预加载的方案，以及 ASDK 中是如何处理预加载的。 不过，在介绍 ASDK 中实现智能预加载的方式之前，文章中会介绍几种简单的预加载方式，方便各位开发者进行对比，选择合适的机制实现预加载这一功能。 网络与性能 ASDK 通过在渲染视图和布局方面的优化已经可以使应用在任何用户的疯狂操作下都能保持... <a class="read-more" href="/reprinted/preload">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -288,24 +276,20 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/ASDK'>ASDK</a>
                     
                 
             
-            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+            <time class="post-date" datetime="2016-11-04">04 Nov 2016</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/nsuserdefaults">NSUserDefaults 的默认值</a></h2>
+            <h2 class="post-title"><a href="/reprinted/dsl">谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>NSUserDefaults 提供了一个与默认设置交互的接口. 这些默认设置允许一个 App 为每一个单独的用户的设置提供定制化的行为. 数据的同步 我们可以通过 NSUserDefaults 对象在运行时从数据库读取用户的数据, 并添加到缓存中. 在我们正常获取或者设置 NSUserDefaults 的值时, 数据库和缓存中的数据其实并没有同步更新, 因为这样会影响效率. NSUserDefaults 在需要同步时会自动调用 synchronize 方法更新数据库数据. 我们也可以手动调用 synchronize 来同步数据. 不可变 从 NSUserDefaults 中返回的值都是不可变的,... <a class="read-more" href="/reprinted/nsuserdefaults">&raquo;</a></p>
+            <p>转自：谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例） 最近在公司做了一次有关 DSL 在 iOS 开发中的应用的分享，这篇文章会简单介绍这次分享的内容。 因为 DSL 以及 DSL 的界定本身就是一个比较模糊的概念，所以难免有与他人观点意见相左的地方，如果有不同的意见，我们可以具体讨论。 这次文章的题目虽然是谈谈 DSL 以及 DSL 的应用，不过文章中主要侧重点仍然是 DSL，会简单介绍 DSL 在 iOS... <a class="read-more" href="/reprinted/dsl">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -327,24 +311,24 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                       <a href='/reprinted/tag/Cocoapods'>Cocoapods</a>,
                     
                 
                     
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/ruby'>ruby</a>
                     
                 
             
-            <time class="post-date" datetime="2016-03-10">10 Mar 2016</time>
+            <time class="post-date" datetime="2016-10-03">03 Oct 2016</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-2">StackOverflow 黑魔法系列 <2></a></h2>
+            <h2 class="post-title"><a href="/reprinted/cocoapods">CocoaPods 都做了什么？</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>距离上一次的 StackOverflow 黑魔法系列的 post 已经很久了, 自己也很久没有写技术博客了, 虽然这次带来的又是一篇水文. 但是好久没有写了, 写写水文也好试试手. AutoReleasePool iOS 中的 run loop 等待一些事件的发生并且响应这些实践. 这个事件可能包括用户触摸屏幕等等. 处理每一个 iOS 中的事件时, 一个新的 autorelease pool 都会在开始时被创建, 然后在事件响应结束后被 drain. 从理论上来说,... <a class="read-more" href="/reprinted/stackoverflow-hei-mo-fa-xi-lie-2">&raquo;</a></p>
+            <p>转自：CocoaPods 都做了什么？ 稍有 iOS 开发经验的人应该都是用过 CocoaPods，而对于 CI、CD 有了解的同学也都知道 Fastlane。而这两个在 iOS 开发中非常便捷的第三方库都是使用 Ruby 来编写的，这是为什么？ 先抛开这个话题不谈，我们来看一下 CocoaPods 和 Fastlane 是如何使用的，首先是 CocoaPods，在每一个工程使用 CocoaPods 的工程中都有一个 Podfile： source 'https://github.com/CocoaPods/Specs.git' target 'Demo'... <a class="read-more" href="/reprinted/cocoapods">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -366,24 +350,24 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
+                       <a href='/reprinted/tag/ruby'>ruby</a>,
                     
                 
                     
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/Cocoapods'>Cocoapods</a>
                     
                 
             
-            <time class="post-date" datetime="2015-08-03">03 Aug 2015</time>
+            <time class="post-date" datetime="2016-09-26">26 Sep 2016</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/swift-de-na-xie-keng">MagicMove 在 iOS 中的实现</a></h2>
+            <h2 class="post-title"><a href="/reprinted/layout-performance">从 Auto Layout 的布局算法谈性能</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>最近由于去武汉参加 hackday, 十多天没有更新博客了. 今天就来说一说, 我在 hackday 上使用 swift 开发 App 遇到的哪些问题吧. 神奇移动 我曾经在很多的 App 中都实现了类似 Keynote 中的神奇移动的效果, 也就是指定当前帧和下一帧中的视图, 当 Keynote 从当前帧切换到下一帧时, 就会根据当前的这两帧中视图的位置添加动画, 达到神奇的效果. 而我在 iOS 开发中的实现其实有以下几个步骤.... <a class="read-more" href="/reprinted/swift-de-na-xie-keng">&raquo;</a></p>
+            <p>转自：从 Auto Layout 的布局算法谈性能 这是使用 ASDK 性能调优系列的第二篇文章，前一篇文章中讲到了如何提升 iOS 应用的渲染性能，你可以点击 这里 了解这部分的内容。 在上一篇文章中，我们提到了 iOS 界面的渲染过程以及如何对渲染过程进行优化。ASDK 的做法是将渲染绘制的工作抛到后台线程进行，并在每次 Runloop 结束时，将绘制结果交给 CALayer 进行展示。 而这篇文章就要从 iOS 中影响性能的另一大杀手，也就是万恶之源 Auto Layout（自动布局）来分析如何对 iOS 应用的性能进行优化以及... <a class="read-more" href="/reprinted/layout-performance">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -405,24 +389,20 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/ASDK'>ASDK</a>
                     
                 
             
-            <time class="post-date" datetime="2015-06-07">07 Jun 2015</time>
+            <time class="post-date" datetime="2016-08-31">31 Aug 2016</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/lian-shi-yu-fa-yu-objective-c">链式语法与 Objective-C</a></h2>
+            <h2 class="post-title"><a href="/reprinted/asdk-rendering">使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>作为一个 Objective-C 语言的使用者已经有近两年的时间了. 在逐渐熟悉手中的工具, Objective-C 语言的同时, 我也开始从更高的角度来观察这一门语言. 虽然至今我也不敢说我精通 Objective-C 和 Cocoa Touch, 但是我对它们也有了一些自己的见解. Objective-C Objective-C 语言的语法使得我感觉到这门语言是如此的优雅. 在别人看来啰嗦的 label, 其实更是为了增加语言的可读性, 使 Objective-C 更像一门自然语言而做出的努力. 大多数的方法都不需要去查看文档, 只凭借方法的签名就能获得这个方法的作用, 这点使我们 iOS... <a class="read-more" href="/reprinted/lian-shi-yu-fa-yu-objective-c">&raquo;</a></p>
+            <p>转自：使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能 这一系列的文章会从几个方面对 ASDK 在性能调优方面策略的实现进行分析，帮助读者理解 ASDK 如何做到使复杂的 UI 界面达到 60 FPS 的刷新频率的；本篇文章会从视图的渲染层面讲解 ASDK 对于渲染过程的优化并对 ASDK 进行概述。 在客户端或者前端开发中，对于性能的优化，尤其是 UI，往往都不是最先考虑的问题。 因为在大多数场景下，使用更加复杂的高性能代码替代可用的代码经常会导致代码的可维护性下降，所以更需要我们开发者对优化的时间点以及原因有一个比较清楚的认识，避免过度优化带来的问题。 对 iOS... <a class="read-more" href="/reprinted/asdk-rendering">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -444,24 +424,20 @@
                     
                 
                     
-                       <a href='/reprinted/tag/OSS'>OSS</a>,
-                    
-                
-                    
-                       <a href='/reprinted/tag/Swift'>Swift</a>
+                       <a href='/reprinted/tag/ASDK'>ASDK</a>
                     
                 
             
-            <time class="post-date" datetime="2015-05-27">27 May 2015</time>
+            <time class="post-date" datetime="2016-08-22">22 Aug 2016</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi">DKNightVersion 的实现 --- 如何为 iOS 应用添加夜间模式</a></h2>
+            <h2 class="post-title"><a href="/reprinted/http-mock">如何进行 HTTP Mock（iOS）</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>最新: 成熟的夜间模式解决方案 注意: 这篇文章已经过时了, 最新版本的 2.3.0 实现已经更改了. 在很多重阅读或者需要在夜间观看的软件其实都会把夜间模式当做一个 App 所需要具备的特性. 而如何在不改变原有的架构, 甚至不改变原有的代码的基础上, 就能为应用优雅地添加夜间模式就成为一个在很多应用开发的过程中不得不面对的一个问题. 就是以上事情的驱动, 使我思考如何才能使用一种优雅并且简洁的方法解决这一问题. 而 DKNightVersion 就是我带来的解决方案. 到目前为止, 这个框架的大部分的工作都已经完成了, 或许它现在不够完善, 不过我会持续地维护这个框架, 帮助饱受实现夜间模式之苦的工程师们解决这个坑的一逼的需求. 实现 现在我也终于有时间来水一水写一篇博客来说一下这个框架是如何实现夜间模式的, 它都有哪些特性.... <a class="read-more" href="/reprinted/dknightversion-de-shi-xian-wei-ios-ying-yong-tian-jia-ye-jian-mo-shi">&raquo;</a></p>
+            <p>转自：如何进行 HTTP Mock（iOS） 这篇文章会对 OHHTTPStubs 源代码的分析，其实现原理是建立在 NSURLProtocol 的基础上的，对这部分内容不了解的读者，可以阅读这篇文章 iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求了解相关知识，本文中不会介绍拦截 HTTP 请求的原理。 如何使用 OHHTTPStubs Mock 网络请求 HTTP Mock 在测试中非常好用，我们可以在不需要后端 API 的情况下，在本地对 HTTP... <a class="read-more" href="/reprinted/http-mock">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -479,20 +455,24 @@
                 on
                 
                     
-                       <a href='/reprinted/tag/iOS'>iOS</a>
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/HTTP'>HTTP</a>
                     
                 
             
-            <time class="post-date" datetime="2015-05-09">09 May 2015</time>
+            <time class="post-date" datetime="2016-08-16">16 Aug 2016</time>
         </footer>
     </article>
     
     <article class="post">
         <header class="post-header">
-            <h2 class="post-title"><a href="/reprinted/bei-xcodeproj-keng-de-zhe-ji-tian">使用代码为 Xcode 工程添加文件</a></h2>
+            <h2 class="post-title"><a href="/reprinted/intercept">iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求</a></h2>
         </header>
         <section class="post-excerpt">
-            <p>这几天在持续更新 DKNightVersion 这个仓库, 我对这个框架投入了很多的时间和精力. 我还是希望把这个框架的方方面面都做好的, 为框架的使用者提供最好的用户体验, 将开发者的使用成本和使用难度降到最低, 提升开发者的使用体验. 但是在我维护这个框架的过程中还是感觉到如何平衡框架的可扩展性和易用性实在是太难了. 为了减少开发者工作量以达到减少错误的目的, 我在这最近几乎每天 8 小时以上的与 xcodeproj 这个文件打交道, 把原来所需的工作尽可能的降低, 从原来的: ruby generator.rb 拖拽 UIKit 文件到工作区的指定位置 选择指定的 Target 到现在的一个命令: rake... <a class="read-more" href="/reprinted/bei-xcodeproj-keng-de-zhe-ji-tian">&raquo;</a></p>
+            <p>转自：iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求 这篇文章会提供一种在 Cocoa 层拦截所有 HTTP 请求的方法，其实标题已经说明了拦截 HTTP 请求需要的了解的就是 NSURLProtocol。 由于文章的内容较长，会分成两部分，这篇文章介绍 NSURLProtocol 拦截 HTTP 请求的原理，另一篇文章如何进行 HTTP Mock 介绍这个原理在 OHHTTPStubs 中的应用，它是如何 Mock（伪造）某个 HTTP... <a class="read-more" href="/reprinted/intercept">&raquo;</a></p>
         </section>
         <footer class="post-meta">
             
@@ -510,11 +490,15 @@
                 on
                 
                     
-                       <a href='/reprinted/tag/iOS'>iOS</a>
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/HTTP'>HTTP</a>
                     
                 
             
-            <time class="post-date" datetime="2015-05-06">06 May 2015</time>
+            <time class="post-date" datetime="2016-08-16">16 Aug 2016</time>
         </footer>
     </article>
     
@@ -527,7 +511,7 @@
             <a class="newer-posts" href="/reprinted/author/" title="Previous Page">&laquo; Newer Posts</a>
         
     
-    <span class="page-number"> Page 2 of 3 </span>
+    <span class="page-number"> Page 2 of 7 </span>
      
         <a class="older-posts" href="/reprinted/author//page3/" title="Next Page">Older Posts &raquo;</a>
      

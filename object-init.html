@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>对象是如何初始化的（iOS）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//object-init" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="对象是如何初始化的（iOS）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//object-init" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="对象是如何初始化的（iOS）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//object-init" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "对象是如何初始化的（iOS）",
+    "url": "/reprinted//object-init",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">对象是如何初始化的（iOS）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-08-07">07 Aug 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/object-init">对象是如何初始化的（iOS）</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>在之前，我们已经讨论了非常多的问题了，关于 objc 源代码系列的文章也快结束了，其实关于对象是如何初始化的这篇文章本来是我要写的第一篇文章，但是由于有很多前置内容不得不说，所以留到了这里。</p>
+
+<p><code class="highlighter-rouge">+ alloc</code> 和 <code class="highlighter-rouge">- init</code> 这一对我们在 iOS 开发中每天都要用到的初始化方法一直困扰着我, 于是笔者仔细研究了一下 objc 源码中 <code class="highlighter-rouge">NSObject</code> 如何进行初始化。</p>
+
+<p>在具体分析对象的初始化过程之前，我想先放出结论，以免文章中的细枝末节对读者的理解有所影响；整个对象的初始化过程其实只是<strong>为一个分配内存空间，并且初始化 isa_t 结构体的过程</strong>。</p>
+
+<h2 id="alloc-方法分析">alloc 方法分析</h2>
+
+<p>先来看一下 <code class="highlighter-rouge">+ alloc</code> 方法的调用栈(在调用栈中省略了很多不必要的方法的调用):open</p>
+
+<pre><code class="language-objectivec">id _objc_rootAlloc(Class cls)
+└── static id callAlloc(Class cls, bool checkNil, bool allocWithZone=false)
+    └── id class_createInstance(Class cls, size_t extraBytes)
+    	└── id _class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone, bool cxxConstruct, size_t *outAllocatedSize)
+            ├── size_t instanceSize(size_t extraBytes)
+            ├── void	*calloc(size_t, size_t)
+            └── inline void objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)
+</code></pre>
+
+<p>这个调用栈中的方法涉及了多个文件中的代码，在下面的章节中会对调用的方法逐步进行分析，如果这个调用栈让你觉得很头疼，也不是什么问题。</p>
+
+<h3 id="alloc-的实现">alloc 的实现</h3>
+
+<pre><code class="language-objectivec">+ (id)alloc {
+    return _objc_rootAlloc(self);
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">alloc</code> 方法的实现真的是非常的简单, 它直接调用了另一个私有方法 <code class="highlighter-rouge">id _objc_rootAlloc(Class cls)</code></p>
+
+<pre><code class="language-objectivec">id _objc_rootAlloc(Class cls) {
+    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);
+}
+</code></pre>
+
+<p>这就是上帝类 <code class="highlighter-rouge">NSObject</code> 对 <code class="highlighter-rouge">callAlloc</code> 的实现，我们省略了非常多的代码，展示了最常见的执行路径：</p>
+
+<pre><code class="language-objectivec">static id callAlloc(Class cls, bool checkNil, bool allocWithZone=false) {
+    id obj = class_createInstance(cls, 0);
+    return obj;
+}
+
+id class_createInstance(Class cls, size_t extraBytes) {
+    return _class_createInstanceFromZone(cls, extraBytes, nil);
+}
+</code></pre>
+
+<p>对象初始化中最重要的操作都在 <code class="highlighter-rouge">_class_createInstanceFromZone</code> 方法中执行：</p>
+
+<pre><code class="language-objectivec">static id _class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone, bool cxxConstruct = true, size_t *outAllocatedSize = nil) {
+    size_t size = cls-&gt;instanceSize(extraBytes);
+
+    id obj = (id)calloc(1, size);
+    if (!obj) return nil;
+    obj-&gt;initInstanceIsa(cls, hasCxxDtor);
+
+    return obj;
+}
+</code></pre>
+
+<h3 id="对象的大小">对象的大小</h3>
+
+<p>在使用 <code class="highlighter-rouge">calloc</code> 为对象分配一块内存空间之前，我们要先获取对象在内存的大小：</p>
+
+<pre><code class="language-objectivec">size_t instanceSize(size_t extraBytes) {
+    size_t size = alignedInstanceSize() + extraBytes;
+    if (size &lt; 16) size = 16;
+    return size;
+}
+
+uint32_t alignedInstanceSize() {
+    return word_align(unalignedInstanceSize());
+}
+
+uint32_t unalignedInstanceSize() {
+    assert(isRealized());
+    return data()-&gt;ro-&gt;instanceSize;
+}
+</code></pre>
+
+<p>实例大小 <code class="highlighter-rouge">instanceSize</code> 会存储在类的 <code class="highlighter-rouge">isa_t</code> 结构体中，然后经过对齐最后返回。</p>
+
+<blockquote>
+  <p>Core Foundation 需要所有的对象的大小都必须大于或等于 16 字节。</p>
+</blockquote>
+
+<p>在获取对象大小之后，直接调用 <code class="highlighter-rouge">calloc</code> 函数就可以为对象分配内存空间了。</p>
+
+<h3 id="isa-的初始化">isa 的初始化</h3>
+
+<p>在对象的初始化过程中除了使用 <code class="highlighter-rouge">calloc</code> 来分配内存之外，还需要根据类初始化 <code class="highlighter-rouge">isa_t</code> 结构体：</p>
+
+<pre><code class="language-objectivec">inline void objc_object::initIsa(Class cls, bool indexed, bool hasCxxDtor) {
+    if (!indexed) {
+        isa.cls = cls;
+    } else {
+        isa.bits = ISA_MAGIC_VALUE;
+        isa.has_cxx_dtor = hasCxxDtor;
+        isa.shiftcls = (uintptr_t)cls &gt;&gt; 3;
+    }
+}
+</code></pre>
+
+<p>上面的代码只是对 <code class="highlighter-rouge">isa_t</code> 结构体进行初始化而已：</p>
+
+<pre><code class="language-objectivec">union isa_t {
+   isa_t() { }
+   isa_t(uintptr_t value) : bits(value) { }
+
+   Class cls;
+   uintptr_t bits;
+
+   struct {
+       uintptr_t indexed           : 1;
+       uintptr_t has_assoc         : 1;
+       uintptr_t has_cxx_dtor      : 1;
+       uintptr_t shiftcls          : 44;
+       uintptr_t magic             : 6;
+       uintptr_t weakly_referenced : 1;
+       uintptr_t deallocating      : 1;
+       uintptr_t has_sidetable_rc  : 1;
+       uintptr_t extra_rc          : 8;
+   };
+};
+</code></pre>
+
+<blockquote>
+  <p>在这里并不想过多介绍关于 <code class="highlighter-rouge">isa_t</code> 结构体的内容，你可以看<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/从%20NSObject%20的初始化了解%20isa.md">从 NSObject 的初始化了解 isa</a> 了解你想知道的关于 <code class="highlighter-rouge">isa_t</code> 的全部内容。</p>
+</blockquote>
+
+<h2 id="init-方法">init 方法</h2>
+
+<p><code class="highlighter-rouge">NSObject</code> 的 <code class="highlighter-rouge">- init</code> 方法只是调用了 <code class="highlighter-rouge">_objc_rootInit</code> 并返回了当前对象：</p>
+
+<pre><code class="language-objectivec">- (id)init {
+    return _objc_rootInit(self);
+}
+
+id _objc_rootInit(id obj) {
+    return obj;
+}
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p>在 iOS 中一个对象的初始化过程很符合直觉，只是分配内存空间、然后初始化 <code class="highlighter-rouge">isa_t</code> 结构体，其实现也并不复杂，这篇文章也是这个系列文章中较为简单并且简短的一篇。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=对象是如何初始化的（iOS）&amp;url=object-init"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=object-init"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=object-init"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/block-retain-object">
+            <section class="post">
+                <h2>iOS 中的 block 是如何持有对象的</h2>
+                <p>> 转自：[iOS 中的 block 是如何持有对象的](https://draveness.me/block-retain-object) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > Block 是 Objective-C 中笔者最喜欢的特性，它为 Objective-C 这门语言提供了强大的函数式编程能力，而最近苹果推出的很多新的 API...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/retain-cycle3">
+            <section class="post">
+                <h2>如何实现 iOS 中的 Associated Object</h2>
+                <p>转自：如何实现 iOS 中的 Associated Object 关注仓库，及时获得更新：iOS-Source-Code-Analyze 这一篇文章是对 FBRetainCycleDetector 中实现的关联对象机制的分析；因为追踪的需要， FBRetainCycleDetector 重新实现了关联对象，本文主要就是对其实现关联对象的方法进行分析。 文章中涉及的类主要就是 FBAssociationManager： FBAssociationManager is...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

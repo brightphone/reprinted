@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>预加载与智能预加载（iOS）</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//preload" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="预加载与智能预加载（iOS）" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//preload" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="预加载与智能预加载（iOS）" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//preload" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "预加载与智能预加载（iOS）",
+    "url": "/reprinted//preload",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">预加载与智能预加载（iOS）</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-11-04">04 Nov 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/ASDK'>ASDK</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/preload">预加载与智能预加载（iOS）</a></p>
+</blockquote>
+
+<blockquote>
+  <p>前两次的分享分别介绍了 ASDK 对于渲染的优化以及 ASDK 中使用的另一种布局模型；这两个新机制的引入分别解决了 iOS 在主线程渲染视图以及 Auto Layout 的性能问题，而这一次讨论的主要内容是 ASDK 如何预先请求服务器数据，达到看似无限滚动列表的效果的。</p>
+</blockquote>
+
+<p>这篇文章是 ASDK 系列中的最后一篇，文章会介绍 iOS 中几种<em>预加载</em>的方案，以及 ASDK 中是如何处理预加载的。</p>
+
+<p>不过，在介绍 ASDK 中实现<strong>智能预加载</strong>的方式之前，文章中会介绍几种简单的预加载方式，方便各位开发者进行对比，选择合适的机制实现预加载这一功能。</p>
+
+<h2 id="网络与性能">网络与性能</h2>
+
+<p>ASDK 通过在渲染视图和布局方面的优化已经可以使应用在任何用户的疯狂操作下都能保持 60 FPS 的流畅程度，也就是说，我们已经充分的利用了当前设备的性能，调动各种资源加快视图的渲染。</p>
+
+<p>但是，仅仅在 CPU 以及 GPU 方面的优化往往是远远不够的。在目前的软件开发中，很难找到一个<strong>没有任何网络请求</strong>的应用，哪怕是一个记账软件也需要服务器来同步保存用户的信息，防止资料的丢失；所以，只在渲染这一层面进行优化还不能让用户的体验达到最佳，因为网络请求往往是一个应用<strong>最为耗时以及昂贵</strong>的操作。</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-network.jpg-1000width" alt="network" /></p>
+
+<p>每一个应用程序在运行时都可以看做是 CPU 在底层利用各种资源疯狂做加减法运算，其中最耗时的操作并不是进行加减法的过程，而是资源转移的过程。</p>
+
+<blockquote>
+  <p>举一个不是很恰当的例子，主厨（CPU）在炒一道菜（计算）时往往需要的时间并不多，但是菜的采购以及准备（资源的转移）会占用大量的时间，如果在每次炒菜之前，都由帮厨提前准备好所有的食材（缓存），那么做一道菜的时间就大大减少了。</p>
+</blockquote>
+
+<p>而提高资源转移的效率的最佳办法就是使用多级缓存：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-multi-layer.jpg-1000width" alt="multi-laye" /></p>
+
+<p>从上到下，虽然容量越来越大，直到 Network 层包含了整个互联网的内容，但是访问时间也是直线上升；在 Core 或者三级缓存中的资源可能访问只需要几个或者几十个时钟周期，但是网络中的资源就<strong>远远</strong>大于这个数字，几分钟、几小时都是有可能的。</p>
+
+<p>更糟糕的是，因为天朝的网络情况及其复杂，运营商劫持 DNS、404 无法访问等问题导致网络问题极其严重；而如何加速网络请求成为了很多移动端以及 Web 应用的重要问题。</p>
+
+<h2 id="预加载">预加载</h2>
+
+<p>本文就会提供一种<strong>缓解网络请求缓慢导致用户体验较差</strong>的解决方案，也就是预加载；在本地真正需要渲染界面之前就通过网络请求获取资源存入内存或磁盘。</p>
+
+<blockquote>
+  <p>预加载并不能彻底解决网络请求缓慢的问题，而是通过提前发起网络请求<strong>缓解</strong>这一问题。</p>
+</blockquote>
+
+<p>那么，预加载到底要关注哪些方面的问题呢？总结下来，有以下两个关注点：</p>
+
+<ul>
+  <li>需要预加载的资源</li>
+  <li>预加载发出的时间</li>
+</ul>
+
+<p>文章会根据上面的两个关注点，分别分析四种预加载方式的实现原理以及优缺点：</p>
+
+<ol>
+  <li>无限滚动列表</li>
+  <li>threshold</li>
+  <li>惰性加载</li>
+  <li>智能预加载</li>
+</ol>
+
+<h3 id="无限滚动列表">无限滚动列表</h3>
+
+<p>其实，无限滚动列表并不能算是一种预加载的实现原理，它只是提供一种分页显示的方法，在每次滚动到 <code class="highlighter-rouge">UITableView</code> 底部时，才会开始发起网络请求向服务器获取对应的资源。</p>
+
+<p>虽然这种方法并不是预加载方式的一种，放在这里的主要作用是作为对比方案，看看如果不使用预加载的机制，用户体验是什么样的。</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-infinite-list.jpg-1000width" alt="infinite-list" /></p>
+
+<p>很多客户端都使用了分页的加载方式，并没有添加额外的预加载的机制来提升用户体验，虽然这种方式并不是不能接受，不过每次滑动到视图底部之后，总要等待网络请求的完成确实对视图的流畅性有一定影响。</p>
+
+<p>虽然仅仅使用无限滚动列表而不提供预加载机制会在一定程度上影响用户体验，不过，这种<strong>需要用户等待几秒钟</strong>的方式，在某些时候确实非常好用，比如：投放广告。</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-advertise.jpg-1000width" alt="advertise" /></p>
+
+<blockquote>
+  <p>QQ 空间就是这么做的，它们<strong>投放的广告基本都是在整个列表的最底端</strong>，这样，当你滚动到列表最下面的时候，就能看到你急需的租房、租车、同城交友、信用卡办理、只有 iPhone 能玩的游戏以及各种奇奇怪怪的辣鸡广告了，很好的解决了我们的日常生活中的各种需求。（哈哈哈哈哈哈哈哈哈哈哈哈哈）</p>
+</blockquote>
+
+<h3 id="threshold">Threshold</h3>
+
+<p>使用 Threshold 进行预加载是一种最为常见的预加载方式，知乎客户端就使用了这种方式预加载条目，而其原理也非常简单，根据当前 <code class="highlighter-rouge">UITableView</code> 的所在位置，除以目前整个 <code class="highlighter-rouge">UITableView.contentView</code> 的高度，来判断当前是否需要发起网络请求：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">threshold</span><span class="p">:</span> <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="k">var</span> <span class="nv">currentPage</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">override</span> <span class="kd">func</span> <span class="nf">scrollViewDidScroll</span><span class="p">(</span><span class="n">_</span> <span class="nv">scrollView</span><span class="p">:</span> <span class="kt">UIScrollView</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">current</span> <span class="o">=</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">contentOffset</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span>
+    <span class="k">let</span> <span class="nv">total</span> <span class="o">=</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">contentSize</span><span class="o">.</span><span class="n">height</span>
+    <span class="k">let</span> <span class="nv">ratio</span> <span class="o">=</span> <span class="n">current</span> <span class="o">/</span> <span class="n">total</span>
+
+    <span class="k">if</span> <span class="n">ratio</span> <span class="o">&gt;=</span> <span class="n">threshold</span> <span class="p">{</span>
+        <span class="n">currentPage</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Request page </span><span class="se">\(</span><span class="n">currentPage</span><span class="se">)</span><span class="s"> from server."</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>上面的代码在当前页面已经划过了 70% 的时候，就请求新的资源，加载数据；但是，仅仅使用这种方法会有另一个问题，尤其是当列表变得很长时，十分明显，比如说：用户从上向下滑动，总共加载了 5 页数据：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-threshold-table.png-1000width" alt="threshold-table" /></p>
+
+<ul>
+  <li>Page 当前总页数；</li>
+  <li>Total 当前 <code class="highlighter-rouge">UITableView</code> 总元素个数；</li>
+  <li>Threshold 网络请求触发时间；</li>
+  <li>Diff 表示最新加载的页面被浏览了多少；</li>
+</ul>
+
+<p>当 Threshold 设置为 70% 的时候，其实并不是单页 70%，这就会导致<strong>新加载的页面都没有看，应用就会发出另一次请求，获取新的资源</strong>。</p>
+
+<h4 id="动态的-threshold">动态的 Threshold</h4>
+
+<p>解决这个问题的办法，还是比较简单的，通过修改上面的代码，将 Threshold 变成一个动态的值，随着页数的增长而增长：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">threshold</span><span class="p">:</span>   <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="k">let</span> <span class="nv">itemPerPage</span><span class="p">:</span> <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="k">var</span> <span class="nv">currentPage</span><span class="p">:</span> <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">override</span> <span class="kd">func</span> <span class="nf">scrollViewDidScroll</span><span class="p">(</span><span class="n">_</span> <span class="nv">scrollView</span><span class="p">:</span> <span class="kt">UIScrollView</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">current</span> <span class="o">=</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">contentOffset</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span>
+    <span class="k">let</span> <span class="nv">total</span> <span class="o">=</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">contentSize</span><span class="o">.</span><span class="n">height</span>
+    <span class="k">let</span> <span class="nv">ratio</span> <span class="o">=</span> <span class="n">current</span> <span class="o">/</span> <span class="n">total</span>
+
+    <span class="k">let</span> <span class="nv">needRead</span> <span class="o">=</span> <span class="n">itemPerPage</span> <span class="o">*</span> <span class="n">threshold</span> <span class="o">+</span> <span class="n">currentPage</span> <span class="o">*</span> <span class="n">itemPerPage</span>
+    <span class="k">let</span> <span class="nv">totalItem</span> <span class="o">=</span> <span class="n">itemPerPage</span> <span class="o">*</span> <span class="p">(</span><span class="n">currentPage</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">newThreshold</span> <span class="o">=</span> <span class="n">needRead</span> <span class="o">/</span> <span class="n">totalItem</span>
+
+    <span class="k">if</span> <span class="n">ratio</span> <span class="o">&gt;=</span> <span class="n">newThreshold</span> <span class="p">{</span>
+        <span class="n">currentPage</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Request page </span><span class="se">\(</span><span class="n">currentPage</span><span class="se">)</span><span class="s"> from server."</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>通过这种方法获取的 <code class="highlighter-rouge">newThreshold</code> 就会随着页数的增长而动态的改变，解决了上面出现的问题：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-dynamic-threshold.jpeg" alt="dynamic-threshold" /></p>
+
+<h3 id="惰性加载">惰性加载</h3>
+
+<p>使用 Threshold 进行预加载其实已经适用于大多数应用场景了；但是，下面介绍的方式，<em>惰性加载</em>能够有针对性的加载用户“会看到的” Cell。</p>
+
+<blockquote>
+  <p><em>惰性加载</em>，就是在用户滚动的时候会对用户滚动结束的区域进行计算，只加载目标区域中的资源。</p>
+</blockquote>
+
+<p>用户在飞速滚动中会看到巨多的空白条目，因为用户并不想阅读这些条目，所以，我们并不需要真正去加载这些内容，只需要在 <code class="highlighter-rouge">ASTableView/ASCollectionView</code> 中只根据用户滚动的目标区域惰性加载资源。</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-lazy-loading.png-1000width" alt="lazy-loading" /></p>
+
+<p>惰性加载的方式不仅仅减少了网络请求的冗余资源，同时也减少了渲染视图、数据绑定的耗时。</p>
+
+<p>计算用户滚动的目标区域可以直接使用下面的代理方法获取：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">markedView</span> <span class="o">=</span> <span class="kt">UIView</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">rowHeight</span><span class="p">:</span> <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mf">44.0</span>
+
+<span class="k">override</span> <span class="kd">func</span> <span class="nf">scrollViewWillEndDragging</span><span class="p">(</span><span class="n">_</span> <span class="nv">scrollView</span><span class="p">:</span> <span class="kt">UIScrollView</span><span class="p">,</span> <span class="n">withVelocity</span> <span class="nv">velocity</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">,</span> <span class="nv">targetContentOffset</span><span class="p">:</span> <span class="kt">UnsafeMutablePointer</span><span class="o">&lt;</span><span class="kt">CGPoint</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">targetOffset</span> <span class="o">=</span> <span class="n">targetContentOffset</span><span class="o">.</span><span class="n">pointee</span>
+    <span class="k">let</span> <span class="nv">targetRect</span> <span class="o">=</span> <span class="kt">CGRect</span><span class="p">(</span><span class="nv">origin</span><span class="p">:</span> <span class="n">targetOffset</span><span class="p">,</span> <span class="nv">size</span><span class="p">:</span> <span class="n">scrollView</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">markedView</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">targetRect</span>
+    <span class="n">markedView</span><span class="o">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="o">.</span><span class="n">black</span><span class="o">.</span><span class="nf">withAlphaComponent</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">tableView</span><span class="o">.</span><span class="nf">addSubview</span><span class="p">(</span><span class="n">markedView</span><span class="p">)</span>
+
+    <span class="k">var</span> <span class="nv">indexPaths</span><span class="p">:</span> <span class="p">[</span><span class="kt">IndexPath</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">let</span> <span class="nv">startIndex</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="n">targetRect</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="n">rowHeight</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">endIndex</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">((</span><span class="n">targetRect</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">tableView</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">height</span><span class="p">)</span> <span class="o">/</span> <span class="n">rowHeight</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">index</span> <span class="k">in</span> <span class="n">startIndex</span><span class="o">...</span><span class="n">endIndex</span> <span class="p">{</span>
+        <span class="n">indexPaths</span><span class="o">.</span><span class="nf">append</span><span class="p">(</span><span class="kt">IndexPath</span><span class="p">(</span><span class="nv">row</span><span class="p">:</span> <span class="n">index</span><span class="p">,</span> <span class="nv">section</span><span class="p">:</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">targetRect</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">indexPaths</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>以上代码只会大致计算出目标区域内的 <code class="highlighter-rouge">IndexPath</code> 数组，并不会展开新的 page，同时会使用浅黑色标记目标区域。</p>
+</blockquote>
+
+<p>当然，惰性加载的实现也并不只是这么简单，不仅需要客户端的工作，同时因为需要<strong>加载特定 offset 资源</strong>，也需要服务端提供相应 API 的支持。</p>
+
+<p>虽然惰性加载的方式能够按照用户的需要请求对应的资源，但是，在用户滑动 <code class="highlighter-rouge">UITableView</code> 的过程中会看到大量的空白条目，这样的用户体验是否可以接受又是值得考虑的问题了。</p>
+
+<h3 id="智能预加载">智能预加载</h3>
+
+<p>终于到了智能预加载的部分了，当我第一次得知 ASDK 可以通过滚动的方向预加载不同数量的内容，感觉是非常神奇的。</p>
+
+<p>&lt;img src=”https://img.draveness.me/2016-11-04-intelligent-preloading-ranges-with-names.png-1000width” height=500&gt;</p>
+
+<p>如上图所示 ASDK 把正在滚动的 ` ASTableView/ASCollectionView` 划分为三种状态：</p>
+
+<ul>
+  <li>Fetch Data</li>
+  <li>Display</li>
+  <li>Visible</li>
+</ul>
+
+<p>上面的这三种状态都是由 ASDK 来管理的，而每一个 <code class="highlighter-rouge">ASCellNode</code> 的状态都是由 <code class="highlighter-rouge">ASRangeController</code> 控制，所有的状态都对应一个 <code class="highlighter-rouge">ASInterfaceState</code>：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">ASInterfaceStatePreload</code> 当前元素貌似要显示到屏幕上，需要从磁盘或者网络请求数据；</li>
+  <li><code class="highlighter-rouge">ASInterfaceStateDisplay</code> 当前元素非常可能要变成可见的，需要进行异步绘制；</li>
+  <li><code class="highlighter-rouge">ASInterfaceStateVisible</code> 当前元素最少在屏幕上显示了 1px</li>
+</ul>
+
+<p>当用户滚动当前视图时，<code class="highlighter-rouge">ASRangeController</code> 就会修改不同区域内元素的状态：</p>
+
+<p>&lt;img src=”https://img.draveness.me/2016-11-04-intelligent-preloading-ranges-screenfuls.png-1000width” height=500&gt;</p>
+
+<p>上图是用户在向下滑动时，<code class="highlighter-rouge">ASCellNode</code> 是如何被标记的，假设<strong>当前视图可见的范围高度为 1</strong>，那么在默认情况下，五个区域会按照上图的形式进行划分：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-buffer-size.png-1000width" alt="buffer-size" /></p>
+
+<p>在滚动方向（Leading）上 Fetch Data 区域会是非滚动方向（Trailing）的两倍，ASDK 会根据滚动方向的变化实时改变缓冲区的位置；在向下滚动时，下面的 Fetch Data 区域就是上面的两倍，向上滚动时，上面的 Fetch Data 区域就是下面的两倍。</p>
+
+<blockquote>
+  <p>这里的两倍并不是一个确定的数值，ASDK 会根据当前设备的不同状态，改变不同区域的大小，但是<strong>滚动方向的区域总会比非滚动方向大一些</strong>。</p>
+</blockquote>
+
+<p>智能预加载能够根据当前的滚动方向，自动改变当前的工作区域，选择合适的区域提前触发请求资源、渲染视图以及异步布局等操作，让视图的滚动达到真正的流畅。</p>
+
+<h4 id="原理">原理</h4>
+
+<p>在 ASDK 中整个智能预加载的概念是由三个部分来统一协调管理的：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">ASRangeController</code></li>
+  <li><code class="highlighter-rouge">ASDataController</code></li>
+  <li><code class="highlighter-rouge">ASTableView</code> 与 <code class="highlighter-rouge">ASTableNode</code></li>
+</ul>
+
+<p>对智能预加载实现的分析，也是根据这三个部分来介绍的。</p>
+
+<h4 id="工作区域的管理">工作区域的管理</h4>
+
+<p><code class="highlighter-rouge">ASRangeController</code> 是 <code class="highlighter-rouge">ASTableView</code> 以及 <code class="highlighter-rouge">ASCollectionView</code> 内部使用的控制器，主要用于监控视图的可见区域、维护工作区域、触发网络请求以及绘制、单元格的异步布局。</p>
+
+<p>以 <code class="highlighter-rouge">ASTableView</code> 为例，在视图进行滚动时，会触发 <code class="highlighter-rouge">-[UIScrollView scrollViewDidScroll:]</code> 代理方法：</p>
+
+<pre><code class="language-objectivec">- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+  ASInterfaceState interfaceState = [self interfaceStateForRangeController:_rangeController];
+  if (ASInterfaceStateIncludesVisible(interfaceState)) {
+    [_rangeController updateCurrentRangeWithMode:ASLayoutRangeModeFull];
+  }
+  ...
+}
+</code></pre>
+
+<blockquote>
+  <p>每一个 <code class="highlighter-rouge">ASTableView</code> 的实例都持有一个 <code class="highlighter-rouge">ASRangeController</code> 以及 <code class="highlighter-rouge">ASDataController</code> 用于管理工作区域以及数据更新。</p>
+</blockquote>
+
+<p>ASRangeController 最重要的私有方法 <code class="highlighter-rouge">-[ASRangeController _updateVisibleNodeIndexPaths]</code> 一般都是因为上面的方法间接调用的：</p>
+
+<pre><code class="language-objectivec">-[ASRangeController updateCurrentRangeWithMode:]
+    -[ASRangeController setNeedsUpdate]
+        -[ASRangeController updateIfNeeded]
+            -[ASRangeController _updateVisibleNodeIndexPaths]
+</code></pre>
+
+<p>调用栈中间的过程其实并不重要，最后的私有方法的主要工作就是计算不同区域内 Cell 的 <code class="highlighter-rouge">NSIndexPath</code> 数组，然后更新对应 Cell 的状态 <code class="highlighter-rouge">ASInterfaceState</code> 触发对应的操作。</p>
+
+<p>我们将这个私有方法的实现分开来看：</p>
+
+<pre><code class="language-objectivec">- (void)_updateVisibleNodeIndexPaths {
+  NSArray&lt;NSArray *&gt; *allNodes = [_dataSource completedNodes];
+  NSUInteger numberOfSections = [allNodes count];
+
+  NSArray&lt;NSIndexPath *&gt; *visibleNodePaths = [_dataSource visibleNodeIndexPathsForRangeController:self];
+
+  ASScrollDirection scrollDirection = [_dataSource scrollDirectionForRangeController:self];
+  if (_layoutControllerImplementsSetViewportSize) {
+    [_layoutController setViewportSize:[_dataSource viewportSizeForRangeController:self]];
+  }
+
+  if (_layoutControllerImplementsSetVisibleIndexPaths) {
+    [_layoutController setVisibleNodeIndexPaths:visibleNodePaths];
+  }
+  ...
+}
+</code></pre>
+
+<p>当前 <code class="highlighter-rouge">ASRangeController</code> 的数据源以及代理就是 <code class="highlighter-rouge">ASTableView</code>，这段代码首先就获取了完成计算和布局的 <code class="highlighter-rouge">ASCellNode</code> 以及可见的 <code class="highlighter-rouge">ASCellNode</code> 的 <code class="highlighter-rouge">NSIndexPath</code>：</p>
+
+<pre><code class="language-objectivec">- (void)_updateVisibleNodeIndexPaths {  
+  NSArray&lt;ASDisplayNode *&gt; *currentSectionNodes = nil;
+  NSInteger currentSectionIndex = -1;
+  NSUInteger numberOfNodesInSection = 0;
+
+  NSSet&lt;NSIndexPath *&gt; *visibleIndexPaths = [NSSet setWithArray:visibleNodePaths];
+  NSSet&lt;NSIndexPath *&gt; *displayIndexPaths = nil;
+  NSSet&lt;NSIndexPath *&gt; *preloadIndexPaths = nil;
+
+  NSMutableOrderedSet&lt;NSIndexPath *&gt; *allIndexPaths = [[NSMutableOrderedSet alloc] initWithSet:visibleIndexPaths];
+
+  ASLayoutRangeMode rangeMode = _currentRangeMode;
+
+  ASRangeTuningParameters parametersPreload = [_layoutController tuningParametersForRangeMode:rangeMode
+                                                                                      rangeType:ASLayoutRangeTypePreload];
+  if (ASRangeTuningParametersEqualToRangeTuningParameters(parametersPreload, ASRangeTuningParametersZero)) {
+    preloadIndexPaths = visibleIndexPaths;
+  } else {
+    preloadIndexPaths = [_layoutController indexPathsForScrolling:scrollDirection
+                                                          rangeMode:rangeMode
+                                                          rangeType:ASLayoutRangeTypePreload];
+  }
+
+  #: displayIndexPaths 的计算和 preloadIndexPaths 非常类似
+
+  [allIndexPaths unionSet:displayIndexPaths];
+  [allIndexPaths unionSet:preloadIndexPaths];
+  ...
+}
+</code></pre>
+
+<p>预加载以及展示部分的 <code class="highlighter-rouge">ASRangeTuningParameters</code> 都是以二维数组的形式保存在 <code class="highlighter-rouge">ASAbstractLayoutController</code> 中的：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-aslayout-range-mode-display-preload.jpeg" alt="aslayout-range-mode-display-preload" /></p>
+
+<p>在获取了 <code class="highlighter-rouge">ASRangeTuningParameters</code> 之后，ASDK 也会通过 <code class="highlighter-rouge">ASFlowLayoutController</code> 的方法 <code class="highlighter-rouge">-[ASFlowLayoutController indexPathsForScrolling:rangeMode:rangeType:]</code> 获取 <code class="highlighter-rouge">NSIndexPath</code> 对象的集合：</p>
+
+<pre><code class="language-objectivec">- (NSSet *)indexPathsForScrolling:(ASScrollDirection)scrollDirection rangeMode:(ASLayoutRangeMode)rangeMode rangeType:(ASLayoutRangeType)rangeType {
+  #: 获取 directionalBuffer 以及 viewportDirectionalSize
+  ASIndexPath startPath = [self findIndexPathAtDistance:(-directionalBuffer.negativeDirection * viewportDirectionalSize)
+                                          fromIndexPath:_visibleRange.start];
+  ASIndexPath endPath   = [self findIndexPathAtDistance:(directionalBuffer.positiveDirection * viewportDirectionalSize)
+                                          fromIndexPath:_visibleRange.end];
+
+  NSMutableSet *indexPathSet = [[NSMutableSet alloc] init];
+  NSArray *completedNodes = [_dataSource completedNodes];
+  ASIndexPath currPath = startPath;
+  while (!ASIndexPathEqualToIndexPath(currPath, endPath)) {
+    [indexPathSet addObject:[NSIndexPath indexPathWithASIndexPath:currPath]];
+    currPath.row++;
+
+    while (currPath.row &gt;= [(NSArray *)completedNodes[currPath.section] count] &amp;&amp; currPath.section &lt; endPath.section) {
+      currPath.row = 0;
+      currPath.section++;
+    }
+  }
+  [indexPathSet addObject:[NSIndexPath indexPathWithASIndexPath:endPath]];
+  return indexPathSet;
+}
+</code></pre>
+
+<p>方法的执行过程非常简单，根据 <code class="highlighter-rouge">ASRangeTuningParameters</code> 获取该滚动方向上的缓冲区大小，在区域内遍历所有的 <code class="highlighter-rouge">ASCellNode</code> 查看其是否在当前区域内，然后加入数组中。</p>
+
+<p>到这里，所有工作区域 <code class="highlighter-rouge">visibleIndexPaths</code> <code class="highlighter-rouge">displayIndexPaths</code> 以及 <code class="highlighter-rouge">preloadIndexPaths</code> 都已经获取到了；接下来，就到了遍历 <code class="highlighter-rouge">NSIndexPath</code>，修改结点状态的过程了；</p>
+
+<pre><code class="language-objectivec">- (void)_updateVisibleNodeIndexPaths {
+  ...
+  for (NSIndexPath *indexPath in allIndexPaths) {
+    ASInterfaceState interfaceState = ASInterfaceStateMeasureLayout;
+
+    if (ASInterfaceStateIncludesVisible(selfInterfaceState)) {
+      if ([visibleIndexPaths containsObject:indexPath]) {
+        interfaceState |= (ASInterfaceStateVisible | ASInterfaceStateDisplay | ASInterfaceStatePreload);
+      } else {
+        if ([preloadIndexPaths containsObject:indexPath]) {
+          interfaceState |= ASInterfaceStatePreload;
+        }
+        if ([displayIndexPaths containsObject:indexPath]) {
+          interfaceState |= ASInterfaceStateDisplay;
+        }
+      }
+    }
+</code></pre>
+
+<p>根据当前 <code class="highlighter-rouge">ASTableView</code> 的状态以及 <code class="highlighter-rouge">NSIndexPath</code> 所在的区域，打开 <code class="highlighter-rouge">ASInterfaceState</code> 对应的位。</p>
+
+<pre><code class="language-objectivec">    NSInteger section = indexPath.section;
+    NSInteger row     = indexPath.row;
+
+    if (section &gt;= 0 &amp;&amp; row &gt;= 0 &amp;&amp; section &lt; numberOfSections) {
+      if (section != currentSectionIndex) {
+        currentSectionNodes = allNodes[section];
+        numberOfNodesInSection = [currentSectionNodes count];
+        currentSectionIndex = section;
+      }
+
+      if (row &lt; numberOfNodesInSection) {
+        ASDisplayNode *node = currentSectionNodes[row];
+
+        if (node.interfaceState != interfaceState) {
+          BOOL nodeShouldScheduleDisplay = [node shouldScheduleDisplayWithNewInterfaceState:interfaceState];
+          [node recursivelySetInterfaceState:interfaceState];
+
+          if (nodeShouldScheduleDisplay) {
+            [self registerForNodeDisplayNotificationsForInterfaceStateIfNeeded:selfInterfaceState];
+            if (_didRegisterForNodeDisplayNotifications) {
+              _pendingDisplayNodesTimestamp = CFAbsoluteTimeGetCurrent();
+            }
+          }
+        }
+      }
+    }
+  }
+  ...
+}
+</code></pre>
+
+<p>后面的一部分代码就会递归的设置结点的 <code class="highlighter-rouge">interfaceState</code>，并且在当前 <code class="highlighter-rouge">ASRangeController</code> 的 <code class="highlighter-rouge">ASLayoutRangeMode</code> 发生改变时，发出通知，调用 <code class="highlighter-rouge">-[ASRangeController _updateVisibleNodeIndexPaths]</code> 私有方法，更新结点的状态。</p>
+
+<pre><code class="language-objectivec">- (void)scheduledNodesDidDisplay:(NSNotification *)notification {
+  CFAbsoluteTime notificationTimestamp = ((NSNumber *) notification.userInfo[ASRenderingEngineDidDisplayNodesScheduledBeforeTimestamp]).doubleValue;
+  if (_pendingDisplayNodesTimestamp &lt; notificationTimestamp) {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:ASRenderingEngineDidDisplayScheduledNodesNotification object:nil];
+    _didRegisterForNodeDisplayNotifications = NO;
+
+    [self setNeedsUpdate];
+  }
+}
+</code></pre>
+
+<h4 id="数据的加载和更新">数据的加载和更新</h4>
+
+<p><code class="highlighter-rouge">ASTableNode</code> 既然是对 <code class="highlighter-rouge">ASTableView</code> 的封装，那么表视图中显示的数据仍然需要数据源来提供，而在 ASDK 中这一机制就比较复杂：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-astableview-data.png-1000width" alt="astableview-data" /></p>
+
+<p>整个过程是由四部分协作完成的，<code class="highlighter-rouge">Controller</code>、<code class="highlighter-rouge">ASTableNode</code>、<code class="highlighter-rouge">ASTableView</code> 以及 <code class="highlighter-rouge">ASDataController</code>，网络请求发起并返回数据之后，会调用 <code class="highlighter-rouge">ASTableNode</code> 的 API 执行插入行的方法，最后再通过 <code class="highlighter-rouge">ASTableView</code> 的同名方法，执行管理和更新节点数据的 <code class="highlighter-rouge">ASDataController</code> 的方法：</p>
+
+<pre><code class="language-objectivec">- (void)insertRowsAtIndexPaths:(NSArray *)indexPaths withAnimationOptions:(ASDataControllerAnimationOptions)animationOptions {
+  dispatch_group_wait(_editingTransactionGroup, DISPATCH_TIME_FOREVER);
+
+  NSArray *sortedIndexPaths = [indexPaths sortedArrayUsingSelector:@selector(compare:)];
+  NSMutableArray&lt;ASIndexedNodeContext *&gt; *contexts = [[NSMutableArray alloc] initWithCapacity:indexPaths.count];
+
+  __weak id&lt;ASEnvironment&gt; environment = [self.environmentDelegate dataControllerEnvironment];
+
+  for (NSIndexPath *indexPath in sortedIndexPaths) {
+    ASCellNodeBlock nodeBlock = [_dataSource dataController:self nodeBlockAtIndexPath:indexPath];
+    ASSizeRange constrainedSize = [self constrainedSizeForNodeOfKind:ASDataControllerRowNodeKind atIndexPath:indexPath];
+    [contexts addObject:[[ASIndexedNodeContext alloc] initWithNodeBlock:nodeBlock
+                                                              indexPath:indexPath
+                                               supplementaryElementKind:nil
+                                                        constrainedSize:constrainedSize
+                                                            environment:environment]];
+  }
+  ASInsertElementsIntoMultidimensionalArrayAtIndexPaths(_nodeContexts[ASDataControllerRowNodeKind], sortedIndexPaths, contexts);
+  dispatch_group_async(_editingTransactionGroup, _editingTransactionQueue, ^{
+    [self _batchLayoutAndInsertNodesFromContexts:contexts withAnimationOptions:animationOptions];
+  });
+}
+</code></pre>
+
+<p>上面的方法总共做了几件事情：</p>
+
+<ol>
+  <li>遍历所有要插入的 <code class="highlighter-rouge">NSIndexPath</code> 数组，然后从数据源中获取对应的 <code class="highlighter-rouge">ASCellNodeBlock</code>；</li>
+  <li>获取每一个 <code class="highlighter-rouge">NSIndexPath</code> 对应的单元的大小 <code class="highlighter-rouge">constrainedSize</code>（在图中没有表现出来）；</li>
+  <li>初始化一堆 <code class="highlighter-rouge">ASIndexedNodeContext</code> 实例，然后加入到控制器维护的 <code class="highlighter-rouge">_nodeContexts</code> 数组中；</li>
+  <li>将节点插入到 <code class="highlighter-rouge">_completedNodes</code> 中，用于之后的缓存，以及提供给 <code class="highlighter-rouge">ASTableView</code> 的数据源代理方法使用；</li>
+</ol>
+
+<p><code class="highlighter-rouge">ASTableView</code> 会将数据源协议的代理设置为自己，而最常见的数据源协议在 <code class="highlighter-rouge">ASTableView</code> 中的实现是这样的：</p>
+
+<pre><code class="language-objectivec">- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+  _ASTableViewCell *cell = [self dequeueReusableCellWithIdentifier:kCellReuseIdentifier forIndexPath:indexPath];
+  cell.delegate = self;
+
+  ASCellNode *node = [_dataController nodeAtCompletedIndexPath:indexPath];
+  if (node) {
+    [_rangeController configureContentView:cell.contentView forCellNode:node];
+    cell.node = node;
+    cell.backgroundColor = node.backgroundColor;
+    cell.selectionStyle = node.selectionStyle;
+    cell.clipsToBounds = node.clipsToBounds;
+  }
+
+  return cell;
+}
+</code></pre>
+
+<p>上面的方法会从 <code class="highlighter-rouge">ASDataController</code> 中的 <code class="highlighter-rouge">_completedNodes</code> 中获取元素的数量信息：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-cellforrowatindexpath.jpg-1000width" alt="cellforrowatindexpath" /></p>
+
+<blockquote>
+  <p>在内部 <code class="highlighter-rouge">_externalCompletedNodes</code> 与 <code class="highlighter-rouge">_completedNodes</code> 作用基本相同，在这里我们不对它们的区别进行分析以及解释。</p>
+</blockquote>
+
+<p>当 <code class="highlighter-rouge">ASTableView</code> 向数据源请求数据时，ASDK 就会从对应的 <code class="highlighter-rouge">ASDataController</code> 中取回最新的 <code class="highlighter-rouge">node</code>，添加在 <code class="highlighter-rouge">_ASTableViewCell</code> 的实例上显示出来。</p>
+
+<h4 id="astableview-和-astablenode">ASTableView 和 ASTableNode</h4>
+
+<p><code class="highlighter-rouge">ASTableView</code> 和 <code class="highlighter-rouge">ASTableNode</code> 的关系，其实就相当于 <code class="highlighter-rouge">CALayer</code> 和 <code class="highlighter-rouge">UIView</code> 的关系一样，后者都是前者的一个包装：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-astableview-astablenode.jpg-1000width" alt="astableview-astablenode" /></p>
+
+<p><code class="highlighter-rouge">ASTableNode</code> 为开发者提供了非常多的接口，其内部实现往往都是直接调用 <code class="highlighter-rouge">ASTableView</code> 的对应方法，在这里简单举几个例子：</p>
+
+<pre><code class="language-objectivec">- (void)insertSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
+  [self.view insertSections:sections withRowAnimation:animation];
+}
+
+- (void)deleteSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
+  [self.view deleteSections:sections withRowAnimation:animation];
+}
+</code></pre>
+
+<p>如果你再去看 <code class="highlighter-rouge">ASTableView</code> 中方法的实现的话，会发现很多方法都是由 <code class="highlighter-rouge">ASDataController</code> 和 <code class="highlighter-rouge">ASRangeController</code> 驱动的，上面的两个方法的实现就是这样的：</p>
+
+<pre><code class="language-objectivec">- (void)insertSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
+  if (sections.count == 0) { return; }
+  [_dataController insertSections:sections withAnimationOptions:animation];
+}
+
+- (void)deleteSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
+  if (sections.count == 0) { return; }
+  [_dataController deleteSections:sections withAnimationOptions:animation];
+}
+</code></pre>
+
+<p>到这里，整个智能预加载的部分就结束了，从<em>需要预加载的资源</em>以及<em>预加载发出的时间</em>两个方面来考虑，ASDK 在不同工作区域中合理标记了需要预加载的资源，并在节点状态改变时就发出请求，在用户体验上是非常优秀的。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>ASDK 中的表视图以及智能预加载其实都是通过下面这四者共同实现的，上层只会暴露出 <code class="highlighter-rouge">ASTableNode</code> 的接口，所有的数据的批量更新、工作区域的管理都是在幕后由 <code class="highlighter-rouge">ASDataController</code> 以及 <code class="highlighter-rouge">ASRangeController</code> 这两个控制器协作完成。</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-multi-layer-asdk.jpg-1000width" alt="multi-layer-asdk" /></p>
+
+<p>智能预加载的使用相比其它实现可能相对复杂，但是在笔者看来，ASDK 对于这一套机制的实现还是非常完善的，同时也提供了极其优秀的用户体验，不过同时带来的也是相对较高的学习成本。</p>
+
+<p>如果真正要选择预加载的机制，笔者觉得最好从 Threshold 以及智能预加载两种方式中选择：</p>
+
+<p><img src="https://img.draveness.me/2016-11-04-pros-cons.jpg-1000width" alt="pros-cons" /></p>
+
+<p>这两种方式的选择，其实也就是实现复杂度和用户体验之间的权衡了。</p>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/preload</p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=预加载与智能预加载（iOS）&amp;url=preload"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=preload"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=preload"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racsignal">
+            <section class="post">
+                <h2>『状态』驱动的世界：ReactiveCocoa</h2>
+                <p>> 转自：[『状态』驱动的世界：ReactiveCocoa](https://draveness.me/racsignal) 这篇以及之后的文章主要会对 ReactiveObjc v2.1.2 的实现进行分析，从最简单的例子中了解 ReactiveCocoa 的工作原理以及概念，也是笔者个人对于 RAC 学习的总结与理解。本文主要会围绕 RAC 中核心概念 `RACSignal` 展开，详细了解其底层实现。 ##...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/dsl">
+            <section class="post">
+                <h2>谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）</h2>
+                <p>转自：谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例） 最近在公司做了一次有关 DSL 在 iOS 开发中的应用的分享，这篇文章会简单介绍这次分享的内容。 因为 DSL 以及...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

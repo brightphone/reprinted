@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>iOS 中的 block 是如何持有对象的</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//block-retain-object" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="iOS 中的 block 是如何持有对象的" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//block-retain-object" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="iOS 中的 block 是如何持有对象的" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//block-retain-object" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "iOS 中的 block 是如何持有对象的",
+    "url": "/reprinted//block-retain-object",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">iOS 中的 block 是如何持有对象的</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-08-09">09 Aug 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/block-retain-object">iOS 中的 block 是如何持有对象的</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>Block 是 Objective-C 中笔者最喜欢的特性，它为 Objective-C 这门语言提供了强大的函数式编程能力，而最近苹果推出的很多新的 API 都已经开始原生的支持 block 语法，可见它在 Objective-C 中变得越来越重要。</p>
+
+<p>这篇文章并不会详细介绍 block 在内存中到底是以什么形式存在的，主要会介绍 block 是如何持有并且释放对象的。文章中的代码都出自 Facebook 开源的<strong>用于检测循环引用</strong>的框架 <a href="https://github.com/facebook/FBRetainCycleDetector">FBRetainCycleDetector</a>，这是分析该框架文章中的最后一篇，也是笔者觉得最有意思的一部分。</p>
+
+<blockquote>
+  <p>如果你希望了解 FBRetainCycleDetector 的原理可以阅读<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/FBRetainCycleDetector/如何在%20iOS%20中解决循环引用的问题.md">如何在 iOS 中解决循环引用的问题</a>以及后续文章。</p>
+</blockquote>
+
+<h2 id="为什么会谈到-block">为什么会谈到 block</h2>
+
+<p>可能很多读者会有这样的疑问，本文既然是对 <code class="highlighter-rouge">FBRetainCycleDetector</code> 解析的文章，为什么会提到 block？原因其实很简单，因为在 iOS 开发中大多数的循环引用都是因为 block 使用不当导致的，由于 block 会 retain 它持有的对象，这样就很容易造成循环引用，最终导致内存泄露。</p>
+
+<p>在 <code class="highlighter-rouge">FBRetainCycleDetector</code> 中存在这样一个类 <code class="highlighter-rouge">FBObjectiveCBlock</code>，这个类的 <code class="highlighter-rouge">- allRetainedObjects</code> 方法就会返回所有 block 持有的强引用，这也是文章需要关注的重点。</p>
+
+<pre><code class="language-objectivec">- (NSSet *)allRetainedObjects {
+	NSMutableArray *results = [[[super allRetainedObjects] allObjects] mutableCopy];
+
+	__attribute__((objc_precise_lifetime)) id anObject = self.object;
+
+	void *blockObjectReference = (__bridge void *)anObject;
+	NSArray *allRetainedReferences = FBGetBlockStrongReferences(blockObjectReference);
+
+	for (id object in allRetainedReferences) {
+		FBObjectiveCGraphElement *element = FBWrapObjectGraphElement(self, object, self.configuration);
+		if (element) {
+			[results addObject:element];
+		}
+	}
+
+	return [NSSet setWithArray:results];
+}
+</code></pre>
+
+<p>这部分代码中的大部分都不重要，只是在开头调用父类方法，在最后将获取的对象包装成一个系列 <code class="highlighter-rouge">FBObjectiveCGraphElement</code>，最后返回一个数组，也就是当前对象 block 持有的全部强引用了。</p>
+
+<h2 id="block-是什么">Block 是什么？</h2>
+
+<p>对 block 稍微有了解的人都知道，block 其实是一个结构体，其结构大概是这样的：</p>
+
+<pre><code class="language-objectivec">struct BlockLiteral {
+	void *isa;
+	int flags;
+	int reserved;
+	void (*invoke)(void *, ...);
+	struct BlockDescriptor *descriptor;
+};
+
+struct BlockDescriptor {
+	unsigned long int reserved;
+	unsigned long int size;
+	void (*copy_helper)(void *dst, void *src);
+	void (*dispose_helper)(void *src);
+	const char *signature;
+};
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">BlockLiteral</code> 结构体中有一个 <code class="highlighter-rouge">isa</code> 指针，而对 <code class="highlighter-rouge">isa</code>了解的人也都知道，这里的 <code class="highlighter-rouge">isa</code> 其实指向了一个类，每一个 block 指向的类可能是 <code class="highlighter-rouge">__NSGlobalBlock__</code>、<code class="highlighter-rouge">__NSMallocBlock__</code> 或者 <code class="highlighter-rouge">__NSStackBlock__</code>，但是这些 block，它们继承自一个共同的父类，也就是 <code class="highlighter-rouge">NSBlock</code>，我们可以使用下面的代码来获取这个类：</p>
+
+<pre><code class="language-objectivec">static Class _BlockClass() {
+	static dispatch_once_t onceToken;
+	static Class blockClass;
+	dispatch_once(&amp;onceToken, ^{
+		void (^testBlock)() = [^{} copy];
+		blockClass = [testBlock class];
+		while(class_getSuperclass(blockClass) &amp;&amp; class_getSuperclass(blockClass) != [NSObject class]) {
+			blockClass = class_getSuperclass(blockClass);
+		}
+		[testBlock release];
+	});
+	return blockClass;
+}
+</code></pre>
+
+<p>Objective-C 中的三种 block <code class="highlighter-rouge">__NSMallocBlock__</code>、<code class="highlighter-rouge">__NSStackBlock__</code> 和 <code class="highlighter-rouge">__NSGlobalBlock__</code> 会在下面的情况下出现：</p>
+
+<p><img src="/content/images/2016/08/block-table.png" alt="" /></p>
+
+<ul>
+  <li>在 ARC 中，捕获外部了变量的 block 的类会是 <code class="highlighter-rouge">__NSMallocBlock__</code> 或者 <code class="highlighter-rouge">__NSStackBlock__</code>，如果 block 被赋值给了某个变量在这个过程中会执行 <code class="highlighter-rouge">_Block_copy</code> 将原有的 <code class="highlighter-rouge">__NSStackBlock__</code> 变成 <code class="highlighter-rouge">__NSMallocBlock__</code>；但是如果 block 没有被赋值给某个变量，那它的类型就是 <code class="highlighter-rouge">__NSStackBlock__</code>；没有捕获外部变量的 block 的类会是 <code class="highlighter-rouge">__NSGlobalBlock__</code> 即不在堆上，也不在栈上，它类似 C 语言函数一样会在代码段中。</li>
+  <li>在非 ARC 中，捕获了外部变量的 block 的类会是 <code class="highlighter-rouge">__NSStackBlock__</code>，放置在栈上，没有捕获外部变量的 block 时与 ARC 环境下情况相同。</li>
+</ul>
+
+<p>如果我们不断打印一个 block 的 <code class="highlighter-rouge">superclass</code> 的话最后就会在继承链中找到 <code class="highlighter-rouge">NSBlock</code> 的身影：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-block-superclass.png-1000width" alt="block-superclass" /></p>
+
+<p>然后可以通过这种办法来判断当前对象是不是 block：</p>
+
+<pre><code class="language-objectivec">BOOL FBObjectIsBlock(void *object) {
+	Class blockClass = _BlockClass();
+
+	Class candidate = object_getClass((__bridge id)object);
+	return [candidate isSubclassOfClass:blockClass];
+}
+</code></pre>
+
+<h2 id="block-如何持有对象">Block 如何持有对象</h2>
+
+<p>在这一小节，我们将讨论 block 是<strong>如何持有对象</strong>的，我们会通过对 FBRetainCycleDetector 的源代码进行分析最后尽量详尽地回答这一问题。</p>
+
+<p>重新回到文章开头提到的 <code class="highlighter-rouge">- allRetainedObjects</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (NSSet *)allRetainedObjects {
+	NSMutableArray *results = [[[super allRetainedObjects] allObjects] mutableCopy];
+
+	__attribute__((objc_precise_lifetime)) id anObject = self.object;
+
+	void *blockObjectReference = (__bridge void *)anObject;
+	NSArray *allRetainedReferences = FBGetBlockStrongReferences(blockObjectReference);
+
+	for (id object in allRetainedReferences) {
+		FBObjectiveCGraphElement *element = FBWrapObjectGraphElement(self, object, self.configuration);
+		if (element) {
+			[results addObject:element];
+		}
+	}
+
+	return [NSSet setWithArray:results];
+}
+</code></pre>
+
+<p>通过函数的符号我们也能够猜测出，上述方法中通过 <code class="highlighter-rouge">FBGetBlockStrongReferences</code> 获取 block 持有的所有强引用：</p>
+
+<pre><code class="language-objectivec">NSArray *FBGetBlockStrongReferences(void *block) {
+	if (!FBObjectIsBlock(block)) {
+		return nil;
+	}
+
+	NSMutableArray *results = [NSMutableArray new];
+
+	void **blockReference = block;
+	NSIndexSet *strongLayout = _GetBlockStrongLayout(block);
+	[strongLayout enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+		void **reference = &amp;blockReference[idx];
+
+		if (reference &amp;&amp; (*reference)) {
+			id object = (id)(*reference);
+
+			if (object) {
+				[results addObject:object];
+			}
+		}
+	}];
+
+	return [results autorelease];
+}
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">FBGetBlockStrongReferences</code> 是对另一个私有函数 <code class="highlighter-rouge">_GetBlockStrongLayout</code> 的封装，也是实现最有意思的部分。</p>
+
+<h3 id="几个必要的概念">几个必要的概念</h3>
+
+<p>在具体介绍 <code class="highlighter-rouge">_GetBlockStrongLayout</code> 函数的源代码之前，我希望先对其原理有一个简单的介绍，便于各位读者的理解；在这里有三个概念需要介绍，首先是 block 持有的对象都存在的位置。</p>
+
+<h4 id="如何持有对象">如何持有对象</h4>
+
+<p>在文章的上面曾经出现过 block 的结构体，不知道各位读者是否还有印象：</p>
+
+<pre><code class="language-objectivec">struct BlockLiteral {
+	void *isa;
+	int flags;
+	int reserved;
+	void (*invoke)(void *, ...);
+	struct BlockDescriptor *descriptor;
+	// imported variables
+};
+</code></pre>
+
+<p>在每个 block 结构体的下面就会存放当前 block 持有的所有对象，无论强弱。我们可以做一个小实验来验证这个观点，我们在程序中声明这样一个 block：</p>
+
+<pre><code class="language-objectivec">NSObject *firstObject = [NSObject new];
+__attribute__((objc_precise_lifetime)) NSObject *object = [NSObject new];
+__weak NSObject *secondObject = object;
+NSObject *thirdObject = [NSObject new];
+
+__unused void (^block)() = ^{
+	__unused NSObject *first = firstObject;
+	__unused NSObject *second = secondObject;
+	__unused NSObject *third = thirdObject;
+};
+</code></pre>
+
+<p>然后在代码中打一个断点：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-block-capture-var-layout.png-1000width" alt="block-capture-var-layout" /></p>
+
+<blockquote>
+  <p>上面代码中 block 由于被变量引用，执行了 <code class="highlighter-rouge">_Block_copy</code>，所以其类型为 <code class="highlighter-rouge">__NSMallocBlock__</code>，没有被变量引用的 block 都是 <code class="highlighter-rouge">__NSStackBlock__</code>。</p>
+</blockquote>
+
+<ol>
+  <li>首先打印 block 变量的大小，因为 block 变量其实只是一个指向结构体的指针，所以大小为 8，而结构体的大小为 32；</li>
+  <li>以 block 的地址为基址，偏移 32，得到一个指针</li>
+  <li>使用 <code class="highlighter-rouge">$3[0]</code> <code class="highlighter-rouge">$3[1]</code> <code class="highlighter-rouge">$3[2]</code> 依次打印地址为 <code class="highlighter-rouge">0x1001023b0</code> <code class="highlighter-rouge">0x1001023b8</code> <code class="highlighter-rouge">0x1001023c0</code> 的内容，可以发现它们就是 block 捕获的全部引用，前两个是强引用，最后的是弱引用</li>
+</ol>
+
+<p>这可以得出一个结论：block 将其捕获的引用存放在结构体的下面，但是为什么这里的顺序并不是按照引用的顺序呢？接下来增加几个变量，再做另一次实验：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-block-capture-strong-weak-order.png-1000width" alt="block-capture-strong-weak-orde" /></p>
+
+<p>在代码中多加入了几个对象之后，block 对持有的对象的布局的顺序依然是<strong>强引用在前、弱引用在后</strong>，我们不妨做一个假设：<strong>block 会将强引用的对象排放在弱引用对象的前面</strong>。但是这个假设能够帮助我们在<strong>只有 block 但是没有上下文信息的情况下</strong>区分哪些是强引用么？我觉得并不能，因为我们没有办法知道它们之间的分界线到底在哪里。</p>
+
+<h4 id="dispose_helper">dispose_helper</h4>
+
+<p>第二个需要介绍的是 <code class="highlighter-rouge">dispose_helper</code>，这是 <code class="highlighter-rouge">BlockDescriptor</code> 结构体中的一个指针：</p>
+
+<pre><code class="language-objectivec">struct BlockDescriptor {
+	unsigned long int reserved;                // NULL
+	unsigned long int size;
+	// optional helper functions
+	void (*copy_helper)(void *dst, void *src); // IFF (1&lt;&lt;25)
+	void (*dispose_helper)(void *src);         // IFF (1&lt;&lt;25)
+	const char *signature;                     // IFF (1&lt;&lt;30)
+};
+</code></pre>
+
+<p>上面的结构体中有两个函数指针，<code class="highlighter-rouge">copy_helper</code> 用于 block 的拷贝，<code class="highlighter-rouge">dispose_helper</code> 用于 block 的 <code class="highlighter-rouge">dispose</code> 也就是 block 在析构的时候会调用这个函数指针，销毁自己持有的对象，而这个原理也是区别强弱引用的关键，因为在 <code class="highlighter-rouge">dispose_helper</code> 会对强引用发送 <code class="highlighter-rouge">release</code> 消息，对弱引用不会做任何的处理。</p>
+
+<h4 id="fbblockstrongrelationdetector">FBBlockStrongRelationDetector</h4>
+
+<p>最后就是用于从 <code class="highlighter-rouge">dispose_helper</code> 接收消息的类 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 了；它的实例在接受 <code class="highlighter-rouge">release</code> 消息时，并不会真正的释放，只会将标记 <code class="highlighter-rouge">_strong</code> 为 YES：</p>
+
+<pre><code class="language-objectivec">- (oneway void)release {
+	_strong = YES;
+}
+
+- (oneway void)trueRelease {
+	[super release];
+}
+</code></pre>
+
+<p>只有真正执行 <code class="highlighter-rouge">trueRelease</code> 的时候才会向对象发送 <code class="highlighter-rouge">release</code> 消息。</p>
+
+<p>因为这个文件覆写了 <code class="highlighter-rouge">release</code> 方法，所以要在非 ARC 下编译：</p>
+
+<pre><code class="language-objectivec">#if __has_feature(objc_arc)
+#error This file must be compiled with MRR. Use -fno-objc-arc flag.
+#endif
+</code></pre>
+
+<p>如果 block 持有了另一个 block 对象，<code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 也可以将自身 fake 成为一个假的 block 防止在接收到关于 block 释放的消息时发生 crash：</p>
+
+<pre><code class="language-objectivec">struct _block_byref_block;
+@interface FBBlockStrongRelationDetector : NSObject {
+	// __block fakery
+	void *forwarding;
+	int flags;   //refcount;
+	int size;
+	void (*byref_keep)(struct _block_byref_block *dst, struct _block_byref_block *src);
+	void (*byref_dispose)(struct _block_byref_block *);
+	void *captured[16];
+}
+</code></pre>
+
+<p>该类的实例在初始化时，会设置 <code class="highlighter-rouge">forwarding</code>、<code class="highlighter-rouge">byref_keep</code> 和 <code class="highlighter-rouge">byref_dispose</code>，后两个方法的实现都是空的，只是为了防止 crash：</p>
+
+<pre><code class="language-objectivec">+ (id)alloc {
+	FBBlockStrongRelationDetector *obj = [super alloc];
+
+	// Setting up block fakery
+	obj-&gt;forwarding = obj;
+	obj-&gt;byref_keep = byref_keep_nop;
+	obj-&gt;byref_dispose = byref_dispose_nop;
+
+	return obj;
+}
+
+static void byref_keep_nop(struct _block_byref_block *dst, struct _block_byref_block *src) {}
+static void byref_dispose_nop(struct _block_byref_block *param) {}
+</code></pre>
+
+<h3 id="获取-block-强引用的对象">获取 block 强引用的对象</h3>
+
+<p>到现在为止，获取 block 强引用对象所需要的知识都介绍完了，接下来可以对私有方法 <code class="highlighter-rouge">_GetBlockStrongLayout</code> 进行分析了：</p>
+
+<pre><code class="language-objectivec">static NSIndexSet *_GetBlockStrongLayout(void *block) {
+	struct BlockLiteral *blockLiteral = block;
+
+	if ((blockLiteral-&gt;flags &amp; BLOCK_HAS_CTOR)
+		|| !(blockLiteral-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE)) {
+		return nil;
+	}
+
+	...
+}
+</code></pre>
+
+<ul>
+  <li>如果 block 有 Cpp 的构造器/析构器，说明它<strong>持有的对象很有可能没有按照指针大小对齐</strong>，我们很难检测到所有的对象</li>
+  <li>如果 block 没有 <code class="highlighter-rouge">dispose</code> 函数，说明它无法 <code class="highlighter-rouge">retain</code> 对象，也就是说我们也没有办法测试其强引用了哪些对象</li>
+</ul>
+
+<pre><code class="language-objectivec">static NSIndexSet *_GetBlockStrongLayout(void *block) {
+	...
+	void (*dispose_helper)(void *src) = blockLiteral-&gt;descriptor-&gt;dispose_helper;
+	const size_t ptrSize = sizeof(void *);
+	const size_t elements = (blockLiteral-&gt;descriptor-&gt;size + ptrSize - 1) / ptrSize;
+
+	void *obj[elements];
+	void *detectors[elements];
+
+	for (size_t i = 0; i &lt; elements; ++i) {
+		FBBlockStrongRelationDetector *detector = [FBBlockStrongRelationDetector new];
+		obj[i] = detectors[i] = detector;
+	}
+
+	@autoreleasepool {
+		dispose_helper(obj);
+	}
+	...
+}
+</code></pre>
+
+<ol>
+  <li>从 <code class="highlighter-rouge">BlockDescriptor</code> 取出 <code class="highlighter-rouge">dispose_helper</code> 以及 <code class="highlighter-rouge">size</code>（block 持有的所有对象的大小）</li>
+  <li>通过 <code class="highlighter-rouge">(blockLiteral-&gt;descriptor-&gt;size + ptrSize - 1) / ptrSize</code> 向上取整，获取 block 持有的指针的数量</li>
+  <li>初始化两个包含 <code class="highlighter-rouge">elements</code> 个 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 实例的数组，其中第一个数组用于传入 <code class="highlighter-rouge">dispose_helper</code>，第二个数组用于检测 <code class="highlighter-rouge">_strong</code> 是否被标记为 <code class="highlighter-rouge">YES</code></li>
+  <li>在自动释放池中执行 <code class="highlighter-rouge">dispose_helper(obj)</code>，释放 block 持有的对象</li>
+</ol>
+
+<pre><code class="language-objectivec">static NSIndexSet *_GetBlockStrongLayout(void *block) {
+	...
+	NSMutableIndexSet *layout = [NSMutableIndexSet indexSet];
+
+	for (size_t i = 0; i &lt; elements; ++i) {
+		FBBlockStrongRelationDetector *detector = (FBBlockStrongRelationDetector *)(detectors[i]);
+		if (detector.isStrong) {
+			[layout addIndex:i];
+		}
+
+		[detector trueRelease];
+	}
+
+	return layout;
+}
+</code></pre>
+
+<p>因为 <code class="highlighter-rouge">dispose_helper</code> 只会调用 <code class="highlighter-rouge">release</code> 方法，但是这并不会导致我们的 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 实例被释放掉，反而会标记 <code class="highlighter-rouge">_string</code> 属性，在这里我们只需要判断这个属性的真假，将对应索引加入数组，最后再调用 <code class="highlighter-rouge">trueRelease</code> 真正的释放对象。</p>
+
+<p>我们可以执行下面的代码，分析其工作过程：</p>
+
+<pre><code class="language-objectivec">NSObject *firstObject = [NSObject new];
+__attribute__((objc_precise_lifetime)) NSObject *object = [NSObject new];
+__weak NSObject *secondObject = object;
+NSObject *thirdObject = [NSObject new];
+
+__unused void (^block)() = ^{
+	__unused NSObject *first = firstObject;
+	__unused NSObject *second = secondObject;
+	__unused NSObject *third = thirdObject;
+};
+
+FBRetainCycleDetector *detector = [FBRetainCycleDetector new];
+[detector addCandidate:block];
+[detector findRetainCycles];
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">dispose_helper</code> 调用之前：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-before-dispose-helper.jpeg" alt="before-dispose-helpe" /></p>
+
+<p><code class="highlighter-rouge">obj</code> 数组中的每一个位置都存储了 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 的实例，但是在 <code class="highlighter-rouge">dispose_helper</code> 调用之后：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-after-dispose-helper.png-1000width" alt="after-dispose-helpe" /></p>
+
+<p>索引为 4 和 5 处的实例已经被清空了，这里对应的 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 实例的 <code class="highlighter-rouge">strong</code> 已经被标记为 <code class="highlighter-rouge">YES</code>、加入到数组中并返回；最后也就获取了所有强引用的索引，同时得到了 block 强引用的对象。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>其实最开始笔者对这个 <code class="highlighter-rouge">dispose_helper</code> 实现的机制并不是特别的肯定，只是有一个猜测，但是在询问了 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 的作者之后，才确定 <code class="highlighter-rouge">dispose_helper</code> 确实会负责向所有捕获的变量发送 <code class="highlighter-rouge">release</code> 消息，如果有兴趣可以看这个 <a href="https://github.com/facebook/FBRetainCycleDetector/issues/15">issue</a>。这部分的代码其实最开始源于 mikeash 大神的 <a href="https://github.com/mikeash/Circle">Circle</a>，不过对于他是如何发现这一点的，笔者并不清楚，如果各位有相关的资料或者合理的解释，可以随时联系我。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=iOS 中的 block 是如何持有对象的&amp;url=block-retain-object"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=block-retain-object"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=block-retain-object"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/protocol-extension">
+            <section class="post">
+                <h2>如何在 Objective-C 中实现协议扩展</h2>
+                <p>> 转自：[如何在 Objective-C 中实现协议扩展](https://draveness.me/protocol-extension) ![](https://img.draveness.me/2016-08-13-protocol-recordings.jpeg) Swift 中的协议扩展为 iOS 开发带来了非常多的可能性，它为我们提供了一种类似多重继承的功能，帮助我们减少一切可能导致重复代码的地方。 ## 关于 Protocol Extension 在 Swift...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/object-init">
+            <section class="post">
+                <h2>对象是如何初始化的（iOS）</h2>
+                <p>转自：对象是如何初始化的（iOS） 关注仓库，及时获得更新：iOS-Source-Code-Analyze 在之前，我们已经讨论了非常多的问题了，关于 objc 源代码系列的文章也快结束了，其实关于对象是如何初始化的这篇文章本来是我要写的第一篇文章，但是由于有很多前置内容不得不说，所以留到了这里。 + alloc 和 - init 这一对我们在 iOS 开发中每天都要用到的初始化方法一直困扰着我, 于是笔者仔细研究了一下 objc...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

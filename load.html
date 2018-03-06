@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>你真的了解 load 方法么？</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//load" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="你真的了解 load 方法么？" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//load" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="你真的了解 load 方法么？" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//load" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "你真的了解 load 方法么？",
+    "url": "/reprinted//load",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">你真的了解 load 方法么？</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-04-28">28 Apr 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/load">你真的了解 load 方法么？</a></p>
+</blockquote>
+
+<blockquote>
+  <p>因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 <code class="highlighter-rouge">x86_64</code> 架构下运行的，对于在 arm64 中运行的代码会特别说明。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<blockquote>
+  <p>文章的标题与其说是问各位读者，不如说是问笔者自己：<strong>我</strong>真的了解 <code class="highlighter-rouge">+ load</code> 方法么？</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">+ load</code> 作为 Objective-C 中的一个方法，与其它方法有很大的不同。它只是一个<strong>在整个文件被加载到运行时，在 <code class="highlighter-rouge">main</code> 函数调用之前被 ObjC 运行时调用的钩子方法</strong>。其中关键字有这么几个：</p>
+
+<ul>
+  <li>文件刚加载</li>
+  <li><code class="highlighter-rouge">main</code> 函数之前</li>
+  <li>钩子方法</li>
+</ul>
+
+<p>我在阅读 ObjC 源代码之前，曾经一度感觉自己对 <code class="highlighter-rouge">+ load</code> 方法的作用非常了解，直到看了源代码中的实现，才知道以前的以为，只是自己的以为罢了。</p>
+
+<p>这篇文章会假设你知道：</p>
+
+<ul>
+  <li>使用过 <code class="highlighter-rouge">+ load</code> 方法</li>
+  <li>知道 <code class="highlighter-rouge">+ load</code> 方法的调用顺序（文章中会简单介绍）</li>
+</ul>
+
+<p>在这篇文章中并不会用大篇幅介绍 <code class="highlighter-rouge">+ load</code> 方法的作用<del>其实也没几个作用</del>，关注点主要在以下两个问题上：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">+ load</code> 方法是如何被调用的</li>
+  <li><code class="highlighter-rouge">+ load</code> 方法为什么会有这种调用顺序</li>
+</ul>
+
+<h2 id="load-方法的调用栈">load 方法的调用栈</h2>
+
+<p>首先来通过 <code class="highlighter-rouge">load</code> 方法的调用栈，分析一下它到底是如何被调用的。</p>
+
+<p>下面是程序的全部代码：</p>
+
+<pre><code class="language-objectivec">// main.m
+#import &lt;Foundation/Foundation.h&gt;
+
+@interface XXObject : NSObject @end
+
+@implementation XXObject
+
++ (void)load {
+    NSLog(@"XXObject load");
+}
+
+@end
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool { }
+    return 0;
+}
+</code></pre>
+
+<p>代码总共只实现了一个 <code class="highlighter-rouge">XXObject</code> 的 <code class="highlighter-rouge">+ load</code> 方法，主函数中也没有任何的东西：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-print-load.png" alt="objc-load-print-load" /></p>
+
+<p>虽然在主函数中什么方法都没有调用，但是运行之后，依然打印了 <code class="highlighter-rouge">XXObject load</code> 字符串，也就是说调用了 <code class="highlighter-rouge">+ load</code> 方法。</p>
+
+<h3 id="使用符号断点">使用符号断点</h3>
+
+<p>使用 Xcode 添加一个符号断点 <code class="highlighter-rouge">+[XXObject load]</code>：</p>
+
+<blockquote>
+  <p>注意这里 <code class="highlighter-rouge">+</code> 和 <code class="highlighter-rouge">[</code> 之间没有空格</p>
+</blockquote>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-symbolic-breakpoint.png" alt="objc-load-symbolic-breakpoint" /></p>
+
+<blockquote>
+  <p>为什么要加一个符号断点呢？因为这样看起来比较高级。</p>
+</blockquote>
+
+<p>重新运行程序。这时，代码会停在 <code class="highlighter-rouge">NSLog(@"XXObject load");</code> 这一行的实现上：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-break-after-add-breakpoint.png" alt="objc-load-break-after-add-breakpoint" /></p>
+
+<p>左侧的调用栈很清楚的告诉我们，哪些方法被调用了：</p>
+
+<pre><code class="language-objectivec">0  +[XXObject load]
+1  call_class_loads()
+2  call_load_methods
+3  load_images
+4  dyld::notifySingle(dyld_image_states, ImageLoader const*)
+11 _dyld_start
+</code></pre>
+
+<blockquote>
+  <p><a href="https://developer.apple.com/library/ios/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html">dyld</a> 是 the dynamic link editor 的缩写，它是苹果的<em>动态链接器</em>。</p>
+
+  <p>在系统内核做好程序准备工作之后，交由 dyld 负责余下的工作。本文不会对其进行解释</p>
+</blockquote>
+
+<p>每当有新的镜像加载之后，都会执行 <code class="highlighter-rouge">3 load_images</code> 方法进行回调，这里的回调是在整个运行时初始化时 <code class="highlighter-rouge">_objc_init</code> 注册的（会在之后的文章中具体介绍）：</p>
+
+<pre><code class="language-objectivec">dyld_register_image_state_change_handler(dyld_image_state_dependents_initialized, 0/*not batch*/, &amp;load_images);
+</code></pre>
+
+<p>有新的镜像被加载到 runtime 时，调用 <code class="highlighter-rouge">load_images</code> 方法，并传入最新镜像的信息列表 <code class="highlighter-rouge">infoList</code>：</p>
+
+<pre><code class="language-objectivec">const char *
+load_images(enum dyld_image_states state, uint32_t infoCount,
+            const struct dyld_image_info infoList[])
+{
+    bool found;
+
+    found = false;
+    for (uint32_t i = 0; i &lt; infoCount; i++) {
+        if (hasLoadMethods((const headerType *)infoList[i].imageLoadAddress)) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) return nil;
+
+    recursive_mutex_locker_t lock(loadMethodLock);
+
+    {
+        rwlock_writer_t lock2(runtimeLock);
+        found = load_images_nolock(state, infoCount, infoList);
+    }
+
+    if (found) {
+        call_load_methods();
+    }
+
+    return nil;
+}
+</code></pre>
+
+<h3 id="什么是镜像">什么是镜像</h3>
+
+<p>这里就会遇到一个问题：镜像到底是什么，我们用一个断点打印出所有加载的镜像：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-print-image-info.png" alt="objc-load-print-image-info" /></p>
+
+<p>从控制台输出的结果大概就是这样的，我们可以看到镜像并不是一个 Objective-C 的代码文件，它应该是一个 target 的编译产物。</p>
+
+<pre><code class="language-objectivec">...
+(const dyld_image_info) $52 = {
+  imageLoadAddress = 0x00007fff8a144000
+  imageFilePath = 0x00007fff8a144168 "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices"
+  imageFileModDate = 1452737802
+}
+(const dyld_image_info) $53 = {
+  imageLoadAddress = 0x00007fff946d9000
+  imageFilePath = 0x00007fff946d9480 "/usr/lib/liblangid.dylib"
+  imageFileModDate = 1452737618
+}
+(const dyld_image_info) $54 = {
+  imageLoadAddress = 0x00007fff88016000
+  imageFilePath = 0x00007fff88016d40 "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation"
+  imageFileModDate = 1452737917
+}
+(const dyld_image_info) $55 = {
+  imageLoadAddress = 0x0000000100000000
+  imageFilePath = 0x00007fff5fbff8f0 "/Users/apple/Library/Developer/Xcode/DerivedData/objc-dibgivkseuawonexgbqssmdszazo/Build/Products/Debug/debug-objc"
+  imageFileModDate = 0
+}
+</code></pre>
+
+<p>这里面有很多的动态链接库，还有一些苹果为我们提供的框架，比如 Foundation、 CoreServices 等等，都是在这个 <code class="highlighter-rouge">load_images</code> 中加载进来的，而这些 <code class="highlighter-rouge">imageFilePath</code> 都是对应的<strong>二进制文件</strong>的地址。</p>
+
+<p>但是如果进入最下面的这个目录，会发现它是一个<strong>可执行文件</strong>，它的运行结果与 Xcode 中的运行结果相同：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-image-binary.png" alt="objc-load-image-binary" /></p>
+
+<h3 id="准备--load-方法">准备 + load 方法</h3>
+
+<p>我们重新回到 <code class="highlighter-rouge">load_images</code> 方法，如果在扫描镜像的过程中发现了 <code class="highlighter-rouge">+ load</code> 符号：</p>
+
+<pre><code class="language-objectivec">for (uint32_t i = 0; i &lt; infoCount; i++) {
+    if (hasLoadMethods((const headerType *)infoList[i].imageLoadAddress)) {
+        found = true;
+        break;
+    }
+}
+</code></pre>
+
+<p>就会进入 <code class="highlighter-rouge">load_images_nolock</code> 来查找 <code class="highlighter-rouge">load</code> 方法：</p>
+
+<pre><code class="language-objectivec">bool load_images_nolock(enum dyld_image_states state,uint32_t infoCount,
+                   const struct dyld_image_info infoList[])
+{
+    bool found = NO;
+    uint32_t i;
+
+    i = infoCount;
+    while (i--) {
+        const headerType *mhdr = (headerType*)infoList[i].imageLoadAddress;
+        if (!hasLoadMethods(mhdr)) continue;
+
+        prepare_load_methods(mhdr);
+        found = YES;
+    }
+
+    return found;
+}
+</code></pre>
+
+<p>调用 <code class="highlighter-rouge">prepare_load_methods</code> 对 <code class="highlighter-rouge">load</code> 方法的调用进行准备（将需要调用 <code class="highlighter-rouge">load</code> 方法的类添加到一个列表中，后面的小节中会介绍）：</p>
+
+<pre><code class="language-objectivec">void prepare_load_methods(const headerType *mhdr)
+{
+    size_t count, i;
+
+    runtimeLock.assertWriting();
+
+    classref_t *classlist =
+        _getObjc2NonlazyClassList(mhdr, &amp;count);
+    for (i = 0; i &lt; count; i++) {
+        schedule_class_load(remapClass(classlist[i]));
+    }
+
+    category_t **categorylist = _getObjc2NonlazyCategoryList(mhdr, &amp;count);
+    for (i = 0; i &lt; count; i++) {
+        category_t *cat = categorylist[i];
+        Class cls = remapClass(cat-&gt;cls);
+        if (!cls) continue;  // category for ignored weak-linked class
+        realizeClass(cls);
+        assert(cls-&gt;ISA()-&gt;isRealized());
+        add_category_to_loadable_list(cat);
+    }
+}
+</code></pre>
+
+<p>通过 <code class="highlighter-rouge">_getObjc2NonlazyClassList</code> 获取所有的类的列表之后，会通过 <code class="highlighter-rouge">remapClass</code> 获取类对应的指针，然后调用 <code class="highlighter-rouge">schedule_class_load</code> <strong>递归地安排当前类和没有调用 <code class="highlighter-rouge">+ load</code> 父类</strong>进入列表。</p>
+
+<pre><code class="language-objectivec">static void schedule_class_load(Class cls)
+{
+    if (!cls) return;
+    assert(cls-&gt;isRealized());
+
+    if (cls-&gt;data()-&gt;flags &amp; RW_LOADED) return;
+
+    schedule_class_load(cls-&gt;superclass);
+
+    add_class_to_loadable_list(cls);
+    cls-&gt;setInfo(RW_LOADED);
+}
+</code></pre>
+
+<p>在执行 <code class="highlighter-rouge">add_class_to_loadable_list(cls)</code> 将当前类加入加载列表之前，会<strong>先把父类加入待加载的列表</strong>，保证父类在子类前调用 <code class="highlighter-rouge">load</code> 方法。</p>
+
+<h3 id="调用--load-方法">调用 + load 方法</h3>
+
+<p>在将镜像加载到运行时、对 <code class="highlighter-rouge">load</code> 方法的准备就绪之后，执行 <code class="highlighter-rouge">call_load_methods</code>，开始调用 <code class="highlighter-rouge">load</code> 方法：</p>
+
+<pre><code class="language-objectivec">void call_load_methods(void)
+{
+    ...
+
+    do {
+        while (loadable_classes_used &gt; 0) {
+            call_class_loads();
+        }
+
+        more_categories = call_category_loads();
+
+    } while (loadable_classes_used &gt; 0  ||  more_categories);
+
+    ...
+}
+</code></pre>
+
+<p>方法的调用流程大概是这样的：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-diagram.png" alt="objc-load-diagra" /></p>
+
+<p>其中 <code class="highlighter-rouge">call_class_loads</code> 会从一个待加载的类列表 <code class="highlighter-rouge">loadable_classes</code> 中寻找对应的类，然后找到 <code class="highlighter-rouge">@selector(load)</code> 的实现并执行。</p>
+
+<pre><code class="language-objectivec">static void call_class_loads(void)
+{
+    int i;
+
+    struct loadable_class *classes = loadable_classes;
+    int used = loadable_classes_used;
+    loadable_classes = nil;
+    loadable_classes_allocated = 0;
+    loadable_classes_used = 0;
+
+    for (i = 0; i &lt; used; i++) {
+        Class cls = classes[i].cls;
+        load_method_t load_method = (load_method_t)classes[i].method;
+        if (!cls) continue;
+
+        (*load_method)(cls, SEL_load);
+    }
+
+    if (classes) free(classes);
+}
+</code></pre>
+
+<p>这行 <code class="highlighter-rouge">(*load_method)(cls, SEL_load)</code> 代码就会调用 <code class="highlighter-rouge">+[XXObject load]</code> 方法。</p>
+
+<blockquote>
+  <p>我们会在下面介绍 <code class="highlighter-rouge">loadable_classes</code> 列表是如何管理的。</p>
+</blockquote>
+
+<p>到现在，我们回答了第一个问题：</p>
+
+<p>Q：<strong><code class="highlighter-rouge">load</code> 方法是如何被调用的？</strong></p>
+
+<p>A：当 Objective-C 运行时初始化的时候，会通过 <code class="highlighter-rouge">dyld_register_image_state_change_handler</code> 在每次有新的镜像加入<em>运行时</em>的时候，进行回调。执行 <code class="highlighter-rouge">load_images</code> 将所有包含 <code class="highlighter-rouge">load</code> 方法的文件加入列表 <code class="highlighter-rouge">loadable_classes</code> ，然后从这个列表中找到对应的 <code class="highlighter-rouge">load</code> 方法的实现，调用 <code class="highlighter-rouge">load</code> 方法。</p>
+
+<h2 id="加载的管理">加载的管理</h2>
+
+<p>ObjC 对于加载的管理，主要使用了两个列表，分别是 <code class="highlighter-rouge">loadable_classes</code> 和 <code class="highlighter-rouge">loadable_categories</code>。</p>
+
+<p>方法的调用过程也分为两个部分，准备 <code class="highlighter-rouge">load</code> 方法和调用 <code class="highlighter-rouge">load</code> 方法，我更觉得这两个部分比较像生产者与消费者：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-28-objc-load-producer-consumer-diagram.png" alt="objc-load-producer-consumer-diagra" /></p>
+
+<p><code class="highlighter-rouge">add_class_to_loadable_list</code> 方法负责将类加入 <code class="highlighter-rouge">loadable_classes</code> 集合，而 <code class="highlighter-rouge">call_class_loads</code> 负责消费集合中的元素。</p>
+
+<p>而对于分类来说，其模型也是类似的，只不过使用了另一个列表 <code class="highlighter-rouge">loadable_categories</code>。</p>
+
+<h3 id="生产-loadable_class">“生产” loadable_class</h3>
+
+<p>在调用 <code class="highlighter-rouge">load_images -&gt; load_images_nolock -&gt; prepare_load_methods -&gt; schedule_class_load -&gt; add_class_to_loadable_list</code> 的时候会将未加载的类添加到 <code class="highlighter-rouge">loadable_classes</code> 数组中：</p>
+
+<pre><code class="language-objectivec">void add_class_to_loadable_list(Class cls)
+{
+    IMP method;
+
+    loadMethodLock.assertLocked();
+
+    method = cls-&gt;getLoadMethod();
+    if (!method) return;
+
+    if (loadable_classes_used == loadable_classes_allocated) {
+        loadable_classes_allocated = loadable_classes_allocated*2 + 16;
+        loadable_classes = (struct loadable_class *)
+            realloc(loadable_classes,
+                              loadable_classes_allocated *
+                              sizeof(struct loadable_class));
+    }
+
+    loadable_classes[loadable_classes_used].cls = cls;
+    loadable_classes[loadable_classes_used].method = method;
+    loadable_classes_used++;
+}
+</code></pre>
+
+<p>方法刚被调用时：</p>
+
+<ol>
+  <li>会从 <code class="highlighter-rouge">class</code> 中获取 <code class="highlighter-rouge">load</code> 方法： <code class="highlighter-rouge">method = cls-&gt;getLoadMethod();</code></li>
+  <li>判断当前 <code class="highlighter-rouge">loadable_classes</code> 这个数组是否已经被全部占用了：<code class="highlighter-rouge">loadable_classes_used == loadable_classes_allocated</code></li>
+  <li>在当前数组的基础上扩大数组的大小：<code class="highlighter-rouge">realloc</code></li>
+  <li>把传入的 <code class="highlighter-rouge">class</code> 以及对应的方法的实现加到列表中</li>
+</ol>
+
+<p>另外一个用于保存分类的列表 <code class="highlighter-rouge">loadable_categories</code> 也有一个类似的方法 <code class="highlighter-rouge">add_category_to_loadable_list</code>。</p>
+
+<pre><code class="language-objectivec">void add_category_to_loadable_list(Category cat)
+{
+    IMP method;
+
+    loadMethodLock.assertLocked();
+
+    method = _category_getLoadMethod(cat);
+
+    if (!method) return;
+
+    if (loadable_categories_used == loadable_categories_allocated) {
+        loadable_categories_allocated = loadable_categories_allocated*2 + 16;
+        loadable_categories = (struct loadable_category *)
+            realloc(loadable_categories,
+                              loadable_categories_allocated *
+                              sizeof(struct loadable_category));
+    }
+
+    loadable_categories[loadable_categories_used].cat = cat;
+    loadable_categories[loadable_categories_used].method = method;
+    loadable_categories_used++;
+}
+</code></pre>
+
+<p>实现几乎与 <code class="highlighter-rouge">add_class_to_loadable_list</code> 完全相同。</p>
+
+<p>到这里我们完成了对 <code class="highlighter-rouge">loadable_classes</code> 以及 <code class="highlighter-rouge">loadable_categories</code> 的提供，下面会开始消耗列表中的元素。</p>
+
+<h3 id="消费-loadable_class">“消费” loadable_class</h3>
+
+<p>调用 <code class="highlighter-rouge">load</code> 方法的过程就是“消费” <code class="highlighter-rouge">loadable_classes</code> 的过程，<code class="highlighter-rouge">load_images -&gt; call_load_methods -&gt; call_class_loads</code> 会从 <code class="highlighter-rouge">loadable_classes</code> 中取出对应类和方法，执行 <code class="highlighter-rouge">load</code>。</p>
+
+<pre><code class="language-objectivec">void call_load_methods(void)
+{
+    static bool loading = NO;
+    bool more_categories;
+
+    loadMethodLock.assertLocked();
+
+    if (loading) return;
+    loading = YES;
+
+    void *pool = objc_autoreleasePoolPush();
+
+    do {
+        while (loadable_classes_used &gt; 0) {
+            call_class_loads();
+        }
+
+        more_categories = call_category_loads();
+
+    } while (loadable_classes_used &gt; 0  ||  more_categories);
+
+    objc_autoreleasePoolPop(pool);
+
+    loading = NO;
+}
+</code></pre>
+
+<p>上述方法对所有在 <code class="highlighter-rouge">loadable_classes</code> 以及 <code class="highlighter-rouge">loadable_categories</code> 中的类以及分类执行 <code class="highlighter-rouge">load</code> 方法。</p>
+
+<pre><code class="language-objectivec">do {
+    while (loadable_classes_used &gt; 0) {
+        call_class_loads();
+    }
+
+    more_categories = call_category_loads();
+
+} while (loadable_classes_used &gt; 0  ||  more_categories);
+</code></pre>
+
+<p>调用顺序如下：</p>
+
+<ol>
+  <li>不停调用类的 <code class="highlighter-rouge">+ load</code> 方法，直到 <code class="highlighter-rouge">loadable_classes</code> 为空</li>
+  <li>调用<strong>一次</strong> <code class="highlighter-rouge">call_category_loads</code> 加载分类</li>
+  <li>如果有 <code class="highlighter-rouge">loadable_classes</code> 或者更多的分类，继续调用 <code class="highlighter-rouge">load</code> 方法</li>
+</ol>
+
+<p>相比于类 <code class="highlighter-rouge">load</code> 方法的调用，分类中 <code class="highlighter-rouge">load</code> 方法的调用就有些复杂了：</p>
+
+<pre><code class="language-objectivec">static bool call_category_loads(void)
+{
+    int i, shift;
+    bool new_categories_added = NO;
+    // 1. 获取当前可以加载的分类列表
+    struct loadable_category *cats = loadable_categories;
+    int used = loadable_categories_used;
+    int allocated = loadable_categories_allocated;
+    loadable_categories = nil;
+    loadable_categories_allocated = 0;
+    loadable_categories_used = 0;
+
+    for (i = 0; i &lt; used; i++) {
+        Category cat = cats[i].cat;
+        load_method_t load_method = (load_method_t)cats[i].method;
+        Class cls;
+        if (!cat) continue;
+
+        cls = _category_getClass(cat);
+        if (cls  &amp;&amp;  cls-&gt;isLoadable()) {
+            // 2. 如果当前类是可加载的 `cls  &amp;&amp;  cls-&gt;isLoadable()` 就会调用分类的 load 方法
+            (*load_method)(cls, SEL_load);
+            cats[i].cat = nil;
+        }
+    }
+
+    // 3. 将所有加载过的分类移除 `loadable_categories` 列表
+    shift = 0;
+    for (i = 0; i &lt; used; i++) {
+        if (cats[i].cat) {
+            cats[i-shift] = cats[i];
+        } else {
+            shift++;
+        }
+    }
+    used -= shift;
+
+    // 4. 为 `loadable_categories` 重新分配内存，并重新设置它的值
+    new_categories_added = (loadable_categories_used &gt; 0);
+    for (i = 0; i &lt; loadable_categories_used; i++) {
+        if (used == allocated) {
+            allocated = allocated*2 + 16;
+            cats = (struct loadable_category *)
+                realloc(cats, allocated *
+                                  sizeof(struct loadable_category));
+        }
+        cats[used++] = loadable_categories[i];
+    }
+
+    if (loadable_categories) free(loadable_categories);
+
+    if (used) {
+        loadable_categories = cats;
+        loadable_categories_used = used;
+        loadable_categories_allocated = allocated;
+    } else {
+        if (cats) free(cats);
+        loadable_categories = nil;
+        loadable_categories_used = 0;
+        loadable_categories_allocated = 0;
+    }
+
+    return new_categories_added;
+}
+</code></pre>
+
+<p>这个方法有些长，我们来分步解释方法的作用：</p>
+
+<ol>
+  <li>获取当前可以加载的分类列表</li>
+  <li>如果当前类是可加载的 <code class="highlighter-rouge">cls  &amp;&amp;  cls-&gt;isLoadable()</code> 就会调用分类的 <code class="highlighter-rouge">load</code> 方法</li>
+  <li>将所有加载过的分类移除 <code class="highlighter-rouge">loadable_categories</code> 列表</li>
+  <li>为 <code class="highlighter-rouge">loadable_categories</code> 重新分配内存，并重新设置它的值</li>
+</ol>
+
+<h2 id="调用的顺序">调用的顺序</h2>
+
+<p>你过去可能会听说过，对于 <code class="highlighter-rouge">load</code> 方法的调用顺序有两条规则：</p>
+
+<ol>
+  <li>父类先于子类调用</li>
+  <li>类先于分类调用</li>
+</ol>
+
+<p>这种现象是非常符合我们的直觉的，我们来分析一下这种现象出现的原因。</p>
+
+<p>第一条规则是由于 <code class="highlighter-rouge">schedule_class_load</code> 有如下的实现：</p>
+
+<pre><code class="language-objectivec">static void schedule_class_load(Class cls)
+{
+    if (!cls) return;
+    assert(cls-&gt;isRealized());
+
+    if (cls-&gt;data()-&gt;flags &amp; RW_LOADED) return;
+
+    schedule_class_load(cls-&gt;superclass);
+
+    add_class_to_loadable_list(cls);
+    cls-&gt;setInfo(RW_LOADED);
+}
+</code></pre>
+
+<p>这里通过这行代码 <code class="highlighter-rouge">schedule_class_load(cls-&gt;superclass)</code> 总是能够保证没有调用 <code class="highlighter-rouge">load</code> 方法的父类先于子类加入 <code class="highlighter-rouge">loadable_classes</code> 数组，从而确保其调用顺序的正确性。</p>
+
+<p>类与分类中 <code class="highlighter-rouge">load</code> 方法的调用顺序主要在 <code class="highlighter-rouge">call_load_methods</code> 中实现：</p>
+
+<pre><code class="language-objectivec">do {
+    while (loadable_classes_used &gt; 0) {
+        call_class_loads();
+    }
+
+    more_categories = call_category_loads();
+
+} while (loadable_classes_used &gt; 0  ||  more_categories);
+</code></pre>
+
+<p>上面的 <code class="highlighter-rouge">do while</code> 语句能够在一定程度上确保，类的 <code class="highlighter-rouge">load</code> 方法会先于分类调用。但是这里不能完全保证调用顺序的正确。</p>
+
+<p>如果<strong>分类的镜像在类的镜像之前加载到运行时</strong>，上面的代码就没法保证顺序的正确了，所以，我们还需要在 <code class="highlighter-rouge">call_category_loads</code> 中判断类是否已经加载到内存中（调用 <code class="highlighter-rouge">load</code> 方法）：</p>
+
+<pre><code class="language-objectivec">if (cls  &amp;&amp;  cls-&gt;isLoadable()) {
+    (*load_method)(cls, SEL_load);
+    cats[i].cat = nil;
+}
+</code></pre>
+
+<p>这里，检查了类是否存在并且是否可以加载，如果都为真，那么就可以调用分类的 load 方法了。</p>
+
+<h2 id="load-的应用">load 的应用</h2>
+
+<p><code class="highlighter-rouge">load</code> 可以说我们在日常开发中可以接触到的调用时间<strong>最靠前的方法</strong>，在主函数运行之前，<code class="highlighter-rouge">load</code> 方法就会调用。</p>
+
+<p>由于它的调用不是<em>惰性</em>的，且其只会在程序调用期间调用一次，最最重要的是，如果在类与分类中都实现了 <code class="highlighter-rouge">load</code> 方法，它们都会被调用，不像其它的在分类中实现的方法会被覆盖，这就使 <code class="highlighter-rouge">load</code> 方法成为了<a href="http://nshipster.com/method-swizzling/">方法调剂</a>的绝佳时机。</p>
+
+<p>但是由于 <code class="highlighter-rouge">load</code> 方法的运行时间过早，所以这里可能不是一个理想的环境，因为<strong>某些类可能需要在在其它类之前加载</strong>，但是这是我们无法保证的。不过在这个时间点，所有的 framework 都已经加载到了运行时中，所以调用 framework 中的方法都是安全的。</p>
+
+<h2 id="参考资料">参考资料</h2>
+
+<ul>
+  <li><a href="http://stackoverflow.com/questions/13326435/nsobject-load-and-initialize-what-do-they-do">NSObject +load and +initialize - What do they do?</a></li>
+  <li><a href="http://nshipster.com/method-swizzling/">Method Swizzling</a></li>
+  <li><a href="https://www.mikeash.com/pyblog/friday-qa-2009-05-22-objective-c-class-loading-and-initialization.html">Objective-C Class Loading and Initialization</a></li>
+</ul>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=你真的了解 load 方法么？&amp;url=load"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=load"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=load"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/initialize">
+            <section class="post">
+                <h2>懒惰的 initialize 方法</h2>
+                <p>> 转自：[懒惰的 initialize 方法](https://draveness.me/initialize) > 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/message">
+            <section class="post">
+                <h2>从源代码看 ObjC 中消息的发送</h2>
+                <p>Blog: Draveness 关注仓库，及时获得更新：iOS-Source-Code-Analyze 因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 x86_64 架构下运行的，对于在...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

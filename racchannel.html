@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>RAC 中的双向数据绑定 RACChannel</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//racchannel" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="RAC 中的双向数据绑定 RACChannel" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//racchannel" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="RAC 中的双向数据绑定 RACChannel" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//racchannel" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "RAC 中的双向数据绑定 RACChannel",
+    "url": "/reprinted//racchannel",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">RAC 中的双向数据绑定 RACChannel</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2017-02-16">16 Feb 2017</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/RAC'>RAC</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/racchannel">RAC 中的双向数据绑定 RACChannel</a></p>
+</blockquote>
+
+<p>之前讲过了 ReactiveCocoa 中的一对一的单向数据流 <code class="highlighter-rouge">RACSignal</code> 和一对多的单向数据流 <code class="highlighter-rouge">RACMulticastConnection</code>，这一篇文章分析的是一对一的双向数据流 <code class="highlighter-rouge">RACChannel</code>。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-What-is-RACChannel.png-1000width" alt="What-is-RACChanne" /></p>
+
+<p><code class="highlighter-rouge">RACChannel</code> 其实是一个相对比较复杂的类，但是，对其有一定了解之后合理运用的话，会在合适的业务中提供非常强大的支持能够极大的简化业务代码。</p>
+
+<h2 id="racchannel-简介">RACChannel 简介</h2>
+
+<p><code class="highlighter-rouge">RACChannel</code> 可以被理解为一个双向的连接，这个连接的两端都是 <code class="highlighter-rouge">RACSignal</code> 实例，它们可以向彼此发送消息，如果我们在视图和模型之间通过 <code class="highlighter-rouge">RACChannel</code> 建立这样的连接：</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-Connection-Between-View-Model.png-1000width" alt="Connection-Between-View-Mode" /></p>
+
+<p>那么从模型发出的消息，最后会发送到视图上；反之，用户对视图进行的操作最后也会体现在模型上。这种通信方式的实现是基于信号的，<code class="highlighter-rouge">RACChannel</code> 内部封装了两个 <code class="highlighter-rouge">RACChannelTerminal</code> 对象，它们都是 <code class="highlighter-rouge">RACSignal</code> 的子类：</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-RACChannel-Interface.png-1000width" alt="RACChannel-Interface" /></p>
+
+<p>对模型进行的操作最后都会发送给 <code class="highlighter-rouge">leadingTerminal</code> 再通过内部的实现发送给 <code class="highlighter-rouge">followingTerminal</code>，由于视图是 <code class="highlighter-rouge">followingTerminal</code> 的订阅者，所以消息最终会发送到视图上。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-Messages-Send-From-Model.png-1000width" alt="Messages-Send-From-Mode" /></p>
+
+<p>在上述情况下，<code class="highlighter-rouge">leadingTerminal</code> 的订阅者（模型）并不会收到消息，它的订阅者（视图）只会在 <code class="highlighter-rouge">followingTerminal</code> 收到消息时才会接受到新的值。</p>
+
+<p>同时，<code class="highlighter-rouge">RACChannel</code> 的绑定都是双向的，视图收到用户的动作，例如点击等事件时，会将消息发送给 <code class="highlighter-rouge">followingTerminal</code>，而 <code class="highlighter-rouge">followingTerminal</code> 并<strong>不会</strong>将消息发送给自己的订阅者（视图），而是会发送给 <code class="highlighter-rouge">leadingTerminal</code>，并通过 <code class="highlighter-rouge">leadingTerminal</code> 发送给其订阅者，即模型。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-Terminals-Between-View-Model.png-1000width" alt="Terminals-Between-View-Mode" /></p>
+
+<p>上图描述了信息在 <code class="highlighter-rouge">RACChannel</code> 之间的传递过程，无论是模型属性的改变还是用户对视图进行的操作都会通过这两个 <code class="highlighter-rouge">RACChannelTerminal</code> 传递到另一端；同时，由于消息不会发送给自己的订阅者，所以不会造成信息的循环发送。</p>
+
+<h2 id="racchannel-和-racchannelterminal">RACChannel 和 RACChannelTerminal</h2>
+
+<p><code class="highlighter-rouge">RACChannel</code> 和 <code class="highlighter-rouge">RACChannelTerminal</code> 的关系非常密切，前者可以理解为一个网络连接，后者可以理解为 <code class="highlighter-rouge">socket</code>，表示网络连接的一端，下图描述了 <code class="highlighter-rouge">RACChannel</code> 与网络连接中概念的一一对应关系。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-Channel-And-Network-Connection.png-1000width" alt="Channel-And-Network-Connection" /></p>
+
+<ul>
+  <li>在客户端使用 <code class="highlighter-rouge">write</code> 向 <code class="highlighter-rouge">socket</code> 中发送消息时，<code class="highlighter-rouge">socket</code> 的持有者客户端不会收到消息，只有在 <code class="highlighter-rouge">socket</code> 上调用 <code class="highlighter-rouge">read</code> 的服务端才会收到消息；反之亦然。</li>
+  <li>在模型使用 <code class="highlighter-rouge">sendNext</code> 向<code class="highlighter-rouge">leadingTerminal</code> 中发送消息时，<code class="highlighter-rouge">leadingTerminal</code> 的订阅者模型不会收到消息，只有在 <code class="highlighter-rouge">followingTerminal</code> 上调用 <code class="highlighter-rouge">subscribe</code> 的视图才会收到消息；反之亦然。</li>
+</ul>
+
+<h3 id="racchannelterminal-的实现">RACChannelTerminal 的实现</h3>
+
+<p>为什么向 <code class="highlighter-rouge">RACChannelTerminal</code> 发送消息，它的订阅者获取不到？先来看一下它在头文件中的定义：</p>
+
+<pre><code class="language-objectivec">@interface RACChannelTerminal : RACSignal &lt;RACSubscriber&gt;
+@end
+</code></pre>
+
+<p><code class="highlighter-rouge">RACChannelTerminal</code> 是一个信号的子类，同时它还遵循了 <code class="highlighter-rouge">RACSubscriber</code> 协议，也就是可以向它调用 <code class="highlighter-rouge">-sendNext:</code> 等方法；<code class="highlighter-rouge">RAChannelTerminal</code> 中持有了两个对象：</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-RACChannelTerminal-Interface.png-1000width" alt="RACChannelTerminal-Interface" /></p>
+
+<p>在初始化时，需要传入 <code class="highlighter-rouge">values</code> 和 <code class="highlighter-rouge">otherTerminal</code> 这两个属性，其中 <code class="highlighter-rouge">values</code> 表示当前断点，<code class="highlighter-rouge">otherTerminal</code> 表示远程端点：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithValues:(RACSignal *)values otherTerminal:(id&lt;RACSubscriber&gt;)otherTerminal {
+	self = [super init];
+	_values = values;
+	_otherTerminal = otherTerminal;
+	return self;
+}
+</code></pre>
+
+<p>当然，作为 <code class="highlighter-rouge">RACSignal</code> 的子类，<code class="highlighter-rouge">RACChannelTerminal</code> 必须覆写 <code class="highlighter-rouge">-subscribe:</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (RACDisposable *)subscribe:(id&lt;RACSubscriber&gt;)subscriber {
+	return [self.values subscribe:subscriber];
+}
+</code></pre>
+
+<p>在订阅者调用 <code class="highlighter-rouge">-subscribeNext:</code> 等方法发起订阅时，实际上订阅的是当前端点；如果向当前端点发送消息，会被转发到远程端点上，而这也就是当前端点的订阅者不会接收到向当前端点发送消息的原因：</p>
+
+<pre><code class="language-objectivec">- (void)sendNext:(id)value {
+	[self.otherTerminal sendNext:value];
+}
+- (void)sendError:(NSError *)error {
+	[self.otherTerminal sendError:error];
+}
+- (void)sendCompleted {
+	[self.otherTerminal sendCompleted];
+}
+</code></pre>
+
+<h3 id="racchannel-的初始化">RACChannel 的初始化</h3>
+
+<p>我们在任何情况下都不应该直接使用 <code class="highlighter-rouge">-init</code> 方法初始化 <code class="highlighter-rouge">RACChannelTerminal</code> 的实例，而是应该以创建 <code class="highlighter-rouge">RACChannel</code> 的方式生成它：</p>
+
+<pre><code class="language-objectivec">- (instancetype)init {
+	self = [super init];
+
+	RACReplaySubject *leadingSubject = [RACReplaySubject replaySubjectWithCapacity:0];
+	RACReplaySubject *followingSubject = [RACReplaySubject replaySubjectWithCapacity:1];
+
+	[[leadingSubject ignoreValues] subscribe:followingSubject];
+	[[followingSubject ignoreValues] subscribe:leadingSubject];
+
+	_leadingTerminal = [[RACChannelTerminal alloc] initWithValues:leadingSubject otherTerminal:followingSubject];
+	_followingTerminal = [[RACChannelTerminal alloc] initWithValues:followingSubject otherTerminal:leadingSubject];
+
+	return self;
+}
+</code></pre>
+
+<p>两个 <code class="highlighter-rouge">RACChannelTerminal</code> 中包装的其实是两个 <code class="highlighter-rouge">RACSubject</code> 热信号，它们既可以作为订阅者，也可以接收其他对象发送的消息；我们并不希望 <code class="highlighter-rouge">leadingSubject</code> 有任何的初始值，但是我们需要 <code class="highlighter-rouge">error</code> 和 <code class="highlighter-rouge">completed</code> 信息可以被重播。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-Sending-Errors-And-Completed-Messages.png-1000width" alt="Sending-Errors-And-Completed-Messages" /></p>
+
+<p>通过 <code class="highlighter-rouge">-ignoreValues</code> 和 <code class="highlighter-rouge">-subscribe:</code> 方法，<code class="highlighter-rouge">leadingSubject</code> 和 <code class="highlighter-rouge">followingSubject</code> 两个热信号中产生的错误会互相发送，这是为了防止连接的两端一边发生了错误，另一边还继续工作的情况的出现。</p>
+
+<p>在初始化方法的最后，生成两个 <code class="highlighter-rouge">RACChannelTerminal</code> 实例的过程就不多说了。</p>
+
+<h2 id="racchannel-与-uikit-组件">RACChannel 与 UIKit 组件</h2>
+
+<p>如果在整个 ReactiveCocoa 工程中搜索 <code class="highlighter-rouge">RACChannel</code>，你会发现以下的 UIKit 组件都与 <code class="highlighter-rouge">RACChannel</code> 有着非常密切的关系：</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-RACChannel-Hierachy.png-1000width" alt="RACChannel-Hierachy" /></p>
+
+<p>UIKit 中的这些组件都提供了使用 <code class="highlighter-rouge">RACChannel</code> 的接口，用以降低数据双向绑定的复杂度，我们以 <code class="highlighter-rouge">UITextField</code> 为例，它在分类的接口中提供了 <code class="highlighter-rouge">rac_newTextChannel</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (RACChannelTerminal *)rac_newTextChannel {
+	return [self rac_channelForControlEvents:UIControlEventAllEditingEvents key:@keypath(self.text) nilValue:@""];
+}
+</code></pre>
+
+<p>上述方法用于返回一个一端绑定 <code class="highlighter-rouge">UIControlEventAllEditingEvents</code> 事件的 <code class="highlighter-rouge">RACChannelTerminal</code> 对象。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-UITextField-RACChannel-Interface.png-1000width" alt="UITextField-RACChannel-Interface" /></p>
+
+<p><code class="highlighter-rouge">UIControlEventAllEditingEvents</code> 事件发生时，它会将自己的 <code class="highlighter-rouge">text</code> 属性作为信号发送到 <code class="highlighter-rouge">followingTerminal -&gt; leadingTerminal</code> 管道中，最后发送给 <code class="highlighter-rouge">leadingTerminal</code> 的订阅者。</p>
+
+<p>在 <code class="highlighter-rouge">rac_newTextChannel</code> 中调用的方法 <code class="highlighter-rouge">-rac_channelForControlEvents:key:nilValue:</code> 是一个 <code class="highlighter-rouge">UIControl</code> 的私有方法：</p>
+
+<pre><code class="language-objectivec">- (RACChannelTerminal *)rac_channelForControlEvents:(UIControlEvents)controlEvents key:(NSString *)key nilValue:(id)nilValue {
+	key = [key copy];
+	RACChannel *channel = [[RACChannel alloc] init];
+
+	RACSignal *eventSignal = [[[self
+		rac_signalForControlEvents:controlEvents]
+		mapReplace:key]
+		takeUntil:[[channel.followingTerminal
+			ignoreValues]
+			catchTo:RACSignal.empty]];
+	[[self
+		rac_liftSelector:@selector(valueForKey:) withSignals:eventSignal, nil]
+		subscribe:channel.followingTerminal];
+
+	RACSignal *valuesSignal = [channel.followingTerminal
+		map:^(id value) {
+			return value ?: nilValue;
+		}];
+	[self rac_liftSelector:@selector(setValue:forKey:) withSignals:valuesSignal, [RACSignal return:key], nil];
+
+	return channel.leadingTerminal;
+}
+</code></pre>
+
+<p>这个方法为所有的 <code class="highlighter-rouge">UIControl</code> 子类，包括 <code class="highlighter-rouge">UITextField</code>、<code class="highlighter-rouge">UISegmentedControl</code> 等等，它的主要作用就是当传入的 <code class="highlighter-rouge">controlEvents</code> 事件发生时，将 UIKit 组件的属性 <code class="highlighter-rouge">key</code> 发送到返回的 <code class="highlighter-rouge">RACChannelTerminal</code> 实例中；同时，在向返回的 <code class="highlighter-rouge">RACChannelTerminal</code> 实例中发送消息时，也会自动更新 UIKit 组件的属性。</p>
+
+<p>上面的代码在初始化 <code class="highlighter-rouge">RACChannel</code> 之后做了两件事情，首先是在 <code class="highlighter-rouge">UIControlEventAllEditingEvents</code> 事件发生时，将 <code class="highlighter-rouge">text</code> 属性发送到 <code class="highlighter-rouge">followingTerminal</code> 中：</p>
+
+<pre><code class="language-objectivec">RACSignal *eventSignal = [[[self
+    rac_signalForControlEvents:controlEvents]
+    mapReplace:key]
+    takeUntil:[[channel.followingTerminal
+        ignoreValues]
+        catchTo:RACSignal.empty]];
+[[self
+    rac_liftSelector:@selector(valueForKey:) withSignals:eventSignal, nil]
+    subscribe:channel.followingTerminal];
+</code></pre>
+
+<p>第二个是在 <code class="highlighter-rouge">followingTerminal</code> 接收到来自 <code class="highlighter-rouge">leadingTerminal</code> 的消息时，更新 <code class="highlighter-rouge">UITextField</code> 的 <code class="highlighter-rouge">text</code> 属性。</p>
+
+<pre><code class="language-objectivec">RACSignal *valuesSignal = [channel.followingTerminal
+    map:^(id value) {
+        return value ?: nilValue;
+    }];
+[self rac_liftSelector:@selector(setValue:forKey:) withSignals:valuesSignal, [RACSignal return:key], nil];
+</code></pre>
+
+<p>这两件事情都是通过 <code class="highlighter-rouge">-rac_liftSelector:withSignals:</code> 方法来完成的，不过，我们不会在这篇文章中介绍这个方法。</p>
+
+<h2 id="racchannel-与-kvo">RACChannel 与 KVO</h2>
+
+<p><code class="highlighter-rouge">RACChannel</code> 不仅为 UIKit 组件提供了接口，还为键值观测提供了 <code class="highlighter-rouge">RACKVOChannel</code> 来高效地完成双向绑定；<code class="highlighter-rouge">RACKVOChannel</code> 是 <code class="highlighter-rouge">RACChannel</code> 的子类：</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-RACKVOChannel.png-1000width" alt="RACKVOChanne" /></p>
+
+<p>在 <code class="highlighter-rouge">RACKVOChannel</code> 提供的接口中，我们一般都会使用 <code class="highlighter-rouge">RACChannelTo</code> 来观测某一个对象的对应属性，三个参数依次为对象、属性和默认值：</p>
+
+<pre><code class="language-objectivec">RACChannelTerminal *integerChannel = RACChannelTo(self, integerProperty, @42);
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">RACChannelTo</code> 是 <code class="highlighter-rouge">RACKVOChannel</code> 头文件中的一个宏，上面的表达式可以展开成为：</p>
+
+<pre><code class="language-objectivec">RACChannelTerminal *integerChannel = [[RACKVOChannel alloc] initWithTarget:self keyPath:@"integerProperty" nilValue:@42][@"followingTerminal"];
+</code></pre>
+
+<p>该宏初始化了一个 <code class="highlighter-rouge">RACKVOChannel</code> 对象，并通过方括号的方式获取其中的 <code class="highlighter-rouge">followingTerminal</code>，这种获取类属性的方式是通过覆写以下的两个方法实现的：</p>
+
+<pre><code class="language-objectivec">- (RACChannelTerminal *)objectForKeyedSubscript:(NSString *)key {
+	RACChannelTerminal *terminal = [self valueForKey:key];
+	return terminal;
+}
+
+- (void)setObject:(RACChannelTerminal *)otherTerminal forKeyedSubscript:(NSString *)key {
+	RACChannelTerminal *selfTerminal = [self objectForKeyedSubscript:key];
+	[otherTerminal subscribe:selfTerminal];
+	[[selfTerminal skip:1] subscribe:otherTerminal];
+}
+</code></pre>
+
+<p>又由于覆写了这两个方法，在 <code class="highlighter-rouge">-setObject:forKeyedSubscript:</code> 时会自动调用 <code class="highlighter-rouge">-subscribe:</code> 方法完成双向绑定，所以我们可以使用 <code class="highlighter-rouge">=</code> 来对两个 <code class="highlighter-rouge">RACKVOChannel</code> 进行双向绑定：</p>
+
+<pre><code class="language-objectivec">RACChannelTo(view, property) = RACChannelTo(model, property);
+
+[[RACKVOChannel alloc] initWithTarget:view keyPath:@"property" nilValue:nil][@"followingTerminal"] = [[RACKVOChannel alloc] initWithTarget:model keyPath:@"property" nilValue:nil][@"followingTerminal"];
+</code></pre>
+
+<p>以上的两种方式是完全等价的，它们都会在对方的属性更新时更新自己的属性。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-RACChannelTo-Model-View.png-1000width" alt="RACChannelTo-Model-Vie" /></p>
+
+<p>实现的方式其实与 <code class="highlighter-rouge">RACChannel</code> 差不多，这里不会深入到代码中进行介绍，与 <code class="highlighter-rouge">RACChannel</code> 的区别是，<code class="highlighter-rouge">RACKVOChannel</code> 并没有暴露出 <code class="highlighter-rouge">leadingTerminal</code> 而是 <code class="highlighter-rouge">followingTerminal</code>：</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-RACChannelTo-And-Property.png-1000width" alt="RACChannelTo-And-Property" /></p>
+
+<h2 id="racchannel-实战">RACChannel 实战</h2>
+
+<p>这一小节通过一个简单的例子来解释如何使用 <code class="highlighter-rouge">RACChannel</code> 进行双向数据绑定。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-TextField-With-Channel.gif" alt="TextField-With-Channe" /></p>
+
+<p>在整个视图上有两个 <code class="highlighter-rouge">UITextField</code>，我们想让这两个 <code class="highlighter-rouge">UITextField</code> <code class="highlighter-rouge">text</code> 的值相互绑定，在一个 <code class="highlighter-rouge">UITextField</code> 编辑时也改变另一个 <code class="highlighter-rouge">UITextField</code> 中的内容：</p>
+
+<pre><code class="language-objectivec">@property (weak, nonatomic) IBOutlet UITextField *textField;
+@property (weak, nonatomic) IBOutlet UITextField *anotherTextField;
+</code></pre>
+
+<p>实现的过程非常简单，分别获取两个 <code class="highlighter-rouge">UITextField</code> 的 <code class="highlighter-rouge">rac_newTextChannel</code> 属性，并让它们订阅彼此的内容：</p>
+
+<pre><code class="language-objectivec">[self.textField.rac_newTextChannel subscribe:self.anotherTextField.rac_newTextChannel];
+[self.anotherTextField.rac_newTextChannel subscribe:self.textField.rac_newTextChannel];
+</code></pre>
+
+<p>这样在使用两个文本输入框时就能达到预期的效果了，这是一个非常简单的例子，可以得到如下的结构图。</p>
+
+<p><img src="https://img.draveness.me/2017-02-16-Two-UITextField-With-RACChannel.png-1000width" alt="Two-UITextField-With-RACChanne" /></p>
+
+<p>两个 <code class="highlighter-rouge">UITextField</code> 通过 <code class="highlighter-rouge">RACChannel</code> 互相影响，在对方属性更新时同时更新自己的属性。</p>
+
+<h2 id="总结">总结</h2>
+
+<p><code class="highlighter-rouge">RACChannel</code> 非常适合于视图和模型之间的双向绑定，在对方的属性或者状态更新时及时通知自己，达到预期的效果；我们可以使用 ReactiveCocoa 中内置的很多与 <code class="highlighter-rouge">RACChannel</code> 有关的方法，来获取开箱即用的 <code class="highlighter-rouge">RACChannelTerminal</code>，当然也可以使用 <code class="highlighter-rouge">RACChannelTo</code> 通过 <code class="highlighter-rouge">RACKVOChannel</code> 来快速绑定类与类的属性。</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://spin.atomicobject.com/2015/05/04/bi-directional-data-bindings-reactivecocoa/">Bi-directional Data Bindings in ReactiveCocoa with RACChannel</a></li>
+  <li><a href="http://tech.meituan.com/ReactiveCocoaSignalFlow.html">ReactiveCocoa 核心元素与信号流</a></li>
+</ul>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/racchannel</p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=RAC 中的双向数据绑定 RACChannel&amp;url=racchannel"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=racchannel"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=racchannel"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racscheduler">
+            <section class="post">
+                <h2>理解 RACScheduler 的实现</h2>
+                <p>> 转自：[理解 RACScheduler 的实现](https://draveness.me/racscheduler) `RACScheduler` 是一个线性执行队列，ReactiveCocoa 中的信号可以在 `RACScheduler` 上执行任务、发送结果；它的实现并不复杂，由多个简单的方法和类组成整个 `RACScheduler` 模块，是整个 ReactiveCocoa 中非常易于理解的部分。 ## RACScheduler...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racconnection">
+            <section class="post">
+                <h2>用于多播的 RACMulticastConnection</h2>
+                <p>转自：用于多播的 RACMulticastConnection ReactiveCocoa 中的信号信号在默认情况下都是冷的，每次有新的订阅者订阅信号时都会执行信号创建时传入的 block；这意味着对于任意一个订阅者，所需要的数据都会重新计算，这在大多数情况下都是开发者想看到的情况，但是这在信号中的 block 有副作用或者较为昂贵时就会有很多问题。 我们希望有一种模型能够将冷信号转变成热信号，并在合适的时间触发，向所有的订阅者发送消息；而今天要介绍的 RACMulticastConnection 就是用于解决上述问题的。 RACMulticastConnection 简介 RACMulticastConnection 封装了将一个信号的订阅分享给多个订阅者的思想，它的每一个对象都持有两个 RACSignal：...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

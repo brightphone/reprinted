@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>如何在 Objective-C 的环境下实现 defer</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//defer" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="如何在 Objective-C 的环境下实现 defer" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//defer" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="如何在 Objective-C 的环境下实现 defer" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//defer" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "如何在 Objective-C 的环境下实现 defer",
+    "url": "/reprinted//defer",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">如何在 Objective-C 的环境下实现 defer</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-07-19">18 Jul 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/defer">如何在 Objective-C 的环境下实现 defer</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>这篇文章会对 <a href="https://github.com/jspahrsummers/libextobjc">libextobjc</a> 中的一小部分代码进行分析，也是<strong>如何扩展 Objective-C 语言</strong>系列文章的第一篇，笔者会从 libextobjc 中选择一些黑魔法进行介绍。</p>
+
+<p>对 Swift 稍有了解的人都知道，<code class="highlighter-rouge">defer</code> 在 Swift 语言中是一个关键字；在 <code class="highlighter-rouge">defer</code> 代码块中的代码，会<strong>在作用域结束时执行</strong>。在这里，我们会使用一些神奇的方法在 Objective-C 中实现 <code class="highlighter-rouge">defer</code>。</p>
+
+<blockquote>
+  <p>如果你已经非常了解 <code class="highlighter-rouge">defer</code> 的作用，你可以跳过第一部分的内容，直接看 <a href="#variable-attributes">Variable Attributes</a>。</p>
+</blockquote>
+
+<h2 id="关于-defer">关于 defer</h2>
+
+<p><code class="highlighter-rouge">defer</code> 是 Swift 在 2.0 时代加入的一个关键字，它提供了一种非常安全并且简单的方法声明一个在作用域结束时执行的代码块。</p>
+
+<p>如果你在 Swift Playground 中输入以下代码：</p>
+
+<pre><code class="language-objectivec">func hello() {
+    defer {
+        print("4")
+    }
+    if true {
+        defer {
+            print("2")
+        }
+        defer {
+            print("1")
+        }
+    }
+    print("3")
+}
+
+hello()
+</code></pre>
+
+<p>控制台的输出会是这样的：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1
+2
+3
+4
+</code></pre></div></div>
+
+<p>你可以仔细思考一下为什么会有这样的输出，并在 Playground 使用 <code class="highlighter-rouge">defer</code> 写一些简单的代码，相信你可以很快理解它是如何工作的。</p>
+
+<blockquote>
+  <p>如果对 <code class="highlighter-rouge">defer</code> 的作用仍然不是非常了解，可以看 <a href="http://nshipster.com/guard-and-defer/#defer">guard &amp; defer</a> 这篇文章的后半部分。</p>
+</blockquote>
+
+<h2 id="variable-attributes">Variable Attributes</h2>
+
+<p>libextobjc 实现的 <code class="highlighter-rouge">defer</code> 并没有基于 Objective-C 的动态特性，甚至也没有调用已有的任何方法，而是使用了 <a href="https://gcc.gnu.org/onlinedocs/gcc/Variable-Attributes.html">Variable Attributes</a> 这一特性。</p>
+
+<blockquote>
+  <p>同样在 GCC 中也存在用于修饰函数的 <a href="https://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html">Function Attributes</a></p>
+</blockquote>
+
+<p>Variable Attributes 其实是 GCC 中用于描述变量的一种修饰符。我们可以使用 <code class="highlighter-rouge">__attribute__</code> 来修饰一些变量来参与静态分析等编译过程；而在 Cocoa Touch 中很多的宏其实都是通过 <code class="highlighter-rouge">__attribute__</code> 来实现的，例如：</p>
+
+<pre><code class="language-objectivec">#define NS_ROOT_CLASS __attribute__((objc_root_class))
+</code></pre>
+
+<p>而 <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#Common-Variable-Attributes#cleanup">cleanup</a> 就是在这里会使用的变量属性：</p>
+
+<blockquote>
+  <p>The cleanup attribute runs a function when the variable goes out of scope. This attribute can only be applied to auto function scope variables; it may not be applied to parameters or variables with static storage duration. The function must take one parameter, a pointer to a type compatible with the variable. The return value of the function (if any) is ignored.</p>
+</blockquote>
+
+<p>GCC 文档中对 <code class="highlighter-rouge">cleanup</code> 属性的介绍告诉我们，在 <code class="highlighter-rouge">cleanup</code> 中必须传入<strong>只有一个参数的函数并且这个参数需要与变量的类型兼容</strong>。</p>
+
+<p>如果上面这句比较绕口的话很难理解，可以通过一个简单的例子理解其使用方法：</p>
+
+<pre><code class="language-objectivec">void cleanup_block(int *a) {
+    printf("%d\n", *a);
+}
+
+int variable __attribute__((cleanup(cleanup_block))) = 2;
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">variable</code> 这个变量离开作用域之后，就会自动将这个变量的<strong>指针</strong>传入 <code class="highlighter-rouge">cleanup_block</code> 中，调用 <code class="highlighter-rouge">cleanup_block</code> 方法来进行『清理』工作。</p>
+
+<h2 id="实现-defer">实现 defer</h2>
+
+<p>到目前为止已经有了实现 <code class="highlighter-rouge">defer</code> 需要的全部知识，我们可以开始分析 libextobjc 是怎么做的。</p>
+
+<p>在 libextobjc 中并没有使用 <code class="highlighter-rouge">defer</code> 这个名字，而是使用了 <code class="highlighter-rouge">onExit</code>（表示代码是在退出作用域时执行）</p>
+
+<blockquote>
+  <p>为了使 <code class="highlighter-rouge">onExit</code> 在使用时更加明显，libextobjc 通过一些其它的手段使得我们在每次使用 <code class="highlighter-rouge">onExit</code> 时都需要添加一个 <code class="highlighter-rouge">@</code> 符号。</p>
+</blockquote>
+
+<pre><code class="language-objectivec">{
+    @onExit {
+        NSLog("Log when out of scope.");
+    };
+    NSLog("Log before out of scope.");
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">onExit</code> 其实只是一个精心设计的宏：</p>
+
+<pre><code class="language-objectivec">#define onExit \
+    ext_keywordify \
+    __strong ext_cleanupBlock_t metamacro_concat(ext_exitBlock_, __LINE__) __attribute__((cleanup(ext_executeCleanupBlock), unused)) = ^
+</code></pre>
+
+<p>既然它只是一个宏，那么上面的代码其实是可以展开的：</p>
+
+<pre><code class="language-objectivec">autoreleasepool {}
+__strong ext_cleanupBlock_t ext_exitBlock_19 __attribute__((cleanup(ext_executeCleanupBlock), unused)) = ^ {
+    NSLog("Log when out of scope.");
+};
+</code></pre>
+
+<p>这里，我们分几个部分来分析上面的代码片段是如何实现 <code class="highlighter-rouge">defer</code> 的功能的：</p>
+
+<ol>
+  <li>
+    <p><code class="highlighter-rouge">ext_keywordify</code> 也是一个宏定义，它通过添加在宏之前添加 <code class="highlighter-rouge">autoreleasepool {}</code> 强迫 <code class="highlighter-rouge">onExit</code> 前必须加上 <code class="highlighter-rouge">@</code> 符号。</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> #define ext_keywordify autoreleasepool {}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">ext_cleanupBlock_t</code> 是一个类型：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> typedef void (^ext_cleanupBlock_t)();
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">metamacro_concat(ext_exitBlock_, __LINE__)</code> 会将 <code class="highlighter-rouge">ext_exitBlock</code> 和当前行号拼接成一个临时的的变量名，例如：<code class="highlighter-rouge">ext_exitBlock_19</code>。</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">__attribute__((cleanup(ext_executeCleanupBlock), unused))</code> 将 <code class="highlighter-rouge">cleanup</code> 函数设置为 <code class="highlighter-rouge">ext_executeCleanupBlock</code>；并将当前变量 <code class="highlighter-rouge">ext_exitBlock_19</code> 标记为 <code class="highlighter-rouge">unused</code> 来抑制 <code class="highlighter-rouge">Unused variable</code> 警告。</p>
+  </li>
+  <li>
+    <p>变量 <code class="highlighter-rouge">ext_exitBlock_19</code> 的值为 <code class="highlighter-rouge">^{ NSLog("Log when out of scope."); }</code>，是一个类型为 <code class="highlighter-rouge">ext_cleanupBlock_t</code> 的 block。</p>
+  </li>
+  <li>
+    <p>在这个变量离开作用域时，会把上面的 block 的指针传入 <code class="highlighter-rouge">cleanup</code> 函数，也就是 <code class="highlighter-rouge">ext_executeCleanupBlock</code>：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> void ext_executeCleanupBlock (__strong ext_cleanupBlock_t *block) {
+     (*block)();
+ }
+</code></pre></div>    </div>
+
+    <p>这个函数的作用只是简单的执行传入的 block，它满足了 GCC 文档中对 <code class="highlighter-rouge">cleanup</code> 函数的几个要求：</p>
+
+    <ol>
+      <li>只能包含一个参数</li>
+      <li>参数的类型是一个<strong>指向变量类型的指针</strong></li>
+      <li>函数的返回值是 <code class="highlighter-rouge">void</code></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="总结">总结</h2>
+
+<blockquote>
+  <p>这是分析 libextobjc 框架的第一篇文章，也是比较简短的一篇，因为我们在日常开发中基本上用不到这个框架提供的 API，但是它依然会为我们展示了很多编程上的黑魔法。</p>
+</blockquote>
+
+<p>libextobjc 将 <code class="highlighter-rouge">cleanup</code> 这一变量属性，很好地包装成了 <code class="highlighter-rouge">@onExit</code>，它的实现也是比较有意思的，也激起了笔者学习 GCC 编译命令并且阅读一些文档的想法。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=如何在 Objective-C 的环境下实现 defer&amp;url=defer"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=defer"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=defer"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/fishhook">
+            <section class="post">
+                <h2>动态修改 C 语言函数的实现</h2>
+                <p>> 转自：[动态修改 C 语言函数的实现](https://draveness.me/fishhook) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > Objective-C 作为基于 Runtime 的语言，它有非常强大的动态特性，可以在运行期间自省、进行方法调剂、为类增加属性、修改消息转发链路，在代码运行期间通过 Runtime 几乎可以修改 Objecitve-C 层的一切类、方法以及属性。...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/keyboard">
+            <section class="post">
+                <h2>『零行代码』解决键盘遮挡问题（iOS）</h2>
+                <p>转自：『零行代码』解决键盘遮挡问题（iOS） 关注仓库，及时获得更新：iOS-Source-Code-Analyze 这篇文章会对 IQKeyboardManager 自动解决键盘遮挡问题的方法进行分析。 最近在项目中使用了 IQKeyboardManager 来解决 UITextField 被键盘遮挡的问题，这个框架的使用方法可以说精简到了极致，只需要将 IQKeyboardManager 加入 Podfile，然后 pod install...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

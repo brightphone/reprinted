@@ -1,0 +1,1142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+   
+      <title>brightphone.github.io/reprinted/</title>
+   
+   <link></link>
+   <description></description>
+   <language>en-uk</language>
+   <managingEditor> </managingEditor>
+   <atom:link href="rss" rel="self" type="application/rss+xml" />
+   
+	<item>
+	  <title>谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）</title>
+	  <link>/reprinted//dsl</link>
+	  <author></author>
+	  <pubDate>2016-10-03T07:45:45+00:00</pubDate>
+	  <guid>/reprinted//dsl</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/dsl">谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）</a></p>
+</blockquote>
+
+<blockquote>
+  <p>最近在公司做了一次有关 DSL 在 iOS 开发中的应用的分享，这篇文章会简单介绍这次分享的内容。</p>
+
+  <p>因为 DSL 以及 DSL 的界定本身就是一个比较模糊的概念，所以难免有与他人观点意见相左的地方，如果有不同的意见，我们可以具体讨论。</p>
+</blockquote>
+
+<p>这次文章的题目虽然是谈谈 DSL 以及 DSL 的应用，不过文章中主要侧重点仍然是 DSL，会简单介绍 DSL 在 iOS 开发中（CocoaPods）是如何应用的。</p>
+
+<h2 id="没有银弹">没有银弹？</h2>
+
+<p>1987 年，IBM 大型电脑之父 Fred Brooks 发表了一篇关于软件工程中的论文 <a href="No Silver Bullet—Essence and Accidents of Software Engineering">No Silver Bullet—Essence and Accidents of Software Engineering</a> 文中主要围绕这么一个观点：没有任何一种技术或者方法能使软件工程的生产力在十年之内提高十倍。</p>
+
+<blockquote>
+  <p>There is no single development, in either technology or management technique, which by itself promises even one order-of-magnitude improvement within a decade in productivity, in reliability, in simplicity.</p>
+</blockquote>
+
+<p>时至今日，我们暂且不谈银弹在软件工程中是否存在（<del>这句话在老板或者项目经理要求加快项目进度时，还是十分好用的</del>），作为一个开发者也不是很关心这种抽象的理论，我们更关心的是开发效率能否有实质的提升。</p>
+
+<p><img src="https://img.draveness.me/2016-10-03-silver-bullet.jpg-1000width" alt="silver-bullet" /></p>
+
+<p>而今天要介绍的 DSL 就可以真正的提升生产力，减少不必要的工作，在一些领域帮助我们更快的实现需求。</p>
+
+<h2 id="dsl-是什么">DSL 是什么？</h2>
+
+<blockquote>
+  <p>笔者是在两年以前，在大一的一次分享上听到 DSL 这个词的，但是当时并没有对这个名词有多深的理解与认识，听过也就忘记了，但是最近做的一些开源项目让我重新想起了 DSL，也是这次分享题目的由来。</p>
+</blockquote>
+
+<p>DSL 其实是 Domain Specific Language 的缩写，中文翻译为<em>领域特定语言</em>（下简称 DSL）；而与 DSL 相对的就是 GPL，这里的 GPL 并不是我们知道的开源许可证，而是 General Purpose Language 的简称，即<em>通用编程语言</em>，也就是我们非常熟悉的 Objective-C、Java、Python 以及 C 语言等等。</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Domain-specific_language">Wikipedia</a> 对于 DSL 的定义还是比较简单的：</p>
+
+<blockquote>
+  <p>A specialized computer language designed for a specific task.</p>
+
+  <p>为了解决某一类任务而专门设计的计算机语言。</p>
+</blockquote>
+
+<p>与 GPL 相对，DSL 与传统意义上的通用编程语言 C、Python 以及 Haskell 完全不同。通用的计算机编程语言是可以用来编写任意计算机程序的，并且能表达任何的<strong>可被计算</strong>的逻辑，同时也是 <a href="https://en.wikipedia.org/wiki/Turing_completeness">图灵完备</a> 的。</p>
+
+<blockquote>
+  <p>这一小节中的 DSL 指外部 DSL，下一节中会介绍 <a href="#embedded-dsl嵌入式-dsl">内部 DSL/嵌入式 DSL</a></p>
+</blockquote>
+
+<p>但是在里所说的 DSL 并不是图灵完备的，它们的<strong>表达能力有限</strong>，只是在特定领域解决特定任务的。</p>
+
+<blockquote>
+  <p>A computer programming language of limited expressiveness focused on a particular domain.</p>
+</blockquote>
+
+<p>另一个世界级软件开发大师 Martin Fowler 对于领域特定语言的定义在笔者看来就更加具体了，<strong>DSL 通过在表达能力上做的妥协换取在某一领域内的高效</strong>。</p>
+
+<p>而有限的表达能力就成为了 GPL 和 DSL 之间的一条界限。</p>
+
+<h3 id="几个栗子">几个栗子</h3>
+
+<p>最常见的 DSL 包括 Regex 以及 HTML &amp; CSS，在这里会对这几个例子进行简单介绍</p>
+
+<ul>
+  <li>Regex
+    <ul>
+      <li>正则表达式仅仅指定了字符串的 pattern，其引擎就会根据 pattern 判断当前字符串跟正则表达式是否匹配。
+  <img src="https://img.draveness.me/2016-10-03-regex.jpg-1000width" alt="regex" /></li>
+    </ul>
+  </li>
+  <li>SQL
+    <ul>
+      <li>SQL 语句在使用时也并没有真正的执行，我们输入的 SQL 语句最终还要交给数据库来进行处理，数据库会从 SQL 语句中<strong>读取</strong>有用的信息，然后从数据库中返回使用者期望的结果。</li>
+    </ul>
+  </li>
+  <li>HTML &amp; CSS
+    <ul>
+      <li>HTML 和 CSS 只是对 Web 界面的结构语义和样式进行描述，虽然它们在构建网站时非常重要，但是它们并非是一种编程语言，正相反，我们可以认为 HTML 和 CSS 是在 Web 中的领域特定语言。</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="features">Features</h3>
+
+<p>上面的几个🌰明显的缩小了通用编程语言的概念，但是它们确实在自己领域表现地非常出色，因为这些 DSL 就是根据某一个特定领域的特点塑造的；而通用编程语言相比领域特定语言，在设计时是为了解决更加抽象的问题，而关注点并不只是在某一个领域。</p>
+
+<p>上面的几个例子有着一些共同的特点：</p>
+
+<ul>
+  <li>没有计算和执行的概念；</li>
+  <li>其本身并不需要直接表示计算；</li>
+  <li>使用时只需要声明规则、事实以及某些元素之间的层级和关系；</li>
+</ul>
+
+<p>虽然了解了 DSL 以及 DSL 的一些特性，但是，到目前为止，我们对于如何构建一个 DSL 仍然不是很清楚。</p>
+
+<h3 id="构建-dsl">构建 DSL</h3>
+
+<p>DSL 的构建与编程语言其实比较类似，想想我们在重新实现编程语言时，需要做那些事情；实现编程语言的过程可以简化为定义语法与语义，然后实现编译器或者解释器的过程，而 DSL 的实现与它也非常类似，我们也需要对 DSL 进行语法与语义上的设计。</p>
+
+<p><img src="https://img.draveness.me/2016-10-03-compiler.png-1000width" alt="compile" /></p>
+
+<p>总结下来，实现 DSL 总共有这么两个需要完成的工作：</p>
+
+<ol>
+  <li>设计语法和语义，定义 DSL 中的元素是什么样的，元素代表什么意思</li>
+  <li>实现 parser，对 DSL 解析，最终通过解释器来执行</li>
+</ol>
+
+<p>以 HTML 为例，HTML 中所有的元素都是包含在尖括号 <code class="highlighter-rouge">&lt;&gt;</code> 中的，尖括号中不同的元素代表了不同的标签，而这些标签会被浏览器<strong>解析</strong>成 DOM 树，再经过一系列的过程调用 Native 的图形 API 进行绘制。</p>
+
+<p><img src="https://img.draveness.me/2016-10-03-dom-tree.png-1000width" alt="dom-tree" /></p>
+
+<p>再比如，我们使用下面这种方式对一个模型进行定义，实现一个 ORM 领域的 DSL：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">define</span> <span class="ss">:article</span> <span class="k">do</span>
+  <span class="kp">attr</span> <span class="ss">:name</span>
+  <span class="kp">attr</span> <span class="ss">:content</span>
+  <span class="kp">attr</span> <span class="ss">:upvotes</span><span class="p">,</span> <span class="ss">:int</span>
+
+  <span class="n">has_many</span> <span class="ss">:comments</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在上面的 DSL 中，使用 <code class="highlighter-rouge">define</code> 来定义一个新的模型，使用 <code class="highlighter-rouge">attr</code> 来为模型添加属性，使用 <code class="highlighter-rouge">has_many</code> 建立数据模型中的一对多关系；我们可以使用 DSL 对这段“字符串”进行解析，然后交给代码生成器来生成代码。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Article</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">title</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">content</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">createdAt</span><span class="p">:</span> <span class="kt">Date</span>
+
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">title</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">content</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">createdAt</span><span class="p">:</span> <span class="kt">Date</span><span class="p">)</span>
+
+    <span class="kd">static</span> <span class="kd">public</span> <span class="kd">func</span> <span class="nf">new</span><span class="p">(</span><span class="nv">title</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">content</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">createdAt</span><span class="p">:</span> <span class="kt">Date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Article</span>
+    <span class="kd">static</span> <span class="kd">public</span> <span class="kd">func</span> <span class="nf">create</span><span class="p">(</span><span class="nv">title</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">content</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">createdAt</span><span class="p">:</span> <span class="kt">Date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Article</span><span class="p">?</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里创建的 DSL 中的元素数量非常少，只有 <code class="highlighter-rouge">define</code> <code class="highlighter-rouge">attr</code> 以及 <code class="highlighter-rouge">has_many</code> 等几个关键字，但是通过这几个关键字就可以完成在模型层需要表达的绝大部分语义。</p>
+
+<h3 id="设计原则和妥协">设计原则和妥协</h3>
+
+<p>DSL 最大的设计原则就是<strong>简单</strong>，通过简化语言中的元素，降低使用者的负担；无论是 Regex、SQL 还是 HTML 以及 CSS，其说明文档往往只有几页，非常易于学习和掌握。但是，由此带来的问题就是，DSL 中缺乏抽象的概念，比如：模块化、变量以及方法等。</p>
+
+<blockquote>
+  <p>抽象的概念并不是某个领域所关注的问题，就像 Regex 并不需要有模块、变量以及方法等概念。</p>
+</blockquote>
+
+<p>由于抽象能力的缺乏，在我们的项目规模变得越来越大时，DSL 往往满足不了开发者的需求；我们仍然需要编程语言中的模块化等概念对 DSL 进行补充，以此解决 DSL 并不是真正编程语言的问题。</p>
+
+<p><img src="https://img.draveness.me/2016-10-03-css-sass.jpg-1000width" alt="css-sass" /></p>
+
+<p>在当今的 Web 前端项目中，我们在开发大规模项目时往往不会直接手写 CSS 文件，而是会使用 Sass 或者 Less 为 CSS 带来更强大的抽象能力，比如嵌套规则，变量，混合以及继承等特性。</p>
+
+<div class="language-css highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">nav</span> <span class="p">{</span>
+  <span class="err">ul</span> <span class="err">{</span>
+    <span class="nl">margin</span><span class="p">:</span> <span class="m">0</span><span class="p">;</span>
+    <span class="nl">padding</span><span class="p">:</span> <span class="m">0</span><span class="p">;</span>
+    <span class="nl">list-style</span><span class="p">:</span> <span class="nb">none</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nt">li</span> <span class="p">{</span> <span class="nl">display</span><span class="p">:</span> <span class="n">inline-block</span><span class="p">;</span> <span class="p">}</span>
+
+  <span class="nt">a</span> <span class="p">{</span>
+    <span class="nl">display</span><span class="p">:</span> <span class="nb">block</span><span class="p">;</span>
+    <span class="nl">padding</span><span class="p">:</span> <span class="m">6px</span> <span class="m">12px</span><span class="p">;</span>
+    <span class="nl">text-decoration</span><span class="p">:</span> <span class="nb">none</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="err">}</span>
+</code></pre></div></div>
+
+<p>也就是说，在使用 DSL 的项目规模逐渐变大时，开发者会通过增加抽象能力的方式，对已有的 DSL 进行拓展；但是这种扩展往往需要重新实现通用编程语言中的特性，所以一般情况下都是比较复杂的。</p>
+
+<h2 id="embedded-dsl嵌入式-dsl">Embedded DSL（嵌入式 DSL）</h2>
+
+<p>那么，是否有一种其它的方法为 DSL 快速添加抽象能力呢？而这也就是这一小节的主题，嵌入式 DSL。</p>
+
+<p>在上一节讲到的 DSL 其实可以被称为外部 DSL；而这里即将谈到的嵌入式 DSL 也有一个别名，内部 DSL。</p>
+
+<p>这两者最大的区别就是，内部 DSL 的实现往往是嵌入一些编程语言的，比如 iOS 的依赖管理组件 CocoaPods 和 Android 的主流编译工具 Gradle，前者的实现是基于 Ruby 语言的一些特性，而后者基于 Groovy。</p>
+
+<p><img src="https://img.draveness.me/2016-10-03-cocoapods.png-1000width" alt="cocoapods" /></p>
+
+<p>CocoaPods 以及其它的嵌入式 DSL 使用了宿主语言（host language）的抽象能力，并且省去了实现复杂语法分析器（Parser）的过程，并不需要重新实现模块、变量等特性。</p>
+
+<p>嵌入式 DSL 的产生其实模糊了框架和 DSL 的边界，不过这两者看起来也没有什么比较明显的区别；不过，DSL 一般会使用宿主语言的特性进行创造，在设计 DSL 时，也不会考虑宿主语言中有哪些 API 以及方法，而框架一般都是对语言中的 API 进行组合和再包装。</p>
+
+<blockquote>
+  <p>我们没有必要争论哪些是框架，哪些是 DSL，因为这些争论并没有什么意义。</p>
+</blockquote>
+
+<h3 id="rails-和-embedded-dsl">Rails 和 Embedded DSL</h3>
+
+<p>最出名也最成功的嵌入式 DSL 应该就是 Ruby on Rails 了，虽然对于 Rails 是否是 DSL 有争议，不过 Rails 为 Web 应用的创建提供大量的内置的支撑，使我们在开发 Web 应用时变得非常容易。</p>
+
+<p><img src="https://img.draveness.me/2016-10-03-rails.jpeg" alt="rails" /></p>
+
+<h2 id="ruby-dsl-和-ios">Ruby、 DSL 和 iOS</h2>
+
+<blockquote>
+  <p>为了保证这篇文章的完整性，这一小节中有的一些内容都出自上一篇文章 <a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/contents/CocoaPods/CocoaPods%20都做了什么？.md">CocoaPods 都做了什么？</a>。</p>
+</blockquote>
+
+<p>笔者同时作为 iOS 和 Rails 开发者接触了非常多的 DSL，而在 iOS 开发中最常见的 DSL 就是 CocoaPods 了，而这里我们以 CocoaPods 为例，介绍如何使用 Ruby 创造一个嵌入式 DSL。</p>
+
+<h3 id="why-ruby">Why Ruby？</h3>
+
+<p>看到这里有人可能会问了，为什么使用 Ruby 创造嵌入式 DSL，而不是使用 C、Java、Python 等等语言呢，这里大概有四个原因：</p>
+
+<ul>
+  <li>一切皆对象的特性减少了语言中的元素，不存在基本类型、操作符；</li>
+  <li>向 Ruby 方法中传入代码块非常方便；</li>
+  <li>作为解释执行的语言，eval 模糊了数据和代码的边界；</li>
+  <li>不对代码的格式进行约束，同时一些约定减少了代码中的噪音。</li>
+</ul>
+
+<h4 id="一切皆对象">一切皆对象</h4>
+
+<p>在许多语言，比如 Java 中，数字与其他的基本类型都不是对象，而在 Ruby 中所有的元素，包括基本类型都是对象，同时也不存在运算符的概念，所谓的 <code class="highlighter-rouge">1 + 1</code>，其实只是 <code class="highlighter-rouge">1.+(1)</code> 的语法糖而已。</p>
+
+<p>得益于一切皆对象的概念，在 Ruby 中，你可以向任意的对象发送 <code class="highlighter-rouge">methods</code> 消息，在运行时自省，所以笔者在每次忘记方法时，都会直接用 <code class="highlighter-rouge">methods</code> 来“查阅文档”：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mf">2.3</span><span class="o">.</span><span class="mi">1</span> <span class="p">:</span><span class="mo">003</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">.</span><span class="nf">methods</span>
+ <span class="o">=&gt;</span> <span class="p">[</span><span class="ss">:%</span><span class="p">,</span> <span class="ss">:&amp;</span><span class="p">,</span> <span class="p">:</span><span class="o">*</span><span class="p">,</span> <span class="p">:</span><span class="o">+</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="p">,</span> <span class="ss">:/</span><span class="p">,</span> <span class="ss">:&lt;</span><span class="p">,</span> <span class="p">:</span><span class="o">&gt;</span><span class="p">,</span> <span class="ss">:^</span><span class="p">,</span> <span class="ss">:|</span><span class="p">,</span> <span class="ss">:~</span><span class="p">,</span> <span class="ss">:-@</span><span class="p">,</span> <span class="ss">:**</span><span class="p">,</span> <span class="ss">:&lt;=&gt;</span><span class="p">,</span> <span class="ss">:&lt;&lt;</span><span class="p">,</span> <span class="ss">:&gt;&gt;</span><span class="p">,</span> <span class="ss">:&lt;=</span><span class="p">,</span> <span class="p">:</span><span class="o">&gt;=</span><span class="p">,</span> <span class="ss">:==</span><span class="p">,</span> <span class="ss">:===</span><span class="p">,</span> <span class="ss">:[]</span><span class="p">,</span> <span class="ss">:inspect</span><span class="p">,</span> <span class="ss">:size</span><span class="p">,</span> <span class="ss">:succ</span><span class="p">,</span> <span class="ss">:to_s</span><span class="p">,</span> <span class="ss">:to_f</span><span class="p">,</span> <span class="ss">:div</span><span class="p">,</span> <span class="ss">:divmod</span><span class="p">,</span> <span class="ss">:fdiv</span><span class="p">,</span> <span class="ss">:modulo</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>比如在这里向对象 <code class="highlighter-rouge">1</code> 调用 <code class="highlighter-rouge">methods</code> 就会返回它能响应的所有方法。</p>
+
+<p>一切皆对象不仅减少了语言中类型的数量，消灭了基本数据类型与对象之间的边界；这一概念同时也简化了组成语言的元素，这样 Ruby 中只有对象和方法，这两个概念，极大降低了这门语言的复杂度：</p>
+
+<ul>
+  <li>使用对象存储状态</li>
+  <li>对象之间通过方法通信</li>
+</ul>
+
+<h4 id="block">block</h4>
+
+<p>Ruby 对函数式编程范式的支持是通过 block，这里的 block 和 Objective-C 中的 block 有些不同。</p>
+
+<p>首先 Ruby 中的 block 也是一种对象，即 <code class="highlighter-rouge">Proc</code> 类的实例，也就是所有的 block 都是 first-class 的，可以作为参数传递，返回。</p>
+
+<p>下面的代码演示了两种向 Ruby 方法中传入代码块的方式：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">twice</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">proc</span><span class="p">)</span>
+	<span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="nb">proc</span><span class="p">.</span><span class="nf">call</span><span class="p">()</span> <span class="p">}</span> <span class="k">if</span> <span class="nb">proc</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">twice</span>
+	<span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="k">yield</span> <span class="p">}</span> <span class="k">if</span> <span class="nb">block_given?</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">yield</code> 会调用外部传入的 block，<code class="highlighter-rouge">block_given?</code> 用于判断当前方法是否传入了 <code class="highlighter-rouge">block</code>。</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">twice</span> <span class="k">do</span>
+	<span class="nb">puts</span> <span class="s2">"Hello"</span>
+<span class="k">end</span>
+
+<span class="n">twice</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"hello"</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>向 <code class="highlighter-rouge">twice</code> 方法传入 block 也非常简单，使用 <code class="highlighter-rouge">do</code>、<code class="highlighter-rouge">end</code> 或者 <code class="highlighter-rouge">{</code>、<code class="highlighter-rouge">}</code> 就可以向任何的 Ruby 方法中传入代码块。</p>
+
+<h4 id="eval">eval</h4>
+
+<p>早在几十年前的 Lisp 语言就有了 <code class="highlighter-rouge">eval</code> 这个方法，这个方法会将字符串当做代码来执行，也就是说 <code class="highlighter-rouge">eval</code> 模糊了代码与数据之间的边界。</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nb">eval</span> <span class="s2">"1 + 2 * 3"</span>
+ <span class="o">=&gt;</span> <span class="mi">7</span>
+</code></pre></div></div>
+
+<p>有了 <code class="highlighter-rouge">eval</code> 方法，我们就获得了更加强大的动态能力，在运行时，使用字符串来改变控制流程，执行代码并可以直接利用当前语言的解释器；而不需要去手动解析字符串然后执行代码。</p>
+
+<h4 id="格式和约定">格式和约定</h4>
+
+<p>编写 Ruby 脚本时并不需要像 Python 一样对代码的格式有着严格的规定，没有对空行、Tab 的要求，完全可以想怎么写就怎么写，这样极大的增加了 DSL 设计的可能性。</p>
+
+<p>同时，在一般情况下，Ruby 在方法调用时并不需要添加括号：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">puts</span> <span class="s2">"Wello World!"</span>
+<span class="nb">puts</span><span class="p">(</span><span class="s2">"Hello World!"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>这样减少了 DSL 中的噪音，能够帮助我们更加关心语法以及语义上的设计，降低了使用者出错的可能性。</p>
+
+<p>最后，Ruby 中存在一种特殊的数据格式 <code class="highlighter-rouge">Symbol</code>：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="ss">:symbol</span><span class="p">.</span><span class="nf">to_s</span>
+ <span class="o">=&gt;</span> <span class="s2">"symbol"</span>
+<span class="o">&gt;</span> <span class="s2">"symbol"</span><span class="p">.</span><span class="nf">to_sym</span>
+ <span class="o">=&gt;</span> <span class="ss">:symbol</span>
+</code></pre></div></div>
+
+<p>Symbol 可以通过 Ruby 中内置的方法与字符串之间无缝转换。那么作为一种字符串的替代品，它的使用也能够降低使用者出错的成本并提升使用体验，我们并不需要去写两边加上引号的字符串，只需要以 <code class="highlighter-rouge">:</code> 开头就能创建一个 Symbol 对象。</p>
+
+<h3 id="podfile-是什么">Podfile 是什么</h3>
+
+<p>对 Ruby 有了一些了解之后，我们就可以再看一下使用 CocoaPods 的工程中的 Podfile 到底是什么了：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span> <span class="s1">'https://github.com/CocoaPods/Specs.git'</span>
+
+<span class="n">target</span> <span class="s1">'Demo'</span> <span class="k">do</span>
+	<span class="n">pod</span> <span class="s1">'Mantle'</span><span class="p">,</span> <span class="s1">'~&gt; 1.5.1'</span>
+	<span class="o">...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>如果不了解 iOS 开发后者没有使用过 CocoaPods，笔者在这里简单介绍一下这个文件中的一些信息。</p>
+
+  <p><code class="highlighter-rouge">source</code> 可以看作是存储依赖元信息（包括依赖的对应的  GitHub 地址）的源地址；</p>
+
+  <p><code class="highlighter-rouge">target</code> 表示需要添加依赖的工程的名字；</p>
+
+  <p><code class="highlighter-rouge">pod</code> 表示依赖，<code class="highlighter-rouge">Mantle</code> 为依赖的框架，后面是版本号。</p>
+</blockquote>
+
+<p>上面是一个使用 Podfile 定义依赖的一个例子，不过 Podfile 对约束的描述其实是这样的：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span><span class="p">(</span><span class="s1">'https://github.com/CocoaPods/Specs.git'</span><span class="p">)</span>
+
+<span class="n">target</span><span class="p">(</span><span class="s1">'Demo'</span><span class="p">)</span> <span class="k">do</span>
+	<span class="n">pod</span><span class="p">(</span><span class="s1">'Mantle'</span><span class="p">,</span> <span class="s1">'~&gt; 1.5.1'</span><span class="p">)</span>
+	<span class="o">...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Podfile 中对于约束的描述，其实都可以看作是代码的简写，在解析时会当做 Ruby 代码来执行。</p>
+
+<h3 id="简单搞个-embedded-dsl">简单搞个 Embedded DSL</h3>
+
+<p>使用 Ruby 实现嵌入式 DSL 一般需要三个步骤，这里以 CocoaPods 为例进行简单介绍：</p>
+
+<ul>
+  <li>创建一个 Podfile 中“代码”执行的上下文，也就是一些方法；</li>
+  <li>读取 Podfile 中的内容到脚本中；</li>
+  <li>使用 <code class="highlighter-rouge">eval</code> 在上下文中执行 Podfile 中的“代码”；</li>
+</ul>
+
+<h4 id="原理">原理</h4>
+
+<p>CocoaPods 对于 DSL 的实现基本上就是我们创建一个 DSL 的过程，定义一系列必要的方法，比如 <code class="highlighter-rouge">source</code>、<code class="highlighter-rouge">pod</code> 等等，创造一个执行的上下文；然后去读存储 DSL 的文件，并且使用 <code class="highlighter-rouge">eval</code> 执行。</p>
+
+<p><strong>信息的传递一般都是通过参数</strong>来进行的，比如：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span> <span class="s1">'https://github.com/CocoaPods/Specs.git'</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">source</code> 方法的参数就是依赖元信息 <code class="highlighter-rouge">Specs</code> 的 Git 地址，在 <code class="highlighter-rouge">eval</code> 执行时就会被读取到 CocoaPods 中，然后进行分析。</p>
+
+<h4 id="实现">实现</h4>
+
+<p>下面是一个非常常见的 Podfile 内容：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span> <span class="s1">'http://source.git'</span>
+<span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">'8.0'</span>
+
+<span class="n">target</span> <span class="s1">'Demo'</span> <span class="k">do</span>
+    <span class="n">pod</span> <span class="s1">'AFNetworking'</span>
+    <span class="n">pod</span> <span class="s1">'SDWebImage'</span>
+    <span class="n">pod</span> <span class="s1">'Masonry'</span>
+    <span class="n">pod</span> <span class="s2">"Typeset"</span>
+    <span class="n">pod</span> <span class="s1">'BlocksKit'</span>
+    <span class="n">pod</span> <span class="s1">'Mantle'</span>
+    <span class="n">pod</span> <span class="s1">'IQKeyboardManager'</span>
+    <span class="n">pod</span> <span class="s1">'IQDropDownTextField'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>因为这里的 <code class="highlighter-rouge">source</code>、<code class="highlighter-rouge">platform</code>、<code class="highlighter-rouge">target</code> 以及 <code class="highlighter-rouge">pod</code> 都是方法，所以在这里我们需要构建一个包含上述方法的上下文：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># eval_pod.rb</span>
+<span class="vg">$hash_value</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">platform</span><span class="p">(</span><span class="n">platform</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">pod</span><span class="p">(</span><span class="n">pod</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>使用一个全局变量 <code class="highlighter-rouge">hash_value</code> 存储 Podfile 中指定的依赖，并且构建了一个 Podfile 解析脚本的骨架；我们先不去完善这些方法的实现细节，先尝试一下读取 Podfile 中的内容并执行 <code class="highlighter-rouge">eval</code> 看看会不会有问题。</p>
+
+<p>在 <code class="highlighter-rouge">eval_pod.rb</code> 文件的最下面加入这几行代码：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">content</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span> <span class="s1">'./Podfile'</span>
+<span class="nb">eval</span> <span class="n">content</span>
+<span class="nb">p</span> <span class="vg">$hash_value</span>
+</code></pre></div></div>
+
+<p>这里读取了 Podfile 文件中的内容，并把其中的内容当做字符串执行，最后打印 <code class="highlighter-rouge">hash_value</code> 的值。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ruby eval_pod.rb
+</code></pre></div></div>
+
+<p>运行这段 Ruby 代码虽然并没有什么输出，但是并没有报出任何的错误，接下来我们就可以完善这些方法了：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">url</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'targets'</span><span class="p">]</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">targets</span> <span class="o">==</span> <span class="kp">nil</span>
+    <span class="n">targets</span> <span class="o">&lt;&lt;</span> <span class="n">target</span>
+    <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'targets'</span><span class="p">]</span> <span class="o">=</span> <span class="n">targets</span>
+    <span class="k">yield</span> <span class="k">if</span> <span class="nb">block_given?</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">platform</span><span class="p">(</span><span class="n">platform</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">pod</span><span class="p">(</span><span class="n">pod</span><span class="p">)</span>
+    <span class="n">pods</span> <span class="o">=</span> <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'pods'</span><span class="p">]</span>
+    <span class="n">pods</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">pods</span> <span class="o">==</span> <span class="kp">nil</span>
+    <span class="n">pods</span> <span class="o">&lt;&lt;</span> <span class="n">pod</span>
+    <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'pods'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pods</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在添加了这些方法的实现之后，再次运行脚本就会得到 Podfile 中的依赖信息了，不过这里的实现非常简单的，很多情况都没有处理：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ruby eval_pod.rb
+<span class="o">{</span><span class="s2">"source"</span><span class="o">=&gt;</span><span class="s2">"http://source.git"</span>, <span class="s2">"targets"</span><span class="o">=&gt;[</span><span class="s2">"Demo"</span><span class="o">]</span>, <span class="s2">"pods"</span><span class="o">=&gt;[</span><span class="s2">"AFNetworking"</span>, <span class="s2">"SDWebImage"</span>, <span class="s2">"Masonry"</span>, <span class="s2">"Typeset"</span>, <span class="s2">"BlocksKit"</span>, <span class="s2">"Mantle"</span>, <span class="s2">"IQKeyboardManager"</span>, <span class="s2">"IQDropDownTextField"</span><span class="o">]}</span>
+</code></pre></div></div>
+
+<p>不过使用 Ruby 构建一个嵌入式 DSL 的过程大概就是这样，使用语言内建的特性来进行创作，创造出一个在使用时看起来并不像代码的 DSL。</p>
+
+<h2 id="写在后面">写在后面</h2>
+
+<p>在最后，笔者想说的是，当我们在某一个领域经常需要解决重复性问题时，可以考虑实现一个 DSL 专门用来解决这些类似的问题。</p>
+
+<p>而使用嵌入式 DSL 来解决这些问题是一个非常好的办法，我们并不需要重新实现解释器，也可以利用宿主语言的抽象能力。</p>
+
+<p>同时，在嵌入式 DSL 扩展了 DSL 的范畴之后，不要纠结于某些东西到底是框架还是领域特定语言，这些都不重要，重要的是，在遇到了某些问题时，我们能否跳出来，使用文中介绍的方法减轻我们的工作量。</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="No Silver Bullet—Essence and Accidents of Software Engineering">No Silver Bullet—Essence and Accidents of Software Engineering</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Domain-specific_language">Domain-specific language</a></li>
+  <li><a href="http://martinfowler.com/bliki/DomainSpecificLanguage.html">DomainSpecificLanguage</a></li>
+  <li><a href="http://taligarsiel.com/Projects/howbrowserswork1.htm">How browsers work</a></li>
+</ul>
+
+<h2 id="其它">其它</h2>
+
+<blockquote>
+  <p>GitHub Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/dsl</p>
+</blockquote>
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>CocoaPods 都做了什么？</title>
+	  <link>/reprinted//cocoapods</link>
+	  <author></author>
+	  <pubDate>2016-09-26T06:19:06+00:00</pubDate>
+	  <guid>/reprinted//cocoapods</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/cocoapods">CocoaPods 都做了什么？</a></p>
+</blockquote>
+
+<p>稍有 iOS 开发经验的人应该都是用过 CocoaPods，而对于 CI、CD 有了解的同学也都知道 Fastlane。而这两个在 iOS 开发中非常便捷的第三方库都是使用 Ruby 来编写的，这是为什么？</p>
+
+<p>先抛开这个话题不谈，我们来看一下 CocoaPods 和 Fastlane 是如何使用的，首先是 CocoaPods，在每一个工程使用 CocoaPods 的工程中都有一个 Podfile：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span> <span class="s1">'https://github.com/CocoaPods/Specs.git'</span>
+
+<span class="n">target</span> <span class="s1">'Demo'</span> <span class="k">do</span>
+	<span class="n">pod</span> <span class="s1">'Mantle'</span><span class="p">,</span> <span class="s1">'~&gt; 1.5.1'</span>
+	<span class="n">pod</span> <span class="s1">'SDWebImage'</span><span class="p">,</span> <span class="s1">'~&gt; 3.7.1'</span>
+	<span class="n">pod</span> <span class="s1">'BlocksKit'</span><span class="p">,</span> <span class="s1">'~&gt; 2.2.5'</span>
+	<span class="n">pod</span> <span class="s1">'SSKeychain'</span><span class="p">,</span> <span class="s1">'~&gt; 1.2.3'</span>
+	<span class="n">pod</span> <span class="s1">'UMengAnalytics'</span><span class="p">,</span> <span class="s1">'~&gt; 3.1.8'</span>
+	<span class="n">pod</span> <span class="s1">'UMengFeedback'</span><span class="p">,</span> <span class="s1">'~&gt; 1.4.2'</span>
+	<span class="n">pod</span> <span class="s1">'Masonry'</span><span class="p">,</span> <span class="s1">'~&gt; 0.5.3'</span>
+	<span class="n">pod</span> <span class="s1">'AFNetworking'</span><span class="p">,</span> <span class="s1">'~&gt; 2.4.1'</span>
+	<span class="n">pod</span> <span class="s1">'Aspects'</span><span class="p">,</span> <span class="s1">'~&gt; 1.4.1'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这是一个使用 Podfile 定义依赖的一个例子，不过 Podfile 对约束的描述其实是这样的：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span><span class="p">(</span><span class="s1">'https://github.com/CocoaPods/Specs.git'</span><span class="p">)</span>
+
+<span class="n">target</span><span class="p">(</span><span class="s1">'Demo'</span><span class="p">)</span> <span class="k">do</span>
+	<span class="n">pod</span><span class="p">(</span><span class="s1">'Mantle'</span><span class="p">,</span> <span class="s1">'~&gt; 1.5.1'</span><span class="p">)</span>
+	<span class="o">...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>Ruby 代码在调用方法时可以省略括号。</p>
+</blockquote>
+
+<p>Podfile 中对于约束的描述，其实都可以看作是对代码简写，上面的代码在解析时可以当做 Ruby 代码来执行。</p>
+
+<p>Fastlane 中的代码 Fastfile 也是类似的：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">lane</span> <span class="ss">:beta</span> <span class="k">do</span>
+  <span class="n">increment_build_number</span>
+  <span class="n">cocoapods</span>
+  <span class="n">match</span>
+  <span class="n">testflight</span>
+  <span class="n">sh</span> <span class="s2">"./customScript.sh"</span>
+  <span class="n">slack</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>使用描述性的”代码“编写脚本，如果没有接触或者使用过 Ruby 的人很难相信上面的这些文本是代码的。</p>
+
+<h2 id="ruby-概述">Ruby 概述</h2>
+
+<p>在介绍 CocoaPods 的实现之前，我们需要对 Ruby 的一些特性有一个简单的了解，在向身边的朋友“传教”的时候，我往往都会用优雅这个词来形容这门语言<del>（手动微笑）</del>。</p>
+
+<p>除了优雅之外，Ruby 的语法具有强大的表现力，并且其使用非常灵活，能快速实现我们的需求，这里简单介绍一下 Ruby 中的一些特性。</p>
+
+<h3 id="一切皆对象">一切皆对象</h3>
+
+<p>在许多语言，比如 Java 中，数字与其他的基本类型都不是对象，而在 Ruby 中所有的元素，包括基本类型都是对象，同时也不存在运算符的概念，所谓的 <code class="highlighter-rouge">1 + 1</code>，其实只是 <code class="highlighter-rouge">1.+(1)</code> 的语法糖而已。</p>
+
+<p>得益于一切皆对象的概念，在 Ruby 中，你可以向任意的对象发送 <code class="highlighter-rouge">methods</code> 消息，在运行时自省，所以笔者在每次忘记方法时，都会直接用 <code class="highlighter-rouge">methods</code> 来“查文档”：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mf">2.3</span><span class="o">.</span><span class="mi">1</span> <span class="p">:</span><span class="mo">003</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">.</span><span class="nf">methods</span>
+ <span class="o">=&gt;</span> <span class="p">[</span><span class="ss">:%</span><span class="p">,</span> <span class="ss">:&amp;</span><span class="p">,</span> <span class="p">:</span><span class="o">*</span><span class="p">,</span> <span class="p">:</span><span class="o">+</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="p">,</span> <span class="ss">:/</span><span class="p">,</span> <span class="ss">:&lt;</span><span class="p">,</span> <span class="p">:</span><span class="o">&gt;</span><span class="p">,</span> <span class="ss">:^</span><span class="p">,</span> <span class="ss">:|</span><span class="p">,</span> <span class="ss">:~</span><span class="p">,</span> <span class="ss">:-@</span><span class="p">,</span> <span class="ss">:**</span><span class="p">,</span> <span class="ss">:&lt;=&gt;</span><span class="p">,</span> <span class="ss">:&lt;&lt;</span><span class="p">,</span> <span class="ss">:&gt;&gt;</span><span class="p">,</span> <span class="ss">:&lt;=</span><span class="p">,</span> <span class="p">:</span><span class="o">&gt;=</span><span class="p">,</span> <span class="ss">:==</span><span class="p">,</span> <span class="ss">:===</span><span class="p">,</span> <span class="ss">:[]</span><span class="p">,</span> <span class="ss">:inspect</span><span class="p">,</span> <span class="ss">:size</span><span class="p">,</span> <span class="ss">:succ</span><span class="p">,</span> <span class="ss">:to_s</span><span class="p">,</span> <span class="ss">:to_f</span><span class="p">,</span> <span class="ss">:div</span><span class="p">,</span> <span class="ss">:divmod</span><span class="p">,</span> <span class="ss">:fdiv</span><span class="p">,</span> <span class="ss">:modulo</span><span class="p">,</span> <span class="ss">:abs</span><span class="p">,</span> <span class="ss">:magnitude</span><span class="p">,</span> <span class="ss">:zero?</span><span class="p">,</span> <span class="ss">:odd?</span><span class="p">,</span> <span class="ss">:even?</span><span class="p">,</span> <span class="ss">:bit_length</span><span class="p">,</span> <span class="ss">:to_int</span><span class="p">,</span> <span class="ss">:to_i</span><span class="p">,</span> <span class="ss">:next</span><span class="p">,</span> <span class="ss">:upto</span><span class="p">,</span> <span class="ss">:chr</span><span class="p">,</span> <span class="ss">:ord</span><span class="p">,</span> <span class="ss">:integer?</span><span class="p">,</span> <span class="ss">:floor</span><span class="p">,</span> <span class="ss">:ceil</span><span class="p">,</span> <span class="ss">:round</span><span class="p">,</span> <span class="ss">:truncate</span><span class="p">,</span> <span class="ss">:downto</span><span class="p">,</span> <span class="ss">:times</span><span class="p">,</span> <span class="ss">:pred</span><span class="p">,</span> <span class="ss">:to_r</span><span class="p">,</span> <span class="ss">:numerator</span><span class="p">,</span> <span class="ss">:denominator</span><span class="p">,</span> <span class="ss">:rationalize</span><span class="p">,</span> <span class="ss">:gcd</span><span class="p">,</span> <span class="ss">:lcm</span><span class="p">,</span> <span class="ss">:gcdlcm</span><span class="p">,</span> <span class="ss">:+@</span><span class="p">,</span> <span class="ss">:eql?</span><span class="p">,</span> <span class="ss">:singleton_method_added</span><span class="p">,</span> <span class="ss">:coerce</span><span class="p">,</span> <span class="ss">:i</span><span class="p">,</span> <span class="ss">:remainder</span><span class="p">,</span> <span class="ss">:real?</span><span class="p">,</span> <span class="ss">:nonzero?</span><span class="p">,</span> <span class="ss">:step</span><span class="p">,</span> <span class="ss">:positive?</span><span class="p">,</span> <span class="ss">:negative?</span><span class="p">,</span> <span class="ss">:quo</span><span class="p">,</span> <span class="ss">:arg</span><span class="p">,</span> <span class="ss">:rectangular</span><span class="p">,</span> <span class="ss">:rect</span><span class="p">,</span> <span class="ss">:polar</span><span class="p">,</span> <span class="ss">:real</span><span class="p">,</span> <span class="ss">:imaginary</span><span class="p">,</span> <span class="ss">:imag</span><span class="p">,</span> <span class="ss">:abs2</span><span class="p">,</span> <span class="ss">:angle</span><span class="p">,</span> <span class="ss">:phase</span><span class="p">,</span> <span class="ss">:conjugate</span><span class="p">,</span> <span class="ss">:conj</span><span class="p">,</span> <span class="ss">:to_c</span><span class="p">,</span> <span class="ss">:between?</span><span class="p">,</span> <span class="ss">:instance_of?</span><span class="p">,</span> <span class="ss">:public_send</span><span class="p">,</span> <span class="ss">:instance_variable_get</span><span class="p">,</span> <span class="ss">:instance_variable_set</span><span class="p">,</span> <span class="ss">:instance_variable_defined?</span><span class="p">,</span> <span class="ss">:remove_instance_variable</span><span class="p">,</span> <span class="ss">:private_methods</span><span class="p">,</span> <span class="ss">:kind_of?</span><span class="p">,</span> <span class="ss">:instance_variables</span><span class="p">,</span> <span class="ss">:tap</span><span class="p">,</span> <span class="ss">:is_a?</span><span class="p">,</span> <span class="ss">:extend</span><span class="p">,</span> <span class="ss">:define_singleton_method</span><span class="p">,</span> <span class="ss">:to_enum</span><span class="p">,</span> <span class="ss">:enum_for</span><span class="p">,</span> <span class="p">:</span><span class="o">=~</span><span class="p">,</span> <span class="p">:</span><span class="o">!~</span><span class="p">,</span> <span class="ss">:respond_to?</span><span class="p">,</span> <span class="ss">:freeze</span><span class="p">,</span> <span class="ss">:display</span><span class="p">,</span> <span class="ss">:send</span><span class="p">,</span> <span class="ss">:object_id</span><span class="p">,</span> <span class="ss">:method</span><span class="p">,</span> <span class="ss">:public_method</span><span class="p">,</span> <span class="ss">:singleton_method</span><span class="p">,</span> <span class="ss">:nil?</span><span class="p">,</span> <span class="ss">:hash</span><span class="p">,</span> <span class="ss">:class</span><span class="p">,</span> <span class="ss">:singleton_class</span><span class="p">,</span> <span class="ss">:clone</span><span class="p">,</span> <span class="ss">:dup</span><span class="p">,</span> <span class="ss">:itself</span><span class="p">,</span> <span class="ss">:taint</span><span class="p">,</span> <span class="ss">:tainted?</span><span class="p">,</span> <span class="ss">:untaint</span><span class="p">,</span> <span class="ss">:untrust</span><span class="p">,</span> <span class="ss">:trust</span><span class="p">,</span> <span class="ss">:untrusted?</span><span class="p">,</span> <span class="ss">:methods</span><span class="p">,</span> <span class="ss">:protected_methods</span><span class="p">,</span> <span class="ss">:frozen?</span><span class="p">,</span> <span class="ss">:public_methods</span><span class="p">,</span> <span class="ss">:singleton_methods</span><span class="p">,</span> <span class="p">:</span><span class="o">!</span><span class="p">,</span> <span class="p">:</span><span class="o">!=</span><span class="p">,</span> <span class="ss">:__send__</span><span class="p">,</span> <span class="ss">:equal?</span><span class="p">,</span> <span class="ss">:instance_eval</span><span class="p">,</span> <span class="ss">:instance_exec</span><span class="p">,</span> <span class="ss">:__id__</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>比如在这里向对象 <code class="highlighter-rouge">1</code> 调用 <code class="highlighter-rouge">methods</code> 就会返回它能响应的所有方法。</p>
+
+<p>一切皆对象不仅减少了语言中类型的不一致，消灭了基本数据类型与对象之间的边界；这一概念同时也简化了语言中的组成元素，这样 Ruby 中只有对象和方法，这两个概念，这也降低了我们理解这门语言的复杂度：</p>
+
+<ul>
+  <li>使用对象存储状态</li>
+  <li>对象之间通过方法通信</li>
+</ul>
+
+<h3 id="block">block</h3>
+
+<p>Ruby 对函数式编程范式的支持是通过 block，这里的 block 和 Objective-C 中的 block 有些不同。</p>
+
+<p>首先 Ruby 中的 block 也是一种对象，所有的 Block 都是 Proc 类的实例，也就是所有的 block 都是 first-class 的，可以作为参数传递，返回。</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">twice</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">proc</span><span class="p">)</span>
+	<span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="nb">proc</span><span class="p">.</span><span class="nf">call</span><span class="p">()</span> <span class="p">}</span> <span class="k">if</span> <span class="nb">proc</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">twice</span>
+	<span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="k">yield</span> <span class="p">}</span> <span class="k">if</span> <span class="nb">block_given?</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">yield</code> 会调用外部传入的 block，<code class="highlighter-rouge">block_given?</code> 用于判断当前方法是否传入了 <code class="highlighter-rouge">block</code>。</p>
+</blockquote>
+
+<p>在这个方法调用时，是这样的：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">twice</span> <span class="k">do</span>
+	<span class="nb">puts</span> <span class="s2">"Hello"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="eval">eval</h3>
+
+<p>最后一个需要介绍的特性就是 <code class="highlighter-rouge">eval</code> 了，早在几十年前的 Lisp 语言就有了 <code class="highlighter-rouge">eval</code> 这个方法，这个方法会将字符串当做代码来执行，也就是说 <code class="highlighter-rouge">eval</code> 模糊了代码与数据之间的边界。</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nb">eval</span> <span class="s2">"1 + 2 * 3"</span>
+ <span class="o">=&gt;</span> <span class="mi">7</span>
+</code></pre></div></div>
+
+<p>有了 <code class="highlighter-rouge">eval</code> 方法，我们就获得了更加强大的动态能力，在运行时，使用字符串来改变控制流程，执行代码；而不需要去手动解析输入、生成语法树。</p>
+
+<h3 id="手动解析-podfile">手动解析 Podfile</h3>
+
+<p>在我们对 Ruby 这门语言有了一个简单的了解之后，就可以开始写一个简易的解析 Podfile 的脚本了。</p>
+
+<p>在这里，我们以一个非常简单的 Podfile 为例，使用 Ruby 脚本解析 Podfile 中指定的依赖：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span> <span class="s1">'http://source.git'</span>
+<span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">'8.0'</span>
+
+<span class="n">target</span> <span class="s1">'Demo'</span> <span class="k">do</span>
+    <span class="n">pod</span> <span class="s1">'AFNetworking'</span>
+    <span class="n">pod</span> <span class="s1">'SDWebImage'</span>
+    <span class="n">pod</span> <span class="s1">'Masonry'</span>
+    <span class="n">pod</span> <span class="s2">"Typeset"</span>
+    <span class="n">pod</span> <span class="s1">'BlocksKit'</span>
+    <span class="n">pod</span> <span class="s1">'Mantle'</span>
+    <span class="n">pod</span> <span class="s1">'IQKeyboardManager'</span>
+    <span class="n">pod</span> <span class="s1">'IQDropDownTextField'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>因为这里的 <code class="highlighter-rouge">source</code>、<code class="highlighter-rouge">platform</code>、<code class="highlighter-rouge">target</code> 以及 <code class="highlighter-rouge">pod</code> 都是方法，所以在这里我们需要构建一个包含上述方法的上下文：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># eval_pod.rb</span>
+<span class="vg">$hash_value</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">platform</span><span class="p">(</span><span class="n">platform</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">pod</span><span class="p">(</span><span class="n">pod</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>使用一个全局变量 <code class="highlighter-rouge">hash_value</code> 存储 Podfile 中指定的依赖，并且构建了一个 Podfile 解析脚本的骨架；我们先不去完善这些方法的实现细节，先尝试一下读取 Podfile 中的内容并执行会不会有什么问题。</p>
+
+<p>在 <code class="highlighter-rouge">eval_pod.rb</code> 文件的最下面加入这几行代码：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">content</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span> <span class="s1">'./Podfile'</span>
+<span class="nb">eval</span> <span class="n">content</span>
+<span class="nb">p</span> <span class="vg">$hash_value</span>
+</code></pre></div></div>
+
+<p>这里读取了 Podfile 文件中的内容，并把其中的内容当做字符串执行，最后打印 <code class="highlighter-rouge">hash_value</code> 的值。</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="n">ruby</span> <span class="n">eval_pod</span><span class="p">.</span><span class="nf">rb</span>
+</code></pre></div></div>
+
+<p>运行这段 Ruby 代码虽然并没有什么输出，但是并没有报出任何的错误，接下来我们就可以完善这些方法了：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">url</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'targets'</span><span class="p">]</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">targets</span> <span class="o">==</span> <span class="kp">nil</span>
+    <span class="n">targets</span> <span class="o">&lt;&lt;</span> <span class="n">target</span>
+    <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'targets'</span><span class="p">]</span> <span class="o">=</span> <span class="n">targets</span>
+    <span class="k">yield</span> <span class="k">if</span> <span class="nb">block_given?</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">platform</span><span class="p">(</span><span class="n">platform</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">pod</span><span class="p">(</span><span class="n">pod</span><span class="p">)</span>
+    <span class="n">pods</span> <span class="o">=</span> <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'pods'</span><span class="p">]</span>
+    <span class="n">pods</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">pods</span> <span class="o">==</span> <span class="kp">nil</span>
+    <span class="n">pods</span> <span class="o">&lt;&lt;</span> <span class="n">pod</span>
+    <span class="vg">$hash_value</span><span class="p">[</span><span class="s1">'pods'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pods</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在添加了这些方法的实现之后，再次运行脚本就会得到 Podfile 中的依赖信息了，不过这里的实现非常简单的，很多情况都没有处理：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="n">ruby</span> <span class="n">eval_pod</span><span class="p">.</span><span class="nf">rb</span>
+<span class="p">{</span><span class="s2">"source"</span><span class="o">=&gt;</span><span class="s2">"http://source.git"</span><span class="p">,</span> <span class="s2">"targets"</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"Demo"</span><span class="p">],</span> <span class="s2">"pods"</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"AFNetworking"</span><span class="p">,</span> <span class="s2">"SDWebImage"</span><span class="p">,</span> <span class="s2">"Masonry"</span><span class="p">,</span> <span class="s2">"Typeset"</span><span class="p">,</span> <span class="s2">"BlocksKit"</span><span class="p">,</span> <span class="s2">"Mantle"</span><span class="p">,</span> <span class="s2">"IQKeyboardManager"</span><span class="p">,</span> <span class="s2">"IQDropDownTextField"</span><span class="p">]}</span>
+</code></pre></div></div>
+
+<p>CocoaPods 中对于 Podfile 的解析与这里的实现其实差不多，接下来就进入了 CocoaPods 的实现部分了。</p>
+
+<h2 id="cocoapods-的实现">CocoaPods 的实现</h2>
+
+<p>在上面简单介绍了 Ruby 的一些语法以及如何解析 Podfile 之后，我们开始深入了解一下 CocoaPods 是如何管理 iOS 项目的依赖，也就是 <code class="highlighter-rouge">pod install</code> 到底做了些什么。</p>
+
+<h3 id="pod-install-的过程">Pod install 的过程</h3>
+
+<p><code class="highlighter-rouge">pod install</code> 这个命令到底做了什么？首先，在 CocoaPods 中，所有的命令都会由 <code class="highlighter-rouge">Command</code> 类派发到将对应的类，而真正执行 <code class="highlighter-rouge">pod install</code> 的类就是 <code class="highlighter-rouge">Install</code>：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Pod</span>
+  <span class="k">class</span> <span class="nc">Command</span>
+	<span class="k">class</span> <span class="nc">Install</span> <span class="o">&lt;</span> <span class="no">Command</span>
+	  <span class="k">def</span> <span class="nf">run</span>
+		<span class="n">verify_podfile_exists!</span>
+		<span class="n">installer</span> <span class="o">=</span> <span class="n">installer_for_config</span>
+		<span class="n">installer</span><span class="p">.</span><span class="nf">repo_update</span> <span class="o">=</span> <span class="n">repo_update?</span><span class="p">(</span><span class="ss">:default</span> <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">)</span>
+		<span class="n">installer</span><span class="p">.</span><span class="nf">update</span> <span class="o">=</span> <span class="kp">false</span>
+		<span class="n">installer</span><span class="p">.</span><span class="nf">install!</span>
+	  <span class="k">end</span>
+	<span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这里面会从配置类的实例 <code class="highlighter-rouge">config</code> 中获取一个 <code class="highlighter-rouge">Installer</code> 的实例，然后执行 <code class="highlighter-rouge">install!</code> 方法，这里的 <code class="highlighter-rouge">installer</code> 有一个 <code class="highlighter-rouge">update</code> 属性，而这也就是 <code class="highlighter-rouge">pod install</code> 和 <code class="highlighter-rouge">update</code> 之间最大的区别，<strong>其中后者会无视已有的 Podfile.lock 文件，重新对依赖进行分析</strong>：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Pod</span>
+  <span class="k">class</span> <span class="nc">Command</span>
+	<span class="k">class</span> <span class="nc">Update</span> <span class="o">&lt;</span> <span class="no">Command</span>
+	  <span class="k">def</span> <span class="nf">run</span>
+		<span class="o">...</span>
+
+		<span class="n">installer</span> <span class="o">=</span> <span class="n">installer_for_config</span>
+		<span class="n">installer</span><span class="p">.</span><span class="nf">repo_update</span> <span class="o">=</span> <span class="n">repo_update?</span><span class="p">(</span><span class="ss">:default</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
+		<span class="n">installer</span><span class="p">.</span><span class="nf">update</span> <span class="o">=</span> <span class="kp">true</span>
+		<span class="n">installer</span><span class="p">.</span><span class="nf">install!</span>
+	  <span class="k">end</span>
+	<span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="podfile-的解析">Podfile 的解析</h3>
+
+<p>Podfile 中依赖的解析其实是与我们在手动解析 Podfile 章节所介绍的差不多，整个过程主要都是由 <strong>CocoaPods-Core</strong> 这个模块来完成的，而这个过程早在 <code class="highlighter-rouge">installer_for_config</code> 中就已经开始了：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">installer_for_config</span>
+  <span class="no">Installer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="nf">sandbox</span><span class="p">,</span> <span class="n">config</span><span class="p">.</span><span class="nf">podfile</span><span class="p">,</span> <span class="n">config</span><span class="p">.</span><span class="nf">lockfile</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这个方法会从 <code class="highlighter-rouge">config.podfile</code> 中取出一个 <code class="highlighter-rouge">Podfile</code> 类的实例：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">podfile</span>
+  <span class="vi">@podfile</span> <span class="o">||=</span> <span class="no">Podfile</span><span class="p">.</span><span class="nf">from_file</span><span class="p">(</span><span class="n">podfile_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">podfile_path</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>类方法 <code class="highlighter-rouge">Podfile.from_file</code> 就定义在 CocoaPods-Core 这个库中，用于分析 Podfile 中定义的依赖，这个方法会根据 Podfile 不同的类型选择不同的调用路径：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Podfile</span><span class="p">.</span><span class="nf">from_file</span>
+<span class="sb">`-- Podfile.from_ruby
+	|-- File.open
+	`</span><span class="o">--</span> <span class="nb">eval</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">from_ruby</code> 类方法就会像我们在前面做的解析 Podfile 的方法一样，从文件中读取数据，然后使用 <code class="highlighter-rouge">eval</code> 直接将文件中的内容当做 Ruby 代码来执行。</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">from_ruby</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">contents</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+  <span class="n">contents</span> <span class="o">||=</span> <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'r:utf-8'</span><span class="p">,</span> <span class="o">&amp;</span><span class="ss">:read</span><span class="p">)</span>
+
+  <span class="n">podfile</span> <span class="o">=</span> <span class="no">Podfile</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">do</span>
+	<span class="k">begin</span>
+	  <span class="nb">eval</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">path</span><span class="p">.</span><span class="nf">to_s</span><span class="p">)</span>
+	<span class="k">rescue</span> <span class="no">Exception</span> <span class="o">=&gt;</span> <span class="n">e</span>
+	  <span class="n">message</span> <span class="o">=</span> <span class="s2">"Invalid `</span><span class="si">#{</span><span class="n">path</span><span class="p">.</span><span class="nf">basename</span><span class="si">}</span><span class="s2">` file: </span><span class="si">#{</span><span class="n">e</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span>
+	  <span class="k">raise</span> <span class="no">DSLError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span>
+	<span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">podfile</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在 Podfile 这个类的顶部，我们使用 Ruby 的 <code class="highlighter-rouge">Mixin</code> 的语法来混入 Podfile 中代码执行所需要的上下文：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kp">include</span> <span class="no">Pod</span><span class="o">::</span><span class="no">Podfile</span><span class="o">::</span><span class="no">DSL</span>
+</code></pre></div></div>
+
+<p>Podfile 中的所有你见到的方法都是定义在 <code class="highlighter-rouge">DSL</code> 这个模块下面的：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Pod</span>
+  <span class="k">class</span> <span class="nc">Podfile</span>
+	<span class="k">module</span> <span class="nn">DSL</span>
+	  <span class="k">def</span> <span class="nf">pod</span><span class="p">(</span><span class="nb">name</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">*</span><span class="n">requirements</span><span class="p">)</span> <span class="k">end</span>
+	  <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span> <span class="k">end</span>
+	  <span class="k">def</span> <span class="nf">platform</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span> <span class="k">end</span>
+	  <span class="k">def</span> <span class="nf">inhibit_all_warnings!</span> <span class="k">end</span>
+	  <span class="k">def</span> <span class="nf">use_frameworks!</span><span class="p">(</span><span class="n">flag</span> <span class="o">=</span> <span class="kp">true</span><span class="p">)</span> <span class="k">end</span>
+	  <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="k">end</span>
+	  <span class="o">...</span>
+	<span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这里定义了很多 Podfile 中使用的方法，当使用 <code class="highlighter-rouge">eval</code> 执行文件中的代码时，就会执行这个模块里的方法，在这里简单看一下其中几个方法的实现，比如说 <code class="highlighter-rouge">source</code> 方法：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+  <span class="n">hash_sources</span> <span class="o">=</span> <span class="n">get_hash_value</span><span class="p">(</span><span class="s1">'sources'</span><span class="p">)</span> <span class="o">||</span> <span class="p">[]</span>
+  <span class="n">hash_sources</span> <span class="o">&lt;&lt;</span> <span class="n">source</span>
+  <span class="n">set_hash_value</span><span class="p">(</span><span class="s1">'sources'</span><span class="p">,</span> <span class="n">hash_sources</span><span class="p">.</span><span class="nf">uniq</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>该方法会将新的 <code class="highlighter-rouge">source</code> 加入已有的源数组中，然后更新原有的 <code class="highlighter-rouge">sources</code> 对应的值。</p>
+
+<p>稍微复杂一些的是 <code class="highlighter-rouge">target</code> 方法：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">options</span>
+	<span class="k">raise</span> <span class="no">Informative</span><span class="p">,</span> <span class="s2">"Unsupported options `</span><span class="si">#{</span><span class="n">options</span><span class="si">}</span><span class="s2">` for "</span> <span class="p">\</span>
+	  <span class="s2">"target `</span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">`."</span>
+  <span class="k">end</span>
+
+  <span class="n">parent</span> <span class="o">=</span> <span class="n">current_target_definition</span>
+  <span class="n">definition</span> <span class="o">=</span> <span class="no">TargetDefinition</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">current_target_definition</span> <span class="o">=</span> <span class="n">definition</span>
+  <span class="k">yield</span> <span class="k">if</span> <span class="nb">block_given?</span>
+<span class="k">ensure</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">current_target_definition</span> <span class="o">=</span> <span class="n">parent</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这个方法会创建一个 <code class="highlighter-rouge">TargetDefinition</code> 类的实例，然后将当前环境系的 <code class="highlighter-rouge">target_definition</code> 设置成这个刚刚创建的实例。这样，之后使用 <code class="highlighter-rouge">pod</code> 定义的依赖都会填充到当前的 <code class="highlighter-rouge">TargetDefinition</code> 中：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">pod</span><span class="p">(</span><span class="nb">name</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">*</span><span class="n">requirements</span><span class="p">)</span>
+  <span class="k">unless</span> <span class="nb">name</span>
+	<span class="k">raise</span> <span class="no">StandardError</span><span class="p">,</span> <span class="s1">'A dependency requires a name.'</span>
+  <span class="k">end</span>
+
+  <span class="n">current_target_definition</span><span class="p">.</span><span class="nf">store_pod</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="o">*</span><span class="n">requirements</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>当 <code class="highlighter-rouge">pod</code> 方法被调用时，会执行 <code class="highlighter-rouge">store_pod</code> 将依赖存储到当前 <code class="highlighter-rouge">target</code> 中的 <code class="highlighter-rouge">dependencies</code> 数组中：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">store_pod</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="o">*</span><span class="n">requirements</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">if</span> <span class="n">parse_subspecs</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">requirements</span><span class="p">)</span>
+  <span class="n">parse_inhibit_warnings</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">requirements</span><span class="p">)</span>
+  <span class="n">parse_configuration_whitelist</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">requirements</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">requirements</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">requirements</span><span class="p">.</span><span class="nf">empty?</span>
+	<span class="n">pod</span> <span class="o">=</span> <span class="p">{</span> <span class="nb">name</span> <span class="o">=&gt;</span> <span class="n">requirements</span> <span class="p">}</span>
+  <span class="k">else</span>
+	<span class="n">pod</span> <span class="o">=</span> <span class="nb">name</span>
+  <span class="k">end</span>
+
+  <span class="n">get_hash_value</span><span class="p">(</span><span class="s1">'dependencies'</span><span class="p">,</span> <span class="p">[])</span> <span class="o">&lt;&lt;</span> <span class="n">pod</span>
+  <span class="kp">nil</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>总结一下，CocoaPods 对 Podfile 的解析与我们在前面做的手动解析 Podfile 的原理差不多，构建一个包含一些方法的上下文，然后直接执行 <code class="highlighter-rouge">eval</code> 方法将文件的内容当做代码来执行，这样只要 Podfile 中的数据是符合规范的，那么解析 Podfile 就是非常简单容易的。</p>
+
+<h3 id="安装依赖的过程">安装依赖的过程</h3>
+
+<p>Podfile 被解析后的内容会被转化成一个 <code class="highlighter-rouge">Podfile</code> 类的实例，而 <code class="highlighter-rouge">Installer</code> 的实例方法 <code class="highlighter-rouge">install!</code> 就会使用这些信息安装当前工程的依赖，而整个安装依赖的过程大约有四个部分：</p>
+
+<ul>
+  <li>解析 Podfile 中的依赖</li>
+  <li>下载依赖</li>
+  <li>创建 <code class="highlighter-rouge">Pods.xcodeproj</code> 工程</li>
+  <li>集成 workspace</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">install!</span>
+  <span class="n">resolve_dependencies</span>
+  <span class="n">download_dependencies</span>
+  <span class="n">generate_pods_project</span>
+  <span class="n">integrate_user_project</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在上面的 <code class="highlighter-rouge">install</code> 方法调用的 <code class="highlighter-rouge">resolve_dependencies</code> 会创建一个 <code class="highlighter-rouge">Analyzer</code> 类的实例，在这个方法中，你会看到一些非常熟悉的字符串：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve_dependencies</span>
+  <span class="n">analyzer</span> <span class="o">=</span> <span class="n">create_analyzer</span>
+
+  <span class="n">plugin_sources</span> <span class="o">=</span> <span class="n">run_source_provider_hooks</span>
+  <span class="n">analyzer</span><span class="p">.</span><span class="nf">sources</span><span class="p">.</span><span class="nf">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="n">plugin_sources</span><span class="p">)</span>
+
+  <span class="no">UI</span><span class="p">.</span><span class="nf">section</span> <span class="s1">'Updating local specs repositories'</span> <span class="k">do</span>
+	<span class="n">analyzer</span><span class="p">.</span><span class="nf">update_repositories</span>
+  <span class="k">end</span> <span class="k">if</span> <span class="n">repo_update?</span>
+
+  <span class="no">UI</span><span class="p">.</span><span class="nf">section</span> <span class="s1">'Analyzing dependencies'</span> <span class="k">do</span>
+	<span class="n">analyze</span><span class="p">(</span><span class="n">analyzer</span><span class="p">)</span>
+	<span class="n">validate_build_configurations</span>
+	<span class="n">clean_sandbox</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在使用 CocoaPods 中经常出现的 <code class="highlighter-rouge">Updating local specs repositories</code> 以及 <code class="highlighter-rouge">Analyzing dependencies</code> 就是从这里输出到终端的，该方法不仅负责对本地所有 PodSpec 文件的更新，还会对当前 <code class="highlighter-rouge">Podfile</code> 中的依赖进行分析：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">create_analyzer</span><span class="p">)</span>
+  <span class="n">analyzer</span><span class="p">.</span><span class="nf">update</span> <span class="o">=</span> <span class="n">update</span>
+  <span class="vi">@analysis_result</span> <span class="o">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="nf">analyze</span>
+  <span class="vi">@aggregate_targets</span> <span class="o">=</span> <span class="n">analyzer</span><span class="p">.</span><span class="nf">result</span><span class="p">.</span><span class="nf">targets</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">analyzer.analyze</code> 方法最终会调用 <code class="highlighter-rouge">Resolver</code> 的实例方法 <code class="highlighter-rouge">resolve</code>：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve</span>
+  <span class="n">dependencies</span> <span class="o">=</span> <span class="n">podfile</span><span class="p">.</span><span class="nf">target_definition_list</span><span class="p">.</span><span class="nf">flat_map</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+	<span class="n">target</span><span class="p">.</span><span class="nf">dependencies</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">dep</span><span class="o">|</span>
+	  <span class="vi">@platforms_by_dependency</span><span class="p">[</span><span class="n">dep</span><span class="p">].</span><span class="nf">push</span><span class="p">(</span><span class="n">target</span><span class="p">.</span><span class="nf">platform</span><span class="p">).</span><span class="nf">uniq!</span> <span class="k">if</span> <span class="n">target</span><span class="p">.</span><span class="nf">platform</span>
+	<span class="k">end</span>
+  <span class="k">end</span>
+  <span class="vi">@activated</span> <span class="o">=</span> <span class="no">Molinillo</span><span class="o">::</span><span class="no">Resolver</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="nb">self</span><span class="p">).</span><span class="nf">resolve</span><span class="p">(</span><span class="n">dependencies</span><span class="p">,</span> <span class="n">locked_dependencies</span><span class="p">)</span>
+  <span class="n">specs_by_target</span>
+<span class="k">rescue</span> <span class="no">Molinillo</span><span class="o">::</span><span class="no">ResolverError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="n">handle_resolver_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这里的 <code class="highlighter-rouge">Molinillo::Resolver</code> 就是用于解决依赖关系的类。</p>
+
+<h4 id="解决依赖关系resolve-dependencies">解决依赖关系（Resolve Dependencies）</h4>
+
+<p>CocoaPods 为了解决 Podfile 中声明的依赖关系，使用了一个叫做 <a href="https://github.com/CocoaPods/Molinillo/blob/master/ARCHITECTURE.md">Milinillo</a> 的依赖关系解决算法；但是，笔者在 Google 上并没有找到与这个算法相关的其他信息，推测是 CocoaPods 为了解决 iOS 中的依赖关系创造的算法。</p>
+
+<p>Milinillo 算法的核心是 <a href="https://en.wikipedia.org/wiki/Backtracking">回溯（Backtracking）</a> 以及 <a href="https://en.wikipedia.org/wiki/Look-ahead_(backtracking)">向前检查（forward check）</a>，整个过程会追踪栈中的两个状态（依赖和可能性）。</p>
+
+<p>在这里并不想陷入对这个算法执行过程的分析之中，如果有兴趣可以看一下仓库中的 <a href="https://github.com/CocoaPods/Molinillo/blob/master/ARCHITECTURE.md">ARCHITECTURE.md</a> 文件，其中比较详细的解释了 Milinillo 算法的工作原理，并对其功能执行过程有一个比较详细的介绍。</p>
+
+<p><code class="highlighter-rouge">Molinillo::Resolver</code> 方法会返回一个依赖图，其内容大概是这样的：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="p">:[</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:AFNetworking</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="AFNetworking"&gt;),</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:SDWebImage</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="SDWebImage"&gt;),</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:Masonry</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="Masonry"&gt;),</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:Typeset</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="Typeset"&gt;),</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:CCTabBarController</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="CCTabBarController"&gt;),</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:BlocksKit</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="BlocksKit"&gt;),</span>
+	<span class="no">Molinillo</span><span class="o">::</span><span class="no">DependencyGraph</span><span class="o">::</span><span class="no">Vertex</span><span class="ss">:Mantle</span><span class="p">(</span><span class="c1">#&lt;Pod::Specification name="Mantle"&gt;),</span>
+	<span class="o">...</span>
+<span class="p">]</span>
+</code></pre></div></div>
+
+<p>这个依赖图是由一个结点数组组成的，在 CocoaPods 拿到了这个依赖图之后，会在 <code class="highlighter-rouge">specs_by_target</code> 中按照 <code class="highlighter-rouge">Target</code> 将所有的 <code class="highlighter-rouge">Specification</code> 分组：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+	<span class="c1">#&lt;Pod::Podfile::TargetDefinition label=Pods&gt;=&gt;[],</span>
+	<span class="c1">#&lt;Pod::Podfile::TargetDefinition label=Pods-Demo&gt;=&gt;[</span>
+		<span class="c1">#&lt;Pod::Specification name="AFNetworking"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="AFNetworking/NSURLSession"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="AFNetworking/Reachability"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="AFNetworking/Security"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="AFNetworking/Serialization"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="AFNetworking/UIKit"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="BlocksKit/Core"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="BlocksKit/DynamicDelegate"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="BlocksKit/MessageUI"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="BlocksKit/UIKit"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="CCTabBarController"&gt;,</span>
+		<span class="c1">#&lt;Pod::Specification name="CategoryCluster"&gt;,</span>
+		<span class="o">...</span>
+	<span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>而这些 <code class="highlighter-rouge">Specification</code> 就包含了当前工程依赖的所有第三方框架，其中包含了名字、版本、源等信息，用于依赖的下载。</p>
+
+<h4 id="下载依赖">下载依赖</h4>
+
+<p>在依赖关系解决返回了一系列 <code class="highlighter-rouge">Specification</code> 对象之后，就到了 Pod install 的第二部分，下载依赖：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">install_pod_sources</span>
+  <span class="vi">@installed_specs</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">pods_to_install</span> <span class="o">=</span> <span class="n">sandbox_state</span><span class="p">.</span><span class="nf">added</span> <span class="o">|</span> <span class="n">sandbox_state</span><span class="p">.</span><span class="nf">changed</span>
+  <span class="n">title_options</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:verbose_prefix</span> <span class="o">=&gt;</span> <span class="s1">'-&gt; '</span><span class="p">.</span><span class="nf">green</span> <span class="p">}</span>
+  <span class="n">root_specs</span><span class="p">.</span><span class="nf">sort_by</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:name</span><span class="p">).</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">spec</span><span class="o">|</span>
+	<span class="k">if</span> <span class="n">pods_to_install</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+	  <span class="k">if</span> <span class="n">sandbox_state</span><span class="p">.</span><span class="nf">changed</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">sandbox</span><span class="p">.</span><span class="nf">manifest</span>
+		<span class="n">previous</span> <span class="o">=</span> <span class="n">sandbox</span><span class="p">.</span><span class="nf">manifest</span><span class="p">.</span><span class="nf">version</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+		<span class="n">title</span> <span class="o">=</span> <span class="s2">"Installing </span><span class="si">#{</span><span class="n">spec</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">spec</span><span class="p">.</span><span class="nf">version</span><span class="si">}</span><span class="s2"> (was </span><span class="si">#{</span><span class="n">previous</span><span class="si">}</span><span class="s2">)"</span>
+	  <span class="k">else</span>
+		<span class="n">title</span> <span class="o">=</span> <span class="s2">"Installing </span><span class="si">#{</span><span class="n">spec</span><span class="si">}</span><span class="s2">"</span>
+	  <span class="k">end</span>
+	  <span class="no">UI</span><span class="p">.</span><span class="nf">titled_section</span><span class="p">(</span><span class="n">title</span><span class="p">.</span><span class="nf">green</span><span class="p">,</span> <span class="n">title_options</span><span class="p">)</span> <span class="k">do</span>
+		<span class="n">install_source_of_pod</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+	  <span class="k">end</span>
+	<span class="k">else</span>
+	  <span class="no">UI</span><span class="p">.</span><span class="nf">titled_section</span><span class="p">(</span><span class="s2">"Using </span><span class="si">#{</span><span class="n">spec</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">title_options</span><span class="p">)</span> <span class="k">do</span>
+		<span class="n">create_pod_installer</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+	  <span class="k">end</span>
+	<span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>在这个方法中你会看到更多熟悉的提示，CocoaPods 会使用沙盒（sandbox）存储已有依赖的数据，在更新现有的依赖时，会根据依赖的不同状态显示出不同的提示信息：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">-&gt;</span> <span class="no">Using</span> <span class="no">AFNetworking</span> <span class="p">(</span><span class="mf">3.1</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="o">-&gt;</span> <span class="no">Using</span> <span class="no">AKPickerView</span> <span class="p">(</span><span class="mf">0.2</span><span class="o">.</span><span class="mi">7</span><span class="p">)</span>
+
+<span class="o">-&gt;</span> <span class="no">Using</span> <span class="no">BlocksKit</span> <span class="p">(</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span> <span class="n">was</span> <span class="p">(</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="o">-&gt;</span> <span class="no">Installing</span> <span class="no">MBProgressHUD</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span>
+<span class="o">...</span>
+</code></pre></div></div>
+
+<p>虽然这里的提示会有三种，但是 CocoaPods 只会根据不同的状态分别调用两种方法：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">install_source_of_pod</code></li>
+  <li><code class="highlighter-rouge">create_pod_installer</code></li>
+</ul>
+
+<p><code class="highlighter-rouge">create_pod_installer</code> 方法只会创建一个 <code class="highlighter-rouge">PodSourceInstaller</code> 的实例，然后加入 <code class="highlighter-rouge">pod_installers</code> 数组中，因为依赖的版本没有改变，所以不需要重新下载，而另一个方法的 <code class="highlighter-rouge">install_source_of_pod</code> 的调用栈非常庞大：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">installer</span><span class="p">.</span><span class="nf">install_source_of_pod</span>
+<span class="o">|--</span> <span class="n">create_pod_installer</span>
+<span class="o">|</span>	<span class="sb">`-- PodSourceInstaller.new
+`</span><span class="o">--</span> <span class="n">podSourceInstaller</span><span class="p">.</span><span class="nf">install!</span>
+	<span class="sb">`-- download_source
+	   `</span><span class="o">--</span> <span class="no">Downloader</span><span class="p">.</span><span class="nf">download</span>
+		   <span class="sb">`-- Downloader.download_request
+			   `</span><span class="o">--</span> <span class="no">Downloader</span><span class="p">.</span><span class="nf">download_source</span>
+				   <span class="o">|--</span> <span class="no">Downloader</span><span class="p">.</span><span class="nf">for_target</span>
+				   <span class="o">|</span>   <span class="o">|--</span> <span class="no">Downloader</span><span class="p">.</span><span class="nf">class_for_options</span>
+				   <span class="o">|</span>   <span class="sb">`-- Git/HTTP/Mercurial/Subversion.new
+				   |-- Git/HTTP/Mercurial/Subversion.download
+				   `</span><span class="o">--</span> <span class="no">Git</span><span class="o">/</span><span class="no">HTTP</span><span class="o">/</span><span class="no">Mercurial</span><span class="o">/</span><span class="no">Subversion</span><span class="p">.</span><span class="nf">download!</span>
+					   <span class="sb">`-- Git.clone
+</span></code></pre></div></div>
+
+<p>在调用栈的末端 <code class="highlighter-rouge">Downloader.download_source</code> 中执行了另一个 CocoaPods 组件 <strong>CocoaPods-Download</strong> 中的方法：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">download_source</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+  <span class="no">FileUtils</span><span class="p">.</span><span class="nf">rm_rf</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+  <span class="n">downloader</span> <span class="o">=</span> <span class="no">Downloader</span><span class="p">.</span><span class="nf">for_target</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+  <span class="n">downloader</span><span class="p">.</span><span class="nf">download</span>
+  <span class="n">target</span><span class="p">.</span><span class="nf">mkpath</span>
+
+  <span class="k">if</span> <span class="n">downloader</span><span class="p">.</span><span class="nf">options_specific?</span>
+	<span class="n">params</span>
+  <span class="k">else</span>
+	<span class="n">downloader</span><span class="p">.</span><span class="nf">checkout_options</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>方法中调用的 <code class="highlighter-rouge">for_target</code> 根据不同的源会创建一个下载器，因为依赖可能通过不同的协议或者方式进行下载，比如说 Git/HTTP/SVN 等等，组件 CocoaPods-Downloader 就会根据 Podfile 中依赖的参数选项使用不同的方法下载依赖。</p>
+
+<p>大部分的依赖都会被下载到 <code class="highlighter-rouge">~/Library/Caches/CocoaPods/Pods/Release/</code> 这个文件夹中，然后从这个这里复制到项目工程目录下的 <code class="highlighter-rouge">./Pods</code> 中，这也就完成了整个 CocoaPods 的下载流程。</p>
+
+<h4 id="生成-podsxcodeproj">生成 Pods.xcodeproj</h4>
+
+<p>CocoaPods 通过组件 CocoaPods-Downloader 已经成功将所有的依赖下载到了当前工程中，这里会将所有的依赖打包到 <code class="highlighter-rouge">Pods.xcodeproj</code> 中：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">generate_pods_project</span><span class="p">(</span><span class="n">generator</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">)</span>
+  <span class="no">UI</span><span class="p">.</span><span class="nf">section</span> <span class="s1">'Generating Pods project'</span> <span class="k">do</span>
+	<span class="n">generator</span><span class="p">.</span><span class="nf">generate!</span>
+	<span class="vi">@pods_project</span> <span class="o">=</span> <span class="n">generator</span><span class="p">.</span><span class="nf">project</span>
+	<span class="n">run_podfile_post_install_hooks</span>
+	<span class="n">generator</span><span class="p">.</span><span class="nf">write</span>
+	<span class="n">generator</span><span class="p">.</span><span class="nf">share_development_pod_schemes</span>
+	<span class="n">write_lockfiles</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">generate_pods_project</code> 中会执行 <code class="highlighter-rouge">PodsProjectGenerator</code> 的实例方法 <code class="highlighter-rouge">generate!</code>：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">generate!</span>
+  <span class="n">prepare</span>
+  <span class="n">install_file_references</span>
+  <span class="n">install_libraries</span>
+  <span class="n">set_target_dependencies</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>这个方法做了几件小事：</p>
+
+<ul>
+  <li>生成 <code class="highlighter-rouge">Pods.xcodeproj</code> 工程</li>
+  <li>将依赖中的文件加入工程</li>
+  <li>将依赖中的 Library 加入工程</li>
+  <li>设置目标依赖（Target Dependencies）</li>
+</ul>
+
+<p>这几件事情都离不开 CocoaPods 的另外一个组件 Xcodeproj，这是一个可以操作一个 Xcode 工程中的 Group 以及文件的组件，我们都知道对 Xcode 工程的修改大多数情况下都是对一个名叫 <code class="highlighter-rouge">project.pbxproj</code> 的文件进行修改，而 Xcodeproj 这个组件就是 CocoaPods 团队开发的用于操作这个文件的第三方库。</p>
+
+<h4 id="生成-workspace">生成 workspace</h4>
+
+<p>最后的这一部分与生成 <code class="highlighter-rouge">Pods.xcodeproj</code> 的过程有一些相似，这里使用的类是 <code class="highlighter-rouge">UserProjectIntegrator</code>，调用方法 <code class="highlighter-rouge">integrate!</code> 时，就会开始集成工程所需要的 Target：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">integrate!</span>
+  <span class="n">create_workspace</span>
+  <span class="n">integrate_user_targets</span>
+  <span class="n">warn_about_xcconfig_overrides</span>
+  <span class="n">save_projects</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>对于这一部分的代码，也不是很想展开来细谈，简单介绍一下这里的代码都做了什么，首先会通过 <code class="highlighter-rouge">Xcodeproj::Workspace</code> 创建一个 workspace，之后会获取所有要集成的 Target 实例，调用它们的 <code class="highlighter-rouge">integrate!</code> 方法：</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">integrate!</span>
+  <span class="no">UI</span><span class="p">.</span><span class="nf">section</span><span class="p">(</span><span class="n">integration_message</span><span class="p">)</span> <span class="k">do</span>
+	<span class="no">XCConfigIntegrator</span><span class="p">.</span><span class="nf">integrate</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">native_targets</span><span class="p">)</span>
+
+	<span class="n">add_pods_library</span>
+	<span class="n">add_embed_frameworks_script_phase</span>
+	<span class="n">remove_embed_frameworks_script_phase_from_embedded_targets</span>
+	<span class="n">add_copy_resources_script_phase</span>
+	<span class="n">add_check_manifest_lock_script_phase</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>方法将每一个 Target 加入到了工程，使用 Xcodeproj 修改 <code class="highlighter-rouge">Copy Resource Script Phrase</code> 等设置，保存 <code class="highlighter-rouge">project.pbxproj</code>，整个 Pod install 的过程就结束了。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>最后想说的是 pod install 和 pod update 区别还是比较大的，每次在执行 pod install 或者 update 时最后都会生成或者修改 <code class="highlighter-rouge">Podfile.lock</code> 文件，其中前者并不会修改 <code class="highlighter-rouge">Podfile.lock</code> 中<strong>显示指定</strong>的版本，而后者会会无视该文件的内容，尝试将所有的 pod 更新到最新版。</p>
+
+<p>CocoaPods 工程的代码虽然非常多，不过代码的逻辑非常清晰，整个管理并下载依赖的过程非常符合直觉以及逻辑。</p>
+
+<h2 id="其它">其它</h2>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/cocoapods</p>
+</blockquote>
+
+	  ]]></description>
+	</item>
+
+
+</channel>
+</rss>

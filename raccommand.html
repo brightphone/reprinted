@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>优雅的 RACCommand</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//raccommand" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="优雅的 RACCommand" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//raccommand" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="优雅的 RACCommand" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//raccommand" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "优雅的 RACCommand",
+    "url": "/reprinted//raccommand",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">优雅的 RACCommand</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2017-02-10">10 Feb 2017</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/RAC'>RAC</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/raccommand">优雅的 RACCommand</a></p>
+</blockquote>
+
+<p><code class="highlighter-rouge">RACCommand</code> 是一个在 ReactiveCocoa 中比较复杂的类，大多数使用 ReactiveCocoa 的人，尤其是初学者并不会经常使用它。</p>
+
+<p>在很多情况下，虽然使用 <code class="highlighter-rouge">RACSignal</code> 和 <code class="highlighter-rouge">RACSubject</code> 就能解决绝大部分问题，但是 <code class="highlighter-rouge">RACCommand</code> 的使用会为我们带来巨大的便利，尤其是在与副作用相关的操作中。</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-What-is-RACCommand.png-1000width" alt="What-is-RACCommand" /></p>
+
+<blockquote>
+  <p>文章中不会讨论 <code class="highlighter-rouge">RACCommand</code> 中的并行执行问题，也就是忽略了 <code class="highlighter-rouge">allowsConcurrentExecution</code> 以及 <code class="highlighter-rouge">allowsConcurrentExecutionSubject</code> 的存在，不过它们确实在 <code class="highlighter-rouge">RACCommand</code> 中非常重要，这里只是为了减少不必要的干扰因素。</p>
+</blockquote>
+
+<h2 id="raccommand-简介">RACCommand 简介</h2>
+
+<p>与前面几篇文章中介绍的 <code class="highlighter-rouge">RACSignal</code> 等元素不同，<code class="highlighter-rouge">RACCommand</code> 并不表示数据流，它只是一个继承自 <code class="highlighter-rouge">NSObject</code> 的类，但是它却可以用来创建和订阅用于响应某些事件的信号。</p>
+
+<pre><code class="language-objectivec">@interface RACCommand&lt;__contravariant InputType, __covariant ValueType&gt; : NSObject
+
+@end
+</code></pre>
+
+<p>它本身并不是一个 <code class="highlighter-rouge">RACStream</code> 或者 <code class="highlighter-rouge">RACSignal</code> 的子类，而是一个用于管理 <code class="highlighter-rouge">RACSignal</code> 的创建与订阅的类。</p>
+
+<p>在 ReactiveCocoa 中的 FrameworkOverview 部分对 <code class="highlighter-rouge">RACCommand</code> 有这样的解释：</p>
+
+<blockquote>
+  <p>A command, represented by the RACCommand class, creates and subscribes to a signal in response to some action. This makes it easy to perform side-effecting work as the user interacts with the app.</p>
+</blockquote>
+
+<p>在用于与 UIKit 组件进行交互或者执行包含副作用的操作时，<code class="highlighter-rouge">RACCommand</code> 能够帮助我们更快的处理并且响应任务，减少编码以及工程的复杂度。</p>
+
+<h2 id="raccommand-的初始化与执行">RACCommand 的初始化与执行</h2>
+
+<p>在 <code class="highlighter-rouge">-initWithSignalBlock:</code> 方法的方法签名上，你可以看到在每次 <code class="highlighter-rouge">RACCommand</code> 初始化时都会传入一个类型为 <code class="highlighter-rouge">RACSignal&lt;ValueType&gt; * (^)(InputType _Nullable input)</code> 的 <code class="highlighter-rouge">signalBlock</code>：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithSignalBlock:(RACSignal&lt;ValueType&gt; * (^)(InputType _Nullable input))signalBlock;
+</code></pre>
+
+<p>输入为 <code class="highlighter-rouge">InputType</code> 返回值为 <code class="highlighter-rouge">RACSignal&lt;ValueType&gt; *</code>，而 <code class="highlighter-rouge">InputType</code> 也就是在调用 <code class="highlighter-rouge">-execute:</code> 方法时传入的对象：</p>
+
+<pre><code class="language-objectivec">- (RACSignal&lt;ValueType&gt; *)execute:(nullable InputType)input;
+</code></pre>
+
+<p>这也就是 <code class="highlighter-rouge">RACCommand</code> 将外部变量（或『副作用』）传入 ReactiveCocoa 内部的方法，你可以理解为 <code class="highlighter-rouge">RACCommand</code> 将外部的变量 <code class="highlighter-rouge">InputType</code> 转换成了使用 <code class="highlighter-rouge">RACSignal</code> 包裹的 <code class="highlighter-rouge">ValueType</code> 对象。</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Execute-For-RACCommand.png-1000width" alt="Execute-For-RACCommand" /></p>
+
+<p>我们以下面的代码为例，先来看一下 <code class="highlighter-rouge">RACCommand</code> 是如何工作的：</p>
+
+<pre><code class="language-objectivec">RACCommand *command = [[RACCommand alloc] initWithSignalBlock:^RACSignal * _Nonnull(NSNumber * _Nullable input) {
+    return [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) {
+        NSInteger integer = [input integerValue];
+        for (NSInteger i = 0; i &lt; integer; i++) {
+            [subscriber sendNext:@(i)];
+        }
+        [subscriber sendCompleted];
+        return nil;
+    }];
+}];
+[[command.executionSignals switchToLatest] subscribeNext:^(id  _Nullable x) {
+    NSLog(@"%@", x);
+}];
+
+[command execute:@1];
+[RACScheduler.mainThreadScheduler afterDelay:0.1
+                                    schedule:^{
+                                        [command execute:@2];
+                                    }];
+[RACScheduler.mainThreadScheduler afterDelay:0.2
+                                    schedule:^{
+                                        [command execute:@3];
+                                    }];
+</code></pre>
+
+<p>首先使用 <code class="highlighter-rouge">-initWithSignalBlock:</code> 方法创建一个 <code class="highlighter-rouge">RACCommand</code> 的对象，传入一个类型为 <code class="highlighter-rouge">InputType -&gt; RACSignal&lt;ValueType&gt;</code> 的 block，这个信号根据输入会发送对应次数的消息，如果运行上面的代码，会打印出：</p>
+
+<pre><code class="language-objectivec">0
+0
+1
+0
+1
+2
+</code></pre>
+
+<blockquote>
+  <p><code class="highlighter-rouge">-switchToLatest</code> 方法只能操作<strong>信号的信号</strong>。</p>
+</blockquote>
+
+<p>每次 <code class="highlighter-rouge">executionSignals</code> 中发送了新的信号时，<code class="highlighter-rouge">switchToLatest</code> 方法返回的信号都会订阅这个最新的信号，这里也就保证了每次都会打印出最新的信号中的值。</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Multiple-Executes.png-1000width" alt="Multiple-Executes" /></p>
+
+<p>在上面代码中还有最后一个问题需要回答，为什么要使用 <code class="highlighter-rouge">RACScheduler.mainThreadScheduler</code> 延迟调用之后的 <code class="highlighter-rouge">-execute:</code> 方法？由于在默认情况下 <code class="highlighter-rouge">RACCommand</code> 都是不支持并发操作的，需要在上一次命令执行之后才可以发送下一次操作，否则就会返回错误信号 <code class="highlighter-rouge">RACErrorSignal</code>，这些错误可以通过订阅 <code class="highlighter-rouge">command.errors</code> 获得。</p>
+
+<p>如果使用如下的方式执行几次 <code class="highlighter-rouge">-execute:</code> 方法：</p>
+
+<pre><code class="language-objectivec">[command execute:@1];
+[command execute:@2];
+[command execute:@3];
+</code></pre>
+
+<p>笔者相信，不出意外的话，你只能在控制台中看到输出 <code class="highlighter-rouge">0</code>。</p>
+
+<h3 id="最重要的内部信号">最重要的内部『信号』</h3>
+
+<p><code class="highlighter-rouge">RACCommand</code> 中最重要的内部『信号』就是 <code class="highlighter-rouge">addedExecutionSignalsSubject</code>：</p>
+
+<pre><code class="language-objectivec">@property (nonatomic, strong, readonly) RACSubject *addedExecutionSignalsSubject;
+</code></pre>
+
+<p>这个 <code class="highlighter-rouge">RACSubject</code> 对象通过各种操作衍生了几乎所有 <code class="highlighter-rouge">RACCommand</code> 中的其他信号，我们会在下一节中具体介绍；</p>
+
+<p>既然 <code class="highlighter-rouge">addedExecutionSignalsSubject</code> 是一个 <code class="highlighter-rouge">RACSubject</code>，它不能在创建时预设好对订阅者发送的消息，它会在哪里接受数据并推送给订阅者呢？答案就在 <code class="highlighter-rouge">-execute:</code> 方法中：</p>
+
+<pre><code class="language-objectivec">- (RACSignal *)execute:(id)input {
+	BOOL enabled = [[self.immediateEnabled first] boolValue];
+	if (!enabled) {
+		NSError *error = [NSError errorWithDomain:RACCommandErrorDomain code:RACCommandErrorNotEnabled userInfo:@{
+			NSLocalizedDescriptionKey: NSLocalizedString(@"The command is disabled and cannot be executed", nil),
+			RACUnderlyingCommandErrorKey: self
+		}];
+
+		return [RACSignal error:error];
+	}
+
+	RACSignal *signal = self.signalBlock(input);
+	RACMulticastConnection *connection = [[signal
+		subscribeOn:RACScheduler.mainThreadScheduler]
+		multicast:[RACReplaySubject subject]];
+
+	[self.addedExecutionSignalsSubject sendNext:connection.signal];
+
+	[connection connect];
+	return [connection.signal setNameWithFormat:@"%@ -execute: %@", self, RACDescription(input)];
+}
+</code></pre>
+
+<p>在方法中这里你也能看到连续几次执行 <code class="highlighter-rouge">-execute:</code> 方法不能成功的原因：每次执行这个方法时，都会从另一个信号 <code class="highlighter-rouge">immediateEnabled</code> 中读取是否能执行当前命令的 <code class="highlighter-rouge">BOOL</code> 值，如果不可以执行的话，就直接返回 <code class="highlighter-rouge">RACErrorSignal</code>。</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Execute-on-RACCommand.png-1000width" alt="Execute-on-RACCommand" /></p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">-execute:</code> 方法是唯一一个为 <code class="highlighter-rouge">addedExecutionSignalsSubject</code> 生产信息的方法。</p>
+</blockquote>
+
+<p>在执行 <code class="highlighter-rouge">signalBlock</code> 返回一个 <code class="highlighter-rouge">RACSignal</code> 之后，会将当前信号包装成一个 <code class="highlighter-rouge">RACMulticastConnection</code>，然后调用 <code class="highlighter-rouge">-sendNext:</code> 方法发送到 <code class="highlighter-rouge">addedExecutionSignalsSubject</code> 上，执行 <code class="highlighter-rouge">-connect</code> 方法订阅原有的信号，最后返回。</p>
+
+<h3 id="复杂的初始化">复杂的初始化</h3>
+
+<p>与简单的 <code class="highlighter-rouge">-execute:</code> 方法相比，<code class="highlighter-rouge">RACCommand</code> 的初始化方法就复杂多了，虽然我们在方法中传入了 <code class="highlighter-rouge">signalBlock</code>，但是 <code class="highlighter-rouge">-initWithEnabled:signalBlock:</code> 方法只是对这个 block 进行了简单的 <code class="highlighter-rouge">copy</code>，真正使用这个 block 的还是上一节中的 <code class="highlighter-rouge">-execute:</code> 方法中。</p>
+
+<p>由于 <code class="highlighter-rouge">RACCommand</code> 在初始化方法中初始化了七个高阶信号，它的实现非常复杂：</p>
+
+<pre><code class="language-objectivec">- (instancetype)initWithEnabled:(RACSignal *)enabledSignal signalBlock:(RACSignal&lt;id&gt; * (^)(id input))signalBlock {
+	self = [super init];
+
+	_addedExecutionSignalsSubject = [RACSubject new];
+	_signalBlock = [signalBlock copy];
+
+	_executionSignals = ...;
+	_errors = ...;
+	RACSignal *immediateExecuting = ...;
+	_executing = ...;
+	RACSignal *moreExecutionsAllowed = ...;
+	_immediateEnabled =...;
+	_enabled = ...;
+
+	return self;
+}
+</code></pre>
+
+<p>这一小节并不能完全介绍全部的七个信号的实现，只会介绍其中的 <code class="highlighter-rouge">immediateExecuting</code> 和 <code class="highlighter-rouge">moreExecutionsAllowed</code> 两个临时信号，剩下的信号都会在下一节中分析。</p>
+
+<h4 id="表示当前有操作执行的信号">表示当前有操作执行的信号</h4>
+
+<p>首先是 <code class="highlighter-rouge">immediateExecuting</code> 信号：</p>
+
+<pre><code class="language-objectivec">RACSignal *immediateExecuting = [[[[self.addedExecutionSignalsSubject
+    flattenMap:^(RACSignal *signal) {
+        return [[[signal
+            catchTo:[RACSignal empty]]
+            then:^{
+                return [RACSignal return:@-1];
+            }]
+            startWith:@1];
+    }]
+    scanWithStart:@0 reduce:^(NSNumber *running, NSNumber *next) {
+        return @(running.integerValue + next.integerValue);
+    }]
+    map:^(NSNumber *count) {
+        return @(count.integerValue &gt; 0);
+    }]
+    startWith:@NO];
+</code></pre>
+
+<p><code class="highlighter-rouge">immediateExecuting</code> 是一个用于表示当前是否有任务执行的信号，如果输入的 <code class="highlighter-rouge">addedExecutionSignalsSubject</code> 等价于以下的信号：</p>
+
+<pre><code class="language-objectivec">[RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) {
+    [subscriber sendNext:[RACSignal error:[NSError errorWithDomain:@"Error" code:1 userInfo:nil]]];
+    [subscriber sendNext:[RACSignal return:@1]];
+    [subscriber sendNext:[RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) {
+        [RACScheduler.mainThreadScheduler afterDelay:1
+                                            schedule:^
+         {
+             [subscriber sendCompleted];
+         }];
+        return nil;
+    }]];
+    [subscriber sendNext:[RACSignal return:@3]];
+    [subscriber sendCompleted];
+    return nil;
+}];
+</code></pre>
+
+<blockquote>
+  <p>在本文的所有章节中都会假设输入的 <code class="highlighter-rouge">addedExecutionSignalsSubject</code> 信号跟上面的代码返回的完全相同。</p>
+</blockquote>
+
+<p>那么，最后生成的高阶信号 <code class="highlighter-rouge">immediateExecuting</code> 如下：</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-immediateExecuting-Signal-in-RACCommand.png-1000width" alt="immediateExecuting-Signal-in-RACCommand" /></p>
+
+<ol>
+  <li><code class="highlighter-rouge">-catchTo:</code> 将所有的错误转换成 <code class="highlighter-rouge">RACEmptySignal</code> 信号；</li>
+  <li><code class="highlighter-rouge">-flattenMap:</code> 将每一个信号的开始和结束的时间点转换成 <code class="highlighter-rouge">1</code> 和 <code class="highlighter-rouge">-1</code> 两个信号；</li>
+  <li><code class="highlighter-rouge">-scanWithStart:reduce:</code> 从 <code class="highlighter-rouge">0</code> 开始累加原有的信号；</li>
+  <li><code class="highlighter-rouge">-map:</code> 将大于 <code class="highlighter-rouge">1</code> 的信号转换为 <code class="highlighter-rouge">@YES</code>；</li>
+  <li><code class="highlighter-rouge">-startWith:</code> 在信号序列最前面加入 <code class="highlighter-rouge">@NO</code>，表示在最开始时，没有任何动作在执行。</li>
+</ol>
+
+<p><code class="highlighter-rouge">immediateExecuting</code> 使用几个 <code class="highlighter-rouge">RACSignal</code> 的操作成功将原有的信号流转换成了表示是否有操作执行的信号流。</p>
+
+<h4 id="表示是否允许更多操作执行的信号">表示是否允许更多操作执行的信号</h4>
+
+<p>相比于 <code class="highlighter-rouge">immediateExecuting</code> 信号的复杂，<code class="highlighter-rouge">moreExecutionsAllowed</code> 就简单多了：</p>
+
+<pre><code class="language-objectivec">RACSignal *moreExecutionsAllowed = [RACSignal
+    if:[self.allowsConcurrentExecutionSubject startWith:@NO]
+    then:[RACSignal return:@YES]
+    else:[immediateExecuting not]];
+</code></pre>
+
+<p>因为文章中不准备介绍与并发执行有关的内容，所以这里的 <code class="highlighter-rouge">then</code> 语句永远不会执行，既然 <code class="highlighter-rouge">RACCommand</code> 不支持并行操作，那么这段代码就非常好理解了，当前 <code class="highlighter-rouge">RACCommand</code> 能否执行操作就是 <code class="highlighter-rouge">immediateExecuting</code> 取反：</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-MoreExecutionAllowed-Signal.png-1000width" alt="MoreExecutionAllowed-Signa" /></p>
+
+<p>到这里所有初始化方法中的临时信号就介绍完了，在下一节中会继续介绍初始化方法中的其它高阶信号。</p>
+
+<h2 id="raccommand-接口中的高阶信号">RACCommand 接口中的高阶信号</h2>
+
+<p>每一个 <code class="highlighter-rouge">RACCommand</code> 对象中都管理着多个信号，它在接口中暴露出的四个信号是这一节关注的重点：</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-RACCommand-Interface.png-1000width" alt="RACCommand-Interface" /></p>
+
+<p>这一小节会按照顺序图中从上到下的顺序介绍 <code class="highlighter-rouge">RACCommand</code> 接口中暴露出来的信号，同时会涉及一些为了生成这些信号的中间产物。</p>
+
+<h3 id="executionsignals">executionSignals</h3>
+
+<p><code class="highlighter-rouge">executionSignals</code> 是 <code class="highlighter-rouge">RACCommand</code> 中最重要的信号；从类型来看，它是一个<strong>包含信号的信号</strong>，在每次执行 <code class="highlighter-rouge">-execute:</code> 方法时，最终都会向 <code class="highlighter-rouge">executionSignals</code> 中传入一个最新的信号。</p>
+
+<p>虽然它最重要，但是<code class="highlighter-rouge">executionSignals</code> 是这个几个高阶信号中实现最简单的：</p>
+
+<pre><code class="language-objectivec">_executionSignals = [[[self.addedExecutionSignalsSubject
+    map:^(RACSignal *signal) {
+        return [signal catchTo:[RACSignal empty]];
+    }]
+    deliverOn:RACScheduler.mainThreadScheduler]
+    setNameWithFormat:@"%@ -executionSignals", self];
+</code></pre>
+
+<p>它只是将信号中的所有的错误 <code class="highlighter-rouge">NSError</code> 转换成了 <code class="highlighter-rouge">RACEmptySignal</code> 对象，并派发到主线程上。</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Execution-Signals.png-1000width" alt="Execution-Signals" /></p>
+
+<p>如果你只订阅了 <code class="highlighter-rouge">executionSignals</code>，那么其实你不会收到任何的错误，所有的错误都会以 <code class="highlighter-rouge">-sendNext:</code> 的形式被发送到 <code class="highlighter-rouge">errors</code> 信号中，这会在后面详细介绍。</p>
+
+<h3 id="executing">executing</h3>
+
+<p><code class="highlighter-rouge">executing</code> 是一个表示当前是否有任务执行的信号，这个信号使用了在上一节中介绍的临时变量作为数据源：</p>
+
+<pre><code class="language-objectivec">_executing = [[[[[immediateExecuting
+    deliverOn:RACScheduler.mainThreadScheduler]
+    startWith:@NO]
+    distinctUntilChanged]
+    replayLast]
+    setNameWithFormat:@"%@ -executing", self];
+</code></pre>
+
+<p>这里对 <code class="highlighter-rouge">immediateExecuting</code> 的变换还是非常容易理解的：</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Executing-Signal.png-1000width" alt="Executing-Signa" /></p>
+
+<p>最后的 <code class="highlighter-rouge">replayLast</code> 方法将原有的信号变成了容量为 <code class="highlighter-rouge">1</code> 的 <code class="highlighter-rouge">RACReplaySubject</code> 对象，这样在每次有订阅者订阅 <code class="highlighter-rouge">executing</code> 信号时，都只会发送最新的状态，因为订阅者并不关心过去的 <code class="highlighter-rouge">executing</code> 的值。</p>
+
+<h3 id="enabled">enabled</h3>
+
+<p><code class="highlighter-rouge">enabled</code> 信号流表示当前的命令是否可以再次被执行，也就是 <code class="highlighter-rouge">-execute:</code> 方法能否可以成功执行新的任务；该信号流依赖于另一个私有信号 <code class="highlighter-rouge">immediateEnabled</code>：</p>
+
+<pre><code class="language-objectivec">RACSignal *enabledSignal = [RACSignal return:@YES];
+
+_immediateEnabled = [[[[RACSignal
+    combineLatest:@[ enabledSignal, moreExecutionsAllowed ]]
+    and]
+    takeUntil:self.rac_willDeallocSignal]
+    replayLast];
+</code></pre>
+
+<p>虽然这个信号的实现比较简单，不过它同时与三个信号有关，<code class="highlighter-rouge">enabledSignal</code>、<code class="highlighter-rouge">moreExecutionsAllowed</code> 以及 <code class="highlighter-rouge">rac_willDeallocSignal</code>：</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Immediate-Enabled-Signal.png-1000width" alt="Immediate-Enabled-Signa" /></p>
+
+<p>虽然图中没有体现出方法 <code class="highlighter-rouge">-takeUntil:self.rac_willDeallocSignal</code> 的执行，不过你需要知道，这个信号在当前 <code class="highlighter-rouge">RACCommand</code> 执行 <code class="highlighter-rouge">dealloc</code> 之后就不会再发出任何消息了。</p>
+
+<p>而 <code class="highlighter-rouge">enabled</code> 信号其实与 <code class="highlighter-rouge">immediateEnabled</code> 相差无几：</p>
+
+<pre><code class="language-objectivec">_enabled = [[[[[self.immediateEnabled
+    take:1]
+    concat:[[self.immediateEnabled skip:1] deliverOn:RACScheduler.mainThreadScheduler]]
+    distinctUntilChanged]
+    replayLast]
+    setNameWithFormat:@"%@ -enabled", self];
+</code></pre>
+
+<p>从名字你可以看出来，<code class="highlighter-rouge">immediateEnabled</code> 在每次原信号发送消息时都会重新计算，而 <code class="highlighter-rouge">enabled</code> 调用了 <code class="highlighter-rouge">-distinctUntilChanged</code> 方法，所以如果连续几次值相同就不会再次发送任何消息。</p>
+
+<p>除了调用 <code class="highlighter-rouge">-distinctUntilChanged</code> 的区别之外，你可以看到 <code class="highlighter-rouge">enabled</code> 信号在最开始调用了 <code class="highlighter-rouge">-take:</code>和 <code class="highlighter-rouge">-concat:</code> 方法：</p>
+
+<pre><code class="language-objectivec">[[self.immediateEnabled
+		take:1]
+		concat:[[self.immediateEnabled skip:1] deliverOn:RACScheduler.mainThreadScheduler]]
+</code></pre>
+
+<p>虽然序列并没有任何的变化，但是在这种情况下，<code class="highlighter-rouge">enabled</code> 信号流中的第一个值会在订阅线程上到达，剩下的所有的值都会在主线程上派发；如果你知道，在一般情况下，我们都会使用 <code class="highlighter-rouge">enabled</code> 信号来控制 UI 的改变（例如 <code class="highlighter-rouge">UIButton</code>），相信你就会明白这么做的理由了。</p>
+
+<h3 id="errors">errors</h3>
+
+<p>错误信号是 <code class="highlighter-rouge">RACCommand</code> 中比较简单的信号；为了保证 <code class="highlighter-rouge">RACCommand</code> 对此执行 <code class="highlighter-rouge">-execute:</code> 方法也可以继续运行，我们只能将所有的错误以其它的形式发送到 <code class="highlighter-rouge">errors</code> 信号中，防止向 <code class="highlighter-rouge">executionSignals</code> 发送错误信号后，<code class="highlighter-rouge">executionSignals</code> 信号就会中止的问题。</p>
+
+<p>我们使用如下的方式创建 <code class="highlighter-rouge">errors</code> 信号：</p>
+
+<pre><code class="language-objectivec">RACMulticastConnection *errorsConnection = [[[self.addedExecutionSignalsSubject
+    flattenMap:^(RACSignal *signal) {
+        return [[signal
+            ignoreValues]
+            catch:^(NSError *error) {
+                return [RACSignal return:error];
+            }];
+    }]
+    deliverOn:RACScheduler.mainThreadScheduler]
+    publish];
+
+_errors = [errorsConnection.signal setNameWithFormat:@"%@ -errors", self];
+[errorsConnection connect];
+</code></pre>
+
+<p>信号的创建过程是把所有的错误消息重新打包成 <code class="highlighter-rouge">RACErrorSignal</code> 并在主线程上进行派发：</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-Errors-Signals.png-1000width" alt="Errors-Signals" /></p>
+
+<p>使用者只需要调用 <code class="highlighter-rouge">-subscribeNext:</code> 就可以从这个信号中获取所有执行过程中发生的错误。</p>
+
+<h2 id="raccommand-的使用">RACCommand 的使用</h2>
+
+<p><code class="highlighter-rouge">RACCommand</code> 非常适合封装网络请求，我们可以使用下面的代码封装一个网络请求：</p>
+
+<pre><code class="language-objectivec">RACCommand *command = [[RACCommand alloc] initWithSignalBlock:^RACSignal * _Nonnull(id  _Nullable input) {
+    return [RACSignal createSignal:^RACDisposable * _Nullable(id&lt;RACSubscriber&gt;  _Nonnull subscriber) {
+        NSURL *url = [NSURL URLWithString:@"http://localhost:3000"];
+        AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithBaseURL:url];
+        NSString *URLString = [NSString stringWithFormat:@"/api/products/%@", input ?: @1];
+        NSURLSessionDataTask *task = [manager GET:URLString parameters:nil progress:nil
+             success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable responseObject) {
+                 [subscriber sendNext:responseObject];
+                 [subscriber sendCompleted];
+             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+                 [subscriber sendError:error];
+             }];
+        return [RACDisposable disposableWithBlock:^{
+            [task cancel];
+        }];
+    }];
+}];
+</code></pre>
+
+<p>上面的 <code class="highlighter-rouge">RACCommand</code> 对象可以通过 <code class="highlighter-rouge">-execute:</code> 方法执行，同时，订阅 <code class="highlighter-rouge">executionSignals</code> 以及 <code class="highlighter-rouge">errors</code> 来获取网络请求的结果。</p>
+
+<pre><code class="language-objectivec">[[command.executionSignals switchToLatest] subscribeNext:^(id  _Nullable x) {
+    NSLog(@"%@", x);
+}];
+[command.errors subscribeNext:^(NSError * _Nullable x) {
+    NSLog(@"%@", x);
+}];
+[command execute:@1];
+</code></pre>
+
+<p>向方法 <code class="highlighter-rouge">-execute:</code> 中传入了 <code class="highlighter-rouge">@1</code> 对象，从服务器中获取了 <code class="highlighter-rouge">id = 1</code> 的商品对象；当然，我们也可以传入不同的 <code class="highlighter-rouge">id</code> 来获取不同的模型，所有的网络请求以及 JSON 转换模型的逻辑都可以封装到这个 <code class="highlighter-rouge">RACCommand</code> 的 block 中，外界只是传入一个 <code class="highlighter-rouge">id</code>，最后就从 <code class="highlighter-rouge">executionSignals</code> 信号中获取了开箱即用的对象。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>使用 <code class="highlighter-rouge">RACCommand</code> 能够优雅地将包含副作用的操作和与副作用无关的操作分隔起来；整个 <code class="highlighter-rouge">RACCommand</code> 相当于一个黑箱，从 <code class="highlighter-rouge">-execute:</code> 方法中获得输入，最后以向信号发送消息的方式，向订阅者推送结果。</p>
+
+<p><img src="https://img.draveness.me/2017-02-10-RACCommand-Side-Effect.png-1000width" alt="RACCommand-Side-Effect" /></p>
+
+<p>这种执行任务的方式就像是一个函数，根据输入的不同，有着不同的输出，非常适合与 UI、网络操作的相关的任务，这也是 <code class="highlighter-rouge">RACCommand</code> 的设计的优雅之处。</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://codeblog.shape.dk/blog/2013/12/05/reactivecocoa-essentials-understanding-and-using-raccommand/">ReactiveCocoa Essentials: Understanding and Using RACCommand</a></li>
+  <li><a href="https://halfrost.com/reactivecocoa_raccommand/">ReactiveCocoa 中 RACCommand 底层实现分析</a></li>
+</ul>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/raccommand</p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=优雅的 RACCommand&amp;url=raccommand"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=raccommand"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=raccommand"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racconnection">
+            <section class="post">
+                <h2>用于多播的 RACMulticastConnection</h2>
+                <p>> 转自：[用于多播的 RACMulticastConnection](https://draveness.me/racconnection) ReactiveCocoa 中的信号信号在默认情况下都是冷的，每次有新的订阅者订阅信号时都会执行信号创建时传入的 block；这意味着对于任意一个订阅者，所需要的数据都会**重新计算**，这在大多数情况下都是开发者想看到的情况，但是这在信号中的 block 有副作用或者较为昂贵时就会有很多问题。 ![RACMulticastConnection](https://img.draveness.me/2017-02-15-RACMulticastConnection.png-1000width) 我们希望有一种模型能够将冷信号转变成热信号，并在合适的时间触发，向所有的订阅者发送消息；而今天要介绍的 `RACMulticastConnection` 就是用于解决上述问题的。 ## RACMulticastConnection 简介...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/racsubject">
+            <section class="post">
+                <h2>『可变』的热信号 RACSubject</h2>
+                <p>转自：『可变』的热信号 RACSubject 在 ReactiveCocoa 中除了不可变的信号 RACSignal，也有用于桥接非 RAC 代码到 ReactiveCocoa 世界的『可变』信号 RACSubject。 RACSubject 到底是什么？根据其字面意思，可以将它理解为一个可以订阅的主题，我们在订阅主题之后，向主题发送新的消息时，所有的订阅者都会接收到最新的消息。 但是这么解释确实有点晦涩，也不易于理解，ReactiveCocoa 团队对...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

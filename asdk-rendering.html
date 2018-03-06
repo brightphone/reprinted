@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//asdk-rendering" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//asdk-rendering" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//asdk-rendering" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能",
+    "url": "/reprinted//asdk-rendering",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-08-22">22 Aug 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/ASDK'>ASDK</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/asdk-rendering">使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能</a></p>
+</blockquote>
+
+<blockquote>
+  <p>这一系列的文章会从几个方面对 <a href="http://asyncdisplaykit.org">ASDK</a> 在性能调优方面策略的实现进行分析，帮助读者理解 ASDK 如何做到使复杂的 UI 界面达到 60 FPS 的刷新频率的；本篇文章会从视图的渲染层面讲解 ASDK 对于渲染过程的优化并对 ASDK 进行概述。</p>
+</blockquote>
+
+<p>在客户端或者前端开发中，对于性能的优化，尤其是 UI，往往都不是最先考虑的问题。</p>
+
+<p>因为在大多数场景下，使用更加复杂的高性能代码替代可用的代码经常会导致代码的可维护性下降，所以更需要我们开发者对优化的时间点以及原因有一个比较清楚的认识，避免过度优化带来的问题。</p>
+
+<p>对 iOS 开发比较熟悉的开发者都知道，iOS 中的性能问题大多是阻塞主线程导致用户的交互反馈出现可以感知的延迟。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-scrollview-demo.png-1000width" alt="scrollview-demo" /></p>
+
+<p>详细说起来，大体有三种原因：</p>
+
+<ol>
+  <li>UI 渲染需要时间较长，无法按时提交结果；</li>
+  <li>一些需要<strong>密集计算</strong>的处理放在了主线程中执行，导致主线程被阻塞，无法渲染 UI 界面；</li>
+  <li>网络请求由于网络状态的问题响应较慢，UI 层由于没有模型返回无法渲染。</li>
+</ol>
+
+<p>上面的这些问题都会影响应用的性能，最常见的表现就是 <code class="highlighter-rouge">UITableView</code> 在滑动时没有达到 <strong>60 FPS</strong>，用户能感受到明显的卡顿。</p>
+
+<h2 id="屏幕的渲染">屏幕的渲染</h2>
+
+<p>相信点开这篇文章的大多数开发者都知道 FPS 是什么，那么如果才能优化我们的 App 使其达到 60 FPS 呢？在具体了解方法之前，我们先退一步，提出另一个问题，屏幕是如何渲染的？</p>
+
+<blockquote>
+  <p>对于第一个问题，可能需要几篇文章来回答，希望整个系列的文章能给你一个满意的答案。3</p>
+</blockquote>
+
+<h3 id="crt-和-lcd">CRT 和 LCD</h3>
+
+<p>屏幕的渲染可能要从 <a href="https://en.wikipedia.org/wiki/Cathode_ray_tube">CRT（Cathode ray tube） 显示器</a>和 <a href="https://en.wikipedia.org/wiki/Liquid-crystal_display">LCD（Liquid-crystal display） 显示器</a>讲起。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-CRT.png-1000width" alt="CRT" /></p>
+
+<p>CRT 显示器是比较古老的技术，它使用阴极电子枪发射电子，在阴极高压的作用下，电子由电子枪射向荧光屏，使荧光粉发光，将图像显示在屏幕上，这也就是用磁铁靠近一些老式电视机的屏幕会让它们变色的原因。</p>
+
+<p>而 FPS 就是 CRT 显示器的刷新频率，电子枪每秒会对显示器上内容进行 60 - 100 次的刷新，哪怕在我们看来没有任何改变。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-lcd.png-1000width" alt="lcd" /></p>
+
+<p>但是 LCD 的原理与 CRT 非常不同，LCD 的成像原理跟光学有关：</p>
+
+<ul>
+  <li>在不加电压下，光线会沿着液晶分子的间隙前进旋转 90°，所以光可以通过；</li>
+  <li>在加入电压之后，光沿着液晶分子的间隙直线前进，被滤光板挡住。</li>
+</ul>
+
+<p>如果你可以翻墙，相信下面的视频会更好得帮助你理解 LCD 的工作原理：</p>
+
+<p><a href="https://www.youtube.com/watch?v=Bf3547WB5qs"><img src="http://img.youtube.com/vi/Bf3547WB5qs/hqdefault.jpg" /></a></p>
+
+<p>LCD 的成像原理虽然与 CRT 截然不同，每一个像素的颜色可以<strong>在需要改变时</strong>才去改变电压，也就是不需要刷新频率，但是由于一些历史原因，LCD 仍然需要按照一定的刷新频率向 GPU 获取新的图像用于显示。</p>
+
+<h3 id="屏幕撕裂">屏幕撕裂</h3>
+
+<p>但是显示器只是用于将图像显示在屏幕上，谁又是图像的提供者呢？图像都是我们经常说的 GPU 提供的。</p>
+
+<p>而这导致了另一个问题，由于 GPU 生成图像的频率与显示器刷新的频率是不相关的，那么在显示器刷新时，GPU 没有准备好需要显示的图像怎么办；或者 GPU 的渲染速度过快，显示器来不及刷新，GPU 就已经开始渲染下一帧图像又该如何处理？</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-screen-tearing.jpg-1000width" alt="screen-tearing" /></p>
+
+<p>如果解决不了这两个问题，就会出现上图中的<em>屏幕撕裂</em>（Screen Tearing）现象，屏幕中一部分显示的是上一帧的内容，另一部分显示的是下一帧的内容。</p>
+
+<p>我们用两个例子来说明可能出现屏幕撕裂的两种情况：</p>
+
+<ul>
+  <li>如果显示器的刷新频率为 75 Hz，GPU 的渲染速度为 100 Hz，那么在两次屏幕刷新的间隔中，GPU 会渲染 4/3 个帧，后面的 1/3 帧会覆盖已经渲染好的帧栈，最终会导致屏幕在 1/3 或者 2/3 的位置出现屏幕撕裂效果；</li>
+  <li>那么 GPU 的渲染速度小于显示器呢，比如说 50 Hz，那么在两次屏幕刷新的间隔中，GPU 只会渲染 2/3 帧，剩下的 1/3 会来自上一帧，与上面的结果完全相同，在同样的位置出现撕裂效果。</li>
+</ul>
+
+<p>到这里，有人会说，如果显示器的刷新频率与 GPU 的渲染速度完全相同，应该就会解决屏幕撕裂的问题了吧？其实并不是。显示器从 GPU 拷贝帧的过程依然需要消耗一定的时间，如果屏幕在拷贝图像时刷新，仍然会导致屏幕撕裂问题。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-how-to-solve-tearing-problem.jpg-1000width" alt="how-to-solve-tearing-proble" /></p>
+
+<p>引入多个缓冲区可以有效地<strong>缓解</strong>屏幕撕裂，也就是同时使用一个<em>帧缓冲区</em>（frame buffer）和多个<em>后备缓冲区</em>（back buffer）；在每次显示器请求内容时，都会从<strong>帧缓冲区</strong>中取出图像然后渲染。</p>
+
+<p>虽然缓冲区可以减缓这些问题，但是却不能解决；如果后备缓冲区绘制完成，而帧缓冲区的图像没有被渲染，后备缓冲区中的图像就会覆盖帧缓冲区，仍然会导致屏幕撕裂。</p>
+
+<p>解决这个问题需要另一个机制的帮助，也就是垂直同步（Vertical synchronization），简称 V-Sync 来解决。</p>
+
+<h3 id="v-sync">V-Sync</h3>
+
+<p>V-Sync 的主要作用就是保证<strong>只有在帧缓冲区中的图像被渲染之后，后备缓冲区中的内容才可以被拷贝到帧缓冲区中</strong>，理想情况下的 V-Sync 会按这种方式工作：</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-normal-vsync.png-1000width" alt="normal-vsyn" /></p>
+
+<p>每次 V-Sync 发生时，CPU 以及 GPU 都已经完成了对图像的处理以及绘制，显示器可以直接拿到缓冲区中的帧。但是，如果 CPU 或者 GPU 的处理需要的时间较长，就会发生掉帧的问题：</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-lag-vsync.png-1000width" alt="lag-vsyn" /></p>
+
+<p>在 V-Sync 信号发出时，CPU 和 GPU 并没有准备好需要渲染的帧，显示器就会继续使用当前帧，这就<strong>加剧</strong>了屏幕的显示问题，而每秒显示的帧数会少于 60。</p>
+
+<p>由于会发生很多次掉帧，在开启了 V-Sync 后，40 ~ 50 FPS 的渲染频率意味着显示器输出的画面帧率会从 60 FPS 急剧下降到 30 FPS，原因在这里不会解释，读者可以自行思考。</p>
+
+<p>其实到这里关于屏幕渲染的内容就已经差不多结束了，根据 V-Sync 的原理，优化应用性能、提高 App 的 FPS 就可以从两个方面来入手，优化 CPU 以及 GPU 的处理时间。</p>
+
+<blockquote>
+  <p>读者也可以从 <a href="http://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/">iOS 保持界面流畅的技巧</a>这篇文章中了解更多的相关内容。</p>
+</blockquote>
+
+<h2 id="性能调优的策略">性能调优的策略</h2>
+
+<p>CPU 和 GPU 在每次 V-Sync 时间点到达之前都在干什么？如果，我们知道了它们各自负责的工作，通过优化代码就可以提升性能。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-cpu-gpu.jpg-1000width" alt="cpu-gpu" /></p>
+
+<p>很多 CPU 的操作都会延迟 GPU 开始渲染的时间：</p>
+
+<ul>
+  <li>布局的计算 - 如果你的视图层级太过于复杂，或者视图需要重复多次进行布局，尤其是在使用 Auto Layout 进行自动布局时，对性能影响尤为严重；</li>
+  <li>视图的惰性加载 - 在 iOS 中只有当视图控制器的视图显示到屏幕时才会加载；</li>
+  <li>解压图片 - iOS 通常会在真正绘制时才会解码图片，对于一个较大的图片，无论是直接或间接使用 <code class="highlighter-rouge">UIImageView</code> 或者绘制到 Core Graphics 中，都需要对图片进行解压；</li>
+  <li>…</li>
+</ul>
+
+<p>宽泛的说，大多数的 <code class="highlighter-rouge">CALayer</code> 的属性都是由 GPU 来绘制的，比如图片的圆角、变换、应用纹理；但是过多的几何结构、重绘、离屏绘制（Offscrren）以及过大的图片都会导致 GPU 的性能明显降低。</p>
+
+<blockquote>
+  <p>上面的内容出自 <a href="https://zsisme.gitbooks.io/ios-/content/chapter12/cpu-versus-gpu.html">CPU vs GPU · iOS 核心动画高级技巧</a>，你可以在上述文章中对 CPU 和 GPU 到底各自做了什么有一个更深的了解。</p>
+</blockquote>
+
+<p>也就是说，如果我们解决了上述问题，就能加快应用的渲染速度，大大提升用户体验。</p>
+
+<h2 id="asyncdisplaykit">AsyncDisplayKit</h2>
+
+<p>文章的前半部分已经从屏幕的渲染原理讲到了性能调优的几个策略；而 <a href="http://asyncdisplaykit.org">AsyncDisplayKit</a> 就根据上述的策略帮助我们对应用性能进行优化。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-asdk-logo.png-1000width" alt="asdk-logo" /></p>
+
+<p>AsyncDisplayKit（以下简称 ASDK）是由 Facebook 开源的一个 iOS 框架，能够帮助最复杂的 UI 界面保持流畅和快速响应。</p>
+
+<p>ASDK 从开发到开源大约经历了一年多的时间，它其实并不是一个简单的框架<del>它是一个复杂的框架</del>，更像是对 UIKit 的重新实现，把整个 UIKit 以及 CALayer 层封装成一个一个 <code class="highlighter-rouge">Node</code>，<strong>将昂贵的渲染、图片解码、布局以及其它 UI 操作移出主线程</strong>，这样主线程就可以对用户的操作及时做出反应。</p>
+
+<p>很多分析 ASDK 的文章都会有这么一张图介绍框架中的最基本概念：</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-asdk-hierarchy.png-1000width" alt="asdk-hierarchy" /></p>
+
+<p>在 ASDK 中最基本的单位就是 <code class="highlighter-rouge">ASDisplayNode</code>，每一个 node 都是对 <code class="highlighter-rouge">UIView</code> 以及 <code class="highlighter-rouge">CALayer</code> 的抽象。但是与 <code class="highlighter-rouge">UIView</code> 不同的是，<code class="highlighter-rouge">ASDisplayNode</code> 是线程安全的，它可以在后台线程中完成初始化以及配置工作。</p>
+
+<p>如果按照 60 FPS 的刷新频率来计算，每一帧的渲染时间只有 16ms，在 16ms 的时间内要完成对 <code class="highlighter-rouge">UIView</code> 的创建、布局、绘制以及渲染，CPU 和 GPU 面临着巨大的压力。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-apple-a9.jpg-1000width" alt="apple-a9" /></p>
+
+<p>但是从 A5 处理器之后，多核的设备成为了主流，原有的将所有操作放入主线程的实践已经不能适应复杂的 UI 界面，所以 <strong>ASDK 将耗时的 CPU 操作以及 GPU 渲染纹理（Texture）的过程全部放入后台进程，使主线程能够快速响应用户操作</strong>。</p>
+
+<p>ASDK 通过独特的渲染技巧、代替 AutoLayout 的布局系统、智能的预加载方式等模块来实现对 App 性能的优化。</p>
+
+<h2 id="asdk-的渲染过程">ASDK 的渲染过程</h2>
+
+<p>ASDK 中到底使用了哪些方法来对视图进行渲染呢？本文主要会从渲染的过程开始分析，了解 ASDK 底层如何提升界面的渲染性能。</p>
+
+<p>在 ASDK 中的渲染围绕 <code class="highlighter-rouge">ASDisplayNode</code> 进行，其过程总共有四条主线：</p>
+
+<ul>
+  <li>初始化 <code class="highlighter-rouge">ASDisplayNode</code> 对应的 <code class="highlighter-rouge">UIView</code> 或者 <code class="highlighter-rouge">CALayer</code>；</li>
+  <li>在当前视图进入视图层级时执行 <code class="highlighter-rouge">setNeedsDisplay</code>；</li>
+  <li><code class="highlighter-rouge">display</code> 方法执行时，向后台线程派发绘制事务；</li>
+  <li>注册成为 <code class="highlighter-rouge">RunLoop</code> 观察者，在每个 <code class="highlighter-rouge">RunLoop</code> 结束时回调。</li>
+</ul>
+
+<h3 id="uiview-和-calayer-的加载">UIView 和 CALayer 的加载</h3>
+
+<p>当我们运行某一个使用 ASDK 的工程时，<code class="highlighter-rouge">-[ASDisplayNode _loadViewOrLayerIsLayerBacked:]</code> 总是 ASDK 中最先被调用的方法，而这个方法执行的原因往往就是 <code class="highlighter-rouge">ASDisplayNode</code> 对应的 <code class="highlighter-rouge">UIView</code> 和 <code class="highlighter-rouge">CALayer</code> 被引用了：</p>
+
+<pre><code class="language-objectivec">- (CALayer *)layer {
+	if (!_layer) {
+		ASDisplayNodeAssertMainThread();
+
+		if (!_flags.layerBacked) return self.view.layer;
+		[self _loadViewOrLayerIsLayerBacked:YES];
+	}
+	return _layer;
+}
+
+- (UIView *)view {
+	if (_flags.layerBacked) return nil;
+	if (!_view) {
+		ASDisplayNodeAssertMainThread();
+		[self _loadViewOrLayerIsLayerBacked:NO];
+	}
+	return _view;
+}
+</code></pre>
+
+<p>这里涉及到一个 ASDK 中比较重要的概念，如果 <code class="highlighter-rouge">ASDisplayNode</code> 是 <code class="highlighter-rouge">layerBacked</code> 的，它不会渲染对应的 <code class="highlighter-rouge">UIView</code> 以此来提升性能：</p>
+
+<pre><code class="language-objectivec">- (void)_loadViewOrLayerIsLayerBacked:(BOOL)isLayerBacked {
+	if (isLayerBacked) {
+		_layer = [self _layerToLoad];
+		_layer.delegate = (id&lt;CALayerDelegate&gt;)self;
+	} else {
+		_view = [self _viewToLoad];
+		_view.asyncdisplaykit_node = self;
+		_layer = _view.layer;
+	}
+	_layer.asyncdisplaykit_node = self;
+
+	self.asyncLayer.asyncDelegate = self;
+}
+</code></pre>
+
+<p>因为 <code class="highlighter-rouge">UIView</code> 和 <code class="highlighter-rouge">CALayer</code> 虽然都可以用于展示内容，不过由于 <code class="highlighter-rouge">UIView</code> 可以用于处理用户的交互，所以如果不需要使用 <code class="highlighter-rouge">UIView</code> 的特性，直接使用 <code class="highlighter-rouge">CALayer</code> 进行渲染，能够节省大量的渲染时间。</p>
+
+<blockquote>
+  <p>如果你使用 Xcode 查看过视图的层级，那么你应该知道，<code class="highlighter-rouge">UIView</code> 在 Debug View Hierarchy 中是有层级的；而 <code class="highlighter-rouge">CALayer</code> 并没有，它门的显示都在一个平面上。</p>
+</blockquote>
+
+<p>上述方法中的 <code class="highlighter-rouge">-[ASDisplayNode _layerToLoad]</code> 以及 <code class="highlighter-rouge">[ASDisplayNode _viewToLoad]</code> 都只会根据当前节点的 <code class="highlighter-rouge">layerClass</code> 或者 <code class="highlighter-rouge">viewClass</code> 初始化一个对象。</p>
+
+<blockquote>
+  <p><a href="http://floriankugler.com/2013/05/24/layer-trees-vs-flat-drawing-graphics-performance-across-ios-device-generations/">Layer Trees vs. Flat Drawing – Graphics Performance Across iOS Device Generations</a> 这篇文章比较了 <code class="highlighter-rouge">UIView</code> 和 <code class="highlighter-rouge">CALayer</code> 的渲染时间。</p>
+</blockquote>
+
+<p><img src="https://img.draveness.me/2016-08-22-view-layer-cg-compare.png-1000width" alt="view-layer-cg-compare" /></p>
+
+<p><code class="highlighter-rouge">-[ASDisplayNode asyncLayer]</code> 只是对当前 <code class="highlighter-rouge">node</code> 持有的 <code class="highlighter-rouge">layer</code> 进行封装，确保会返回一个 <code class="highlighter-rouge">_ASDisplayLayer</code> 的实例：</p>
+
+<pre><code class="language-objectivec">- (_ASDisplayLayer *)asyncLayer {
+	ASDN::MutexLocker l(_propertyLock);
+	return [_layer isKindOfClass:[_ASDisplayLayer class]] ? (_ASDisplayLayer *)_layer : nil;
+}
+</code></pre>
+
+<p>最重要的是 <code class="highlighter-rouge">-[ASDisplayNode _loadViewOrLayerIsLayerBacked:]</code> 方法会将当前节点设置为 <code class="highlighter-rouge">asyncLayer</code> 的代理，在后面会使用 <code class="highlighter-rouge">ASDisplayNode</code> 为 <code class="highlighter-rouge">CALayer</code> 渲染内容。</p>
+
+<h3 id="视图层级">视图层级</h3>
+
+<p>在初始化工作完成之后，当 <code class="highlighter-rouge">ASDisplayNode</code> 第一次被加入到视图的层级时，<code class="highlighter-rouge">-[_ASDisplayView willMoveToWindow:]</code> 就会被调用。</p>
+
+<h4 id="_asdisplayview-和-_asdisplaylayer">_ASDisplayView 和 _ASDisplayLayer</h4>
+
+<p><code class="highlighter-rouge">_ASDisplayView</code> 和 <code class="highlighter-rouge">_ASDisplayLayer</code> 都是私有类，它们之间的对应关系其实和 <code class="highlighter-rouge">UIView</code> 与 <code class="highlighter-rouge">CALayer</code> 完全相同。</p>
+
+<pre><code class="language-objectivec">+ (Class)layerClass {
+	return [_ASDisplayLayer class];
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">_ASDisplayView</code> 覆写了很多跟视图层级改变有关的方法：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">-[_ASDisplayView willMoveToWindow:]</code></li>
+  <li><code class="highlighter-rouge">-[_ASDisplayView didMoveToWindow]</code></li>
+  <li><code class="highlighter-rouge">-[_ASDisplayView willMoveToSuperview:]</code></li>
+  <li><code class="highlighter-rouge">-[_ASDisplayView didMoveToSuperview]</code></li>
+</ul>
+
+<p>它们用于在视图的层级改变时，通知对应 <code class="highlighter-rouge">ASDisplayNode</code> 作出相应的反应，比如 <code class="highlighter-rouge">-[_ASDisplayView willMoveToWindow:]</code> 方法会在视图被加入层级时调用：</p>
+
+<pre><code class="language-objectivec">- (void)willMoveToWindow:(UIWindow *)newWindow {
+	BOOL visible = (newWindow != nil);
+	if (visible &amp;&amp; !_node.inHierarchy) {
+		[_node __enterHierarchy];
+	}
+}
+</code></pre>
+
+<h4 id="setneedsdisplay">setNeedsDisplay</h4>
+
+<p>当前视图如果不在视图层级中，就会通过 <code class="highlighter-rouge">_node</code> 的实例方法 <code class="highlighter-rouge">-[ASDisplayNode __enterHierarchy]</code> 加入视图层级：</p>
+
+<pre><code class="language-objectivec">- (void)__enterHierarchy {
+	if (!_flags.isInHierarchy &amp;&amp; !_flags.visibilityNotificationsDisabled &amp;&amp; ![self __selfOrParentHasVisibilityNotificationsDisabled]) {
+		_flags.isEnteringHierarchy = YES;
+		_flags.isInHierarchy = YES;
+
+		if (_flags.shouldRasterizeDescendants) {
+			[self _recursiveWillEnterHierarchy];
+		} else {
+			[self willEnterHierarchy];
+		}
+		_flags.isEnteringHierarchy = NO;
+
+		# 更新 layer 显示的内容
+	}
+}
+
+</code></pre>
+
+<blockquote>
+  <p><code class="highlighter-rouge">_flags</code> 是 <code class="highlighter-rouge">ASDisplayNodeFlags</code> 结构体，用于标记当前 <code class="highlighter-rouge">ASDisplayNode</code> 的一些 BOOL 值，比如，异步显示、栅格化子视图等等，你不需要知道都有什么，根据这些值的字面意思理解就已经足够了。</p>
+</blockquote>
+
+<p>上述方法的前半部分只是对 <code class="highlighter-rouge">_flags</code> 的标记，如果需要将当前视图的子视图栅格化，也就是<strong>将它的全部子视图与当前视图压缩成一个图层</strong>，就会向这些视图递归地调用 <code class="highlighter-rouge">-[ASDisplayNode willEnterHierarchy]</code> 方法通知目前的状态：</p>
+
+<pre><code class="language-objectivec">- (void)_recursiveWillEnterHierarchy {
+  _flags.isEnteringHierarchy = YES;
+  [self willEnterHierarchy];
+  _flags.isEnteringHierarchy = NO;
+
+  for (ASDisplayNode *subnode in self.subnodes) {
+	[subnode _recursiveWillEnterHierarchy];
+  }
+}
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">-[ASDisplayNode willEnterHierarchy]</code> 会修改当前节点的 <code class="highlighter-rouge">interfaceState</code> 到 <code class="highlighter-rouge">ASInterfaceStateInHierarchy</code>，表示当前节点不包含在 <code class="highlighter-rouge">cell</code> 或者其它，但是在 <code class="highlighter-rouge">window</code> 中。</p>
+
+<pre><code class="language-objectivec">- (void)willEnterHierarchy {
+  if (![self supportsRangeManagedInterfaceState]) {
+	self.interfaceState = ASInterfaceStateInHierarchy;
+  }
+}
+</code></pre>
+
+<p>当前结点需要被显示在屏幕上时，如果其内容 <code class="highlighter-rouge">contents</code> 为空，就会调用 <code class="highlighter-rouge">-[CALayer setNeedsDisplay]</code> 方法将 <code class="highlighter-rouge">CALayer</code> 标记为脏的，通知系统需要在下一个绘制循环中重绘视图：</p>
+
+<pre><code class="language-objectivec">- (void)__enterHierarchy {
+	 if (!_flags.isInHierarchy &amp;&amp; !_flags.visibilityNotificationsDisabled &amp;&amp; ![self __selfOrParentHasVisibilityNotificationsDisabled]) {
+
+		# 标记节点的 flag
+
+		if (self.contents == nil) {
+			CALayer *layer = self.layer;
+			[layer setNeedsDisplay];
+
+			if ([self _shouldHavePlaceholderLayer]) {
+				[CATransaction begin];
+				[CATransaction setDisableActions:YES];
+				[self _setupPlaceholderLayerIfNeeded];
+				_placeholderLayer.opacity = 1.0;
+				[CATransaction commit];
+				[layer addSublayer:_placeholderLayer];
+			}
+		}
+	}
+}
+</code></pre>
+
+<p>在将 <code class="highlighter-rouge">CALayer</code> 标记为 dirty 之后，在绘制循环中就会执行 <code class="highlighter-rouge">-[CALayer display]</code> 方法，对它要展示的内容进行绘制；如果当前视图需要一些占位图，那么就会在这里的代码中，为当前 <code class="highlighter-rouge">node</code> 对应的 <code class="highlighter-rouge">layer</code> 添加合适颜色的占位层。</p>
+
+<p><img src="https://img.draveness.me/2016-08-22-placeholder-layer.png-1000width" alt="placeholder-laye" /></p>
+
+<h3 id="派发异步绘制事务">派发异步绘制事务</h3>
+
+<p>在上一节中调用 <code class="highlighter-rouge">-[CALayer setNeedsDisplay]</code> 方法将当前节点标记为 dirty 之后，在下一个绘制循环时就会对所有需要重绘的 <code class="highlighter-rouge">CALayer</code> 执行 <code class="highlighter-rouge">-[CALayer display]</code>，这也是这一小节需要分析的方法的入口：</p>
+
+<pre><code class="language-objectivec">- (void)display {
+  [self _hackResetNeedsDisplay];
+
+  ASDisplayNodeAssertMainThread();
+  if (self.isDisplaySuspended) return;
+
+  [self display:self.displaysAsynchronously];
+}
+</code></pre>
+
+<p>这一方法的调用栈比较复杂，在具体分析之前，笔者会先给出这个方法的调用栈，给读者一个关于该方法实现的简要印象：</p>
+
+<pre><code class="language-objectivec">-[_ASDisplayLayer display]
+	-[_ASDisplayLayer display:] // 将绘制工作交给 ASDisplayNode 处理
+		-[ASDisplayNode(AsyncDisplay) displayAsyncLayer:asynchronously:]
+			-[ASDisplayNode(AsyncDisplay) _displayBlockWithAsynchronous:isCancelledBlock:rasterizing:]
+				-[ASDisplayNode(AsyncDisplay) _recursivelyRasterizeSelfAndSublayersWithIsCancelledBlock:displayBlocks:]            
+			-[CALayer(ASDisplayNodeAsyncTransactionContainer) asyncdisplaykit_parentTransactionContainer]
+			-[CALayer(ASDisplayNodeAsyncTransactionContainer) asyncdisplaykit_asyncTransaction]
+				-[_ASAsyncTransaction initWithCallbackQueue:completionBlock:]
+				-[_ASAsyncTransactionGroup addTransactionContainer:]
+			-[_ASAsyncTransaction addOperationWithBlock:priority:queue:completion:]
+				ASAsyncTransactionQueue::GroupImpl::schedule(NSInteger priority, dispatch_queue_t queue, dispatch_block_t block)
+					void dispatch_async(dispatch_queue_t queue, dispatch_block_t block);
+</code></pre>
+
+<p><code class="highlighter-rouge">-[_ASDisplayLayer display]</code> 在调用栈中其实会创建一个 <code class="highlighter-rouge">displayBlock</code>，它其实是一个使用 Core Graphics 进行图像绘制的过程，整个绘制过程是通过事务的形式进行管理的；而 <code class="highlighter-rouge">displayBlock</code> 会被 GCD 分发到后台的并发进程来处理。</p>
+
+<p>调用栈中的第二个方法 <code class="highlighter-rouge">-[_ASDisplayLayer display]</code> 会将异步绘制的工作交给自己的 <code class="highlighter-rouge">asyncDelegate</code>，也就是<a href="#uiview-和-calayer-的加载">第一部分</a>中设置的 <code class="highlighter-rouge">ASDisplayNode</code>：</p>
+
+<pre><code class="language-objectivec">- (void)display:(BOOL)asynchronously {
+  [_asyncDelegate displayAsyncLayer:self asynchronously:asynchronously];
+}
+</code></pre>
+
+<h4 id="asdisplaynodeasyncdisplay">ASDisplayNode(AsyncDisplay)</h4>
+
+<p>这里省略了一部分 <code class="highlighter-rouge">-[ASDisplayNode(AsyncDisplay) displayAsyncLayer:asynchronously:]</code> 方法的实现：</p>
+
+<pre><code class="language-objectivec">- (void)displayAsyncLayer:(_ASDisplayLayer *)asyncLayer asynchronously:(BOOL)asynchronously {
+  ASDisplayNodeAssertMainThread();
+
+  ...
+
+  asyncdisplaykit_async_transaction_operation_block_t displayBlock = [self _displayBlockWithAsynchronous:asynchronously isCancelledBlock:isCancelledBlock rasterizing:NO];
+
+  if (!displayBlock) return;
+
+  asyncdisplaykit_async_transaction_operation_completion_block_t completionBlock = ^(id&lt;NSObject&gt; value, BOOL canceled){
+	ASDisplayNodeCAssertMainThread();
+	if (!canceled &amp;&amp; !isCancelledBlock()) {
+	  UIImage *image = (UIImage *)value;
+	  _layer.contentsScale = self.contentsScale;
+	  _layer.contents = (id)image.CGImage;
+	}
+  };
+
+  if (asynchronously) {
+	CALayer *containerLayer = _layer.asyncdisplaykit_parentTransactionContainer ? : _layer;
+	_ASAsyncTransaction *transaction = containerLayer.asyncdisplaykit_asyncTransaction;
+	[transaction addOperationWithBlock:displayBlock priority:self.drawingPriority queue:[_ASDisplayLayer displayQueue] completion:completionBlock];
+  } else {
+	UIImage *contents = (UIImage *)displayBlock();
+	completionBlock(contents, NO);
+  }
+}
+</code></pre>
+
+<p>省略后的代码脉络非常清晰，<code class="highlighter-rouge">-[ASDisplayNode(AsyncDisplay) _displayBlockWithAsynchronous:isCancelledBlock:rasterizing:]</code> 返回一个用于 <code class="highlighter-rouge">displayBlock</code>，然后构造一个 <code class="highlighter-rouge">completionBlock</code>，在绘制结束时执行，在主线程中设置当前 <code class="highlighter-rouge">layer</code> 的内容。</p>
+
+<p>如果当前的渲染是异步的，就会将 <code class="highlighter-rouge">displayBlock</code> 包装成一个事务，添加到队列中执行，否则就会同步执行当前的 block，并执行 <code class="highlighter-rouge">completionBlock</code> 回调，通知 <code class="highlighter-rouge">layer</code> 更新显示的内容。</p>
+
+<p>同步显示的部分到这里已经很清楚了，我们更关心的其实还是异步绘制的部分，因为这部分才是 ASDK 提升效率的关键；而这就要从获取 <code class="highlighter-rouge">displayBlock</code> 的方法开始了解了。</p>
+
+<h4 id="displayblock-的构建">displayBlock 的构建</h4>
+
+<p><code class="highlighter-rouge">displayBlock</code> 的创建一般分为三种不同的方式：</p>
+
+<ol>
+  <li>将当前视图的子视图压缩成一层绘制在当前页面上</li>
+  <li>使用 <code class="highlighter-rouge">- displayWithParameters:isCancelled:</code> 返回一个 <code class="highlighter-rouge">UIImage</code>，对图像节点 <code class="highlighter-rouge">ASImageNode</code> 进行绘制</li>
+  <li>使用 <code class="highlighter-rouge">- drawRect:withParameters:isCancelled:isRasterizing:</code> 在 CG 上下文中绘制文字节点 <code class="highlighter-rouge">ASTextNode</code></li>
+</ol>
+
+<p>这三种方式都通过 ASDK 来优化视图的渲染速度，这些操作最后都会扔到后台的并发线程中进行处理。</p>
+
+<blockquote>
+  <p>下面三个部分的代码经过了删减，省略了包括取消绘制、通知代理、控制并发数量以及用于调试的代码。</p>
+</blockquote>
+
+<h5 id="栅格化子视图">栅格化子视图</h5>
+
+<p>如果当前的视图需要栅格化子视图，就会进入启用下面的构造方式创建一个 block，它会递归地将子视图绘制在父视图上：</p>
+
+<pre><code class="language-objectivec">- (asyncdisplaykit_async_transaction_operation_block_t)_displayBlockWithAsynchronous:(BOOL)asynchronous isCancelledBlock:(asdisplaynode_iscancelled_block_t)isCancelledBlock rasterizing:(BOOL)rasterizing {
+  asyncdisplaykit_async_transaction_operation_block_t displayBlock = nil;
+  ASDisplayNodeFlags flags = _flags;
+
+  if (!rasterizing &amp;&amp; self.shouldRasterizeDescendants) {
+	NSMutableArray *displayBlocks = [NSMutableArray array];
+	[self _recursivelyRasterizeSelfAndSublayersWithIsCancelledBlock:isCancelledBlock displayBlocks:displayBlocks];
+
+	CGFloat contentsScaleForDisplay = self.contentsScaleForDisplay;
+	BOOL opaque = self.opaque &amp;&amp; CGColorGetAlpha(self.backgroundColor.CGColor) == 1.0f;
+
+	displayBlock = ^id{
+
+	  UIGraphicsBeginImageContextWithOptions(bounds.size, opaque, contentsScaleForDisplay);
+
+	  for (dispatch_block_t block in displayBlocks) {
+		block();
+	  }
+
+	  UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+	  UIGraphicsEndImageContext();
+
+	  return image;
+	};
+  } else if (flags.implementsInstanceImageDisplay || flags.implementsImageDisplay) {
+	#：绘制 UIImage
+  } else if (flags.implementsInstanceDrawRect || flags.implementsDrawRect) {
+	#：提供 context，使用 CG 绘图
+  }
+
+  return [displayBlock copy];
+}
+</code></pre>
+
+<p>在压缩视图层级的过程中就会调用 <code class="highlighter-rouge">-[ASDisplayNode(AsyncDisplay) _recursivelyRasterizeSelfAndSublayersWithIsCancelledBlock:displayBlocks:]</code> 方法，获取子视图的所有 <code class="highlighter-rouge">displayBlock</code>，在得到 <code class="highlighter-rouge">UIGraphicsBeginImageContextWithOptions</code> 需要的参数之后，创建一个新的 context，执行了所有的 <code class="highlighter-rouge">displayBlock</code> 将子视图的绘制到当前图层之后，使用 <code class="highlighter-rouge">UIGraphicsGetImageFromCurrentImageContext</code> 取出图层的内容并返回。</p>
+
+<p><code class="highlighter-rouge">-[ASDisplayNode(AsyncDisplay) _recursivelyRasterizeSelfAndSublayersWithIsCancelledBlock:displayBlocks:]</code> 的实现还是有些繁琐的，它主要的功能就是使用 Core Graphics 进行绘图，将背景颜色、仿射变换、位置大小以及圆角等参数绘制到当前的上下文中，而且这个过程是递归的，直到不存在或者不需要绘制子节点为止。</p>
+
+<h5 id="绘制图片">绘制图片</h5>
+
+<p><code class="highlighter-rouge">displayBlock</code> 的第二种绘制策略更多地适用于图片节点 <code class="highlighter-rouge">ASImageNode</code> 的绘制：</p>
+
+<pre><code class="language-objectivec">- (asyncdisplaykit_async_transaction_operation_block_t)_displayBlockWithAsynchronous:(BOOL)asynchronous isCancelledBlock:(asdisplaynode_iscancelled_block_t)isCancelledBlock rasterizing:(BOOL)rasterizing {
+  asyncdisplaykit_async_transaction_operation_block_t displayBlock = nil;
+  ASDisplayNodeFlags flags = _flags;
+
+  if (!rasterizing &amp;&amp; self.shouldRasterizeDescendants) {
+	#：栅格化
+  } else if (flags.implementsInstanceImageDisplay || flags.implementsImageDisplay) {
+	id drawParameters = [self drawParameters];
+
+	displayBlock = ^id{
+	  UIImage *result = nil;
+	  if (flags.implementsInstanceImageDisplay) {
+		result = [self displayWithParameters:drawParameters isCancelled:isCancelledBlock];
+	  } else {
+		result = [[self class] displayWithParameters:drawParameters isCancelled:isCancelledBlock];
+	  }
+	  return result;
+	};
+  } else if (flags.implementsInstanceDrawRect || flags.implementsDrawRect) {
+	#：提供 context，使用 CG 绘图
+  }
+
+  return [displayBlock copy];
+}
+</code></pre>
+
+<p>通过 <code class="highlighter-rouge">- displayWithParameters:isCancelled:</code> 的执行返回一个图片，不过这里的绘制也离不开 Core Graphics 的一些 C 函数，你会在 <code class="highlighter-rouge">-[ASImageNode displayWithParameters:isCancelled:]</code> 中看到对于 CG 的运用，它会使用 <code class="highlighter-rouge">drawParameters</code> 来修改并绘制自己持有的 <code class="highlighter-rouge">image</code> 对象。</p>
+
+<h5 id="使用-cg-绘图">使用 CG 绘图</h5>
+
+<p>文字的绘制一般都会在 <code class="highlighter-rouge">- drawRect:withParameters:isCancelled:isRasterizing:</code> 进行，这个方法只是提供了一个合适的用于绘制的上下文，该方法不止可以绘制文字，只是在这里绘制文字比较常见：</p>
+
+<pre><code class="language-objectivec">- (asyncdisplaykit_async_transaction_operation_block_t)_displayBlockWithAsynchronous:(BOOL)asynchronous isCancelledBlock:(asdisplaynode_iscancelled_block_t)isCancelledBlock rasterizing:(BOOL)rasterizing {
+  asyncdisplaykit_async_transaction_operation_block_t displayBlock = nil;
+  ASDisplayNodeFlags flags = _flags;
+
+  if (!rasterizing &amp;&amp; self.shouldRasterizeDescendants) {
+	#：栅格化
+  } else if (flags.implementsInstanceImageDisplay || flags.implementsImageDisplay) {
+	#：绘制 UIImage
+  } else if (flags.implementsInstanceDrawRect || flags.implementsDrawRect) {
+	  if (!rasterizing) {
+		UIGraphicsBeginImageContextWithOptions(bounds.size, opaque, contentsScaleForDisplay);
+	  }
+
+	  if (flags.implementsInstanceDrawRect) {
+		[self drawRect:bounds withParameters:drawParameters isCancelled:isCancelledBlock isRasterizing:rasterizing];
+	  } else {
+		[[self class] drawRect:bounds withParameters:drawParameters isCancelled:isCancelledBlock isRasterizing:rasterizing];
+	  }
+
+	  UIImage *image = nil;
+	  if (!rasterizing) {
+		image = UIGraphicsGetImageFromCurrentImageContext();
+		UIGraphicsEndImageContext();
+	  }
+
+	  return image;
+	};
+  }
+
+  return [displayBlock copy];
+}
+</code></pre>
+
+<p>上述代码跟第一部分比较像，区别是这里不会栅格化子视图；代码根据情况会决定是否重新开一个新的上下文，然后通过 <code class="highlighter-rouge">- drawRect:withParameters:isCancelled:isRasterizing:</code> 方法实现绘制。</p>
+
+<h4 id="管理绘制事务">管理绘制事务</h4>
+
+<p>ASDK 提供了一个私有的管理事务的机制，由三部分组成 <code class="highlighter-rouge">_ASAsyncTransactionGroup</code>、<code class="highlighter-rouge">_ASAsyncTransactionContainer</code> 以及 <code class="highlighter-rouge">_ASAsyncTransaction</code>，这三者各自都有不同的功能：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">_ASAsyncTransactionGroup</code> 会在初始化时，向 Runloop 中注册一个回调，在每次 Runloop 结束时，执行回调来提交 <code class="highlighter-rouge">displayBlock</code> 执行的结果</li>
+  <li><code class="highlighter-rouge">_ASAsyncTransactionContainer</code> 为当前 <code class="highlighter-rouge">CALayer</code> 提供了用于保存事务的容器，并提供了获取新的 <code class="highlighter-rouge">_ASAsyncTransaction</code> 实例的便利方法</li>
+  <li><code class="highlighter-rouge">_ASAsyncTransaction</code> 将异步操作封装成了轻量级的事务对象，使用 C++ 代码对 GCD 进行了封装</li>
+</ul>
+
+<p>从上面的小节中，我们已经获取到了用于绘制的 <code class="highlighter-rouge">displayBlock</code>，然后就需要将 block 添加到绘制事务中：</p>
+
+<pre><code class="language-objectivec">- (void)displayAsyncLayer:(_ASDisplayLayer *)asyncLayer asynchronously:(BOOL)asynchronously {
+  ...
+
+  if (asynchronously) {
+	CALayer *containerLayer = _layer.asyncdisplaykit_parentTransactionContainer ? : _layer;
+	_ASAsyncTransaction *transaction = containerLayer.asyncdisplaykit_asyncTransaction;
+	[transaction addOperationWithBlock:displayBlock priority:self.drawingPriority queue:[_ASDisplayLayer displayQueue] completion:completionBlock];
+  } else {
+	...
+  }
+}
+</code></pre>
+
+<p>前两行代码是获取 <code class="highlighter-rouge">_ASAsyncTransaction</code> 实例的过程，这个实例会包含在一个 <code class="highlighter-rouge">layer</code> 的哈希表中，最后调用的实例方法 <code class="highlighter-rouge">-[_ASAsyncTransaction addOperationWithBlock:priority:queue:completion:]</code> 会把用于绘制的 <code class="highlighter-rouge">displayBlock</code> 添加到后台并行队列中：</p>
+
+<pre><code class="language-objectivec">+ (dispatch_queue_t)displayQueue {
+  static dispatch_queue_t displayQueue = NULL;
+  static dispatch_once_t onceToken;
+  dispatch_once(&amp;onceToken, ^{
+	displayQueue = dispatch_queue_create("org.AsyncDisplayKit.ASDisplayLayer.displayQueue", DISPATCH_QUEUE_CONCURRENT);
+	dispatch_set_target_queue(displayQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+  });
+
+  return displayQueue;
+}
+</code></pre>
+
+<p>这个队列是一个并行队列，并且优先级是 <code class="highlighter-rouge">DISPATCH_QUEUE_PRIORITY_HIGH</code>，<strong>确保 UI 的渲染会在其它异步操作执行之前进行</strong>，而 <code class="highlighter-rouge">-[_ASAsyncTransaction addOperationWithBlock:priority:queue:completion:]</code> 中会初始化 <code class="highlighter-rouge">ASDisplayNodeAsyncTransactionOperation</code> 的实例，然后传入 <code class="highlighter-rouge">completionBlock</code>，在绘制结束时回调：</p>
+
+<pre><code class="language-objectivec">- (void)addOperationWithBlock:(asyncdisplaykit_async_transaction_operation_block_t)block priority:(NSInteger)priority queue:(dispatch_queue_t)queue completion:(asyncdisplaykit_async_transaction_operation_completion_block_t)completion {
+  ASDisplayNodeAssertMainThread();
+
+  [self _ensureTransactionData];
+
+  ASDisplayNodeAsyncTransactionOperation *operation = [[ASDisplayNodeAsyncTransactionOperation alloc] initWithOperationCompletionBlock:completion];
+  [_operations addObject:operation];
+  _group-&gt;schedule(priority, queue, ^{
+	@autoreleasepool {
+	  operation.value = block();
+	}
+  });
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">schedule</code> 方法是一个 C++ 方法，它会向 <code class="highlighter-rouge">ASAsyncTransactionQueue::Group</code> 中派发一个 block，这个 block 中会执行 <code class="highlighter-rouge">displayBlock</code>，然后将结果传给 <code class="highlighter-rouge">operation.value</code>：</p>
+
+<pre><code class="language-objectivec">void ASAsyncTransactionQueue::GroupImpl::schedule(NSInteger priority, dispatch_queue_t queue, dispatch_block_t block) {
+  ASAsyncTransactionQueue &amp;q = _queue;
+  ASDN::MutexLocker locker(q._mutex);
+
+  DispatchEntry &amp;entry = q._entries[queue];
+
+  Operation operation;
+  operation._block = block;
+  operation._group = this;
+  operation._priority = priority;
+  entry.pushOperation(operation);
+
+  ++_pendingOperations;
+
+  NSUInteger maxThreads = [NSProcessInfo processInfo].activeProcessorCount * 2;
+
+  if ([[NSRunLoop mainRunLoop].currentMode isEqualToString:UITrackingRunLoopMode])
+	--maxThreads;
+
+  if (entry._threadCount &lt; maxThreads) {
+	bool respectPriority = entry._threadCount &gt; 0;
+	++entry._threadCount;
+
+	dispatch_async(queue, ^{
+	  while (!entry._operationQueue.empty()) {
+		Operation operation = entry.popNextOperation(respectPriority);
+		{
+		  if (operation._block) {
+			operation._block();
+		  }
+		  operation._group-&gt;leave();
+		  operation._block = nil;
+		}
+	  }
+	  --entry._threadCount;
+
+	  if (entry._threadCount == 0) {
+		q._entries.erase(queue);
+	  }
+	});
+  }
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">ASAsyncTransactionQueue::GroupImpl</code> 其实现其实就是对 GCD 的封装，同时添加一些最大并发数、线程锁的功能。通过 <code class="highlighter-rouge">dispatch_async</code> 将 block 分发到 <code class="highlighter-rouge">queue</code> 中，立刻执行 block，将数据传回 <code class="highlighter-rouge">ASDisplayNodeAsyncTransactionOperation</code> 实例。</p>
+
+<h3 id="回调">回调</h3>
+
+<p>在 <code class="highlighter-rouge">_ASAsyncTransactionGroup</code> 调用 <code class="highlighter-rouge">mainTransactionGroup</code> 类方法获取单例时，会通过 <code class="highlighter-rouge">+[_ASAsyncTransactionGroup registerTransactionGroupAsMainRunloopObserver]</code> 向 Runloop 中注册回调：</p>
+
+<pre><code class="language-objectivec">+ (void)registerTransactionGroupAsMainRunloopObserver:(_ASAsyncTransactionGroup *)transactionGroup {
+  static CFRunLoopObserverRef observer;
+  CFRunLoopRef runLoop = CFRunLoopGetCurrent();
+  CFOptionFlags activities = (kCFRunLoopBeforeWaiting | kCFRunLoopExit);
+  CFRunLoopObserverContext context = {0, (__bridge void *)transactionGroup, &amp;CFRetain, &amp;CFRelease, NULL};
+
+  observer = CFRunLoopObserverCreate(NULL, activities, YES, INT_MAX, &amp;_transactionGroupRunLoopObserverCallback, &amp;context);
+  CFRunLoopAddObserver(runLoop, observer, kCFRunLoopCommonModes);
+  CFRelease(observer);
+}
+</code></pre>
+
+<p>上述代码会在即将退出 Runloop 或者 Runloop 开始休眠时执行回调 <code class="highlighter-rouge">_transactionGroupRunLoopObserverCallback</code>，而这个回调方法就是这一条主线的入口：</p>
+
+<pre><code class="language-objectivec">static void _transactionGroupRunLoopObserverCallback(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
+  ASDisplayNodeCAssertMainThread();
+  _ASAsyncTransactionGroup *group = (__bridge _ASAsyncTransactionGroup *)info;
+  [group commit];
+}
+</code></pre>
+
+<p>上一节中只是会将绘制代码提交到后台的并发进程中，而这里才会将结果提交，也就是在每次 Runloop 循环结束时开始绘制内容，而 <code class="highlighter-rouge">-[_operationCompletionBlock commit]</code> 方法的调用栈能够帮助我们理解内容是如何提交的，又是如何传回 <code class="highlighter-rouge">node</code> 持有的 <code class="highlighter-rouge">layer</code> 的：</p>
+
+<pre><code class="language-objectivec">-[_ASAsyncTransactionGroup commit]
+	-[_ASAsyncTransaction commit]
+		ASAsyncTransactionQueue::GroupImpl::notify(dispatch_queue_t, dispatch_block_t)
+			_notifyList.push_back(GroupNotify)
+</code></pre>
+
+<p><code class="highlighter-rouge">-[_ASAsyncTransactionGroup commit]</code> 方法的调用完成了对绘制事务的提交，而在 <code class="highlighter-rouge">-[_ASAsyncTransaction commit]</code> 中会调用 <code class="highlighter-rouge">notify</code> 方法，在上一节中的 <code class="highlighter-rouge">displayBlock</code> 执行结束后调用这里传入的 block 执行 <code class="highlighter-rouge">-[_ASAsyncTransaction completeTransaction]</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (void)commit {
+  ASDisplayNodeAssertMainThread();
+  __atomic_store_n(&amp;_state, ASAsyncTransactionStateCommitted, __ATOMIC_SEQ_CST);
+
+  _group-&gt;notify(_callbackQueue, ^{
+	ASDisplayNodeAssertMainThread();
+	[self completeTransaction];
+  });
+}
+</code></pre>
+
+<p>我们按照时间顺序来分析在上面的 block 执行之前，方法是如何调用的，以及 block 是如何被执行的；这就不得不回到派发绘制事务的部分了，在 <code class="highlighter-rouge">ASAsyncTransactionQueue::GroupImpl::schedule</code> 方法中，使用了 <code class="highlighter-rouge">dispatch_async</code> 将派发 block：</p>
+
+<pre><code class="language-objectivec">void ASAsyncTransactionQueue::GroupImpl::schedule(NSInteger priority, dispatch_queue_t queue, dispatch_block_t block) {
+  ...
+  if (entry._threadCount &lt; maxThreads) {
+	...    
+	dispatch_async(queue, ^{
+	  ...
+	  while (!entry._operationQueue.empty()) {
+		Operation operation = entry.popNextOperation(respectPriority);
+		{
+		  ASDN::MutexUnlocker unlock(q._mutex);
+		  if (operation._block) {
+			operation._block();
+		  }
+		  operation._group-&gt;leave();
+		  operation._block = nil;
+		}
+	  }
+	  ...
+	});
+  }
+}
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">displayBlock</code> 执行之后，会调用的 <code class="highlighter-rouge">group</code> 的 <code class="highlighter-rouge">leave</code> 方法：</p>
+
+<pre><code class="language-objectivec">void ASAsyncTransactionQueue::GroupImpl::leave() {
+  if (_pendingOperations == 0) {
+	std::list&lt;GroupNotify&gt; notifyList;
+	_notifyList.swap(notifyList);
+
+	for (GroupNotify &amp; notify : notifyList) {
+	  dispatch_async(notify._queue, notify._block);
+	}
+  }
+}
+</code></pre>
+
+<p>这里终于执行了在 <code class="highlighter-rouge">- commit</code> 中加入的 block，也就是 <code class="highlighter-rouge">-[_ASAsyncTransaction completeTransaction]</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (void)completeTransaction {
+  if (__atomic_load_n(&amp;_state, __ATOMIC_SEQ_CST) != ASAsyncTransactionStateComplete) {
+	BOOL isCanceled = (__atomic_load_n(&amp;_state, __ATOMIC_SEQ_CST) == ASAsyncTransactionStateCanceled);
+	for (ASDisplayNodeAsyncTransactionOperation *operation in _operations) {
+	  [operation callAndReleaseCompletionBlock:isCanceled];
+	}
+
+	__atomic_store_n(&amp;_state, ASAsyncTransactionStateComplete, __ATOMIC_SEQ_CST);
+  }
+}
+</code></pre>
+
+<p>最后的最后，<code class="highlighter-rouge">-[ASDisplayNodeAsyncTransactionOperation callAndReleaseCompletionBlock:]</code> 方法执行了回调将 <code class="highlighter-rouge">displayBlock</code> 执行的结果传回了 CALayer:</p>
+
+<pre><code class="language-objectivec">- (void)callAndReleaseCompletionBlock:(BOOL)canceled; {
+  if (_operationCompletionBlock) {
+	_operationCompletionBlock(self.value, canceled);
+	self.operationCompletionBlock = nil;
+  }
+}
+</code></pre>
+
+<p>也就是在  <code class="highlighter-rouge">-[ASDisplayNode(AsyncDisplay) displayAsyncLayer:asynchronously:]</code> 方法中构建的 <code class="highlighter-rouge">completionBlock</code>：</p>
+
+<pre><code class="language-objectivec">asyncdisplaykit_async_transaction_operation_completion_block_t completionBlock = ^(id&lt;NSObject&gt; value, BOOL canceled){
+  ASDisplayNodeCAssertMainThread();
+  if (!canceled &amp;&amp; !isCancelledBlock()) {
+	UIImage *image = (UIImage *)value;
+	BOOL stretchable = !UIEdgeInsetsEqualToEdgeInsets(image.capInsets, UIEdgeInsetsZero);
+	if (stretchable) {
+	  ASDisplayNodeSetupLayerContentsWithResizableImage(_layer, image);
+	} else {
+	  _layer.contentsScale = self.contentsScale;
+	  _layer.contents = (id)image.CGImage;
+	}
+	[self didDisplayAsyncLayer:self.asyncLayer];
+  }
+};
+</code></pre>
+
+<p>这一部分进行的大量的数据传递都是通过 block 进行的，从 Runloop 中对事务的提交，以及通过 <code class="highlighter-rouge">notify</code> 方法加入的 block，都是为了最后将绘制的结果传回 <code class="highlighter-rouge">CALayer</code> 对象，而到这里可以说整个 ASDK 对于视图内容的绘制过程就结束了。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>ASDK 对于绘制过程的优化有三部分：分别是栅格化子视图、绘制图像以及绘制文字。</p>
+
+<p>它拦截了视图加入层级时发出的通知 <code class="highlighter-rouge">- willMoveToWindow:</code> 方法，然后手动调用 <code class="highlighter-rouge">- setNeedsDisplay</code>，强制所有的 <code class="highlighter-rouge">CALayer</code> 执行 <code class="highlighter-rouge">- display</code> 更新内容；</p>
+
+<p>然后将上面的操作全部抛入了后台的并发线程中，并在 Runloop 中注册回调，在每次 Runloop 结束时，对已经完成的事务进行 <code class="highlighter-rouge">- commit</code>，以图片的形式直接传回对应的 <code class="highlighter-rouge">layer.content</code> 中，完成对内容的更新。</p>
+
+<p>从它的实现来看，确实解决了很多昂贵的 CPU 以及 GPU 操作，有效地加快了视图的绘制和渲染，保证了主线程的流畅执行。</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://hardforum.com/threads/how-vsync-works-and-why-people-loathe-it.928593/">How VSync works, and why people loathe it</a></li>
+  <li><a href="http://www.jianshu.com/p/71cba1711de0">脑洞大开：为啥帧率达到 60 fps 就流畅？</a></li>
+  <li><a href="http://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/">iOS 保持界面流畅的技巧</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Analog_television#Vertical_synchronization">CADiplayLink Class Reference - Developer- Apple</a></li>
+  <li><a href="https://zsisme.gitbooks.io/ios-/content/chapter12/cpu-versus-gpu.html">CPU vs GPU · iOS 核心动画高级技巧</a></li>
+  <li><a href="http://vizlabxt.github.io/blog/2012/10/22/UIView-Rendering/">理解 UIView 的绘制</a></li>
+  <li><a href="http://vizlabxt.github.io/blog/2015/01/09/Behind-AsyncDisplayKit/">Introduce to AsyncDisplayKit</a></li>
+  <li><a href="https://www.raywenderlich.com/86365/asyncdisplaykit-tutorial-achieving-60-fps-scrolling">AsyncDisplayKit Tutorial: Achieving 60 FPS scrolling</a></li>
+  <li><a href="http://floriankugler.com/2013/05/24/layer-trees-vs-flat-drawing-graphics-performance-across-ios-device-generations/">Layer Trees vs. Flat Drawing – Graphics Performance Across iOS Device Generations</a></li>
+  <li><a href="http://blog.ibireme.com/2015/05/18/runloop/">深入理解 RunLoop</a></li>
+</ul>
+
+<h2 id="其它">其它</h2>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/asdk-rendering</p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能&amp;url=asdk-rendering"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=asdk-rendering"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=asdk-rendering"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/layout-performance">
+            <section class="post">
+                <h2>从 Auto Layout 的布局算法谈性能</h2>
+                <p>> 转自：[从 Auto Layout 的布局算法谈性能](https://draveness.me/layout-performance) > 这是使用 ASDK 性能调优系列的第二篇文章，前一篇文章中讲到了如何提升 iOS 应用的渲染性能，你可以点击 [这里](https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/contents/AsyncDisplayKit/提升%20iOS%20界面的渲染性能.md) 了解这部分的内容。 在上一篇文章中，我们提到了 iOS...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/http-mock">
+            <section class="post">
+                <h2>如何进行 HTTP Mock（iOS）</h2>
+                <p>转自：如何进行 HTTP Mock（iOS） 这篇文章会对 OHHTTPStubs 源代码的分析，其实现原理是建立在 NSURLProtocol 的基础上的，对这部分内容不了解的读者，可以阅读这篇文章 iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求了解相关知识，本文中不会介绍拦截 HTTP...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>如何在 Objective-C 中实现协议扩展</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//protocol-extension" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="如何在 Objective-C 中实现协议扩展" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//protocol-extension" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="如何在 Objective-C 中实现协议扩展" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//protocol-extension" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "如何在 Objective-C 中实现协议扩展",
+    "url": "/reprinted//protocol-extension",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">如何在 Objective-C 中实现协议扩展</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-08-13">13 Aug 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/protocol-extension">如何在 Objective-C 中实现协议扩展</a></p>
+</blockquote>
+
+<p><img src="https://img.draveness.me/2016-08-13-protocol-recordings.jpeg" alt="" /></p>
+
+<p>Swift 中的协议扩展为 iOS 开发带来了非常多的可能性，它为我们提供了一种类似多重继承的功能，帮助我们减少一切可能导致重复代码的地方。</p>
+
+<h2 id="关于-protocol-extension">关于 Protocol Extension</h2>
+
+<p>在 Swift 中比较出名的 Then 就是使用了协议扩展为所有的 <code class="highlighter-rouge">AnyObject</code> 添加方法，而且不需要调用 runtime 相关的 API，其实现简直是我见过最简单的开源框架之一：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">Then</span> <span class="p">{}</span>
+
+<span class="kd">extension</span> <span class="kt">Then</span> <span class="k">where</span> <span class="k">Self</span><span class="p">:</span> <span class="kt">AnyObject</span> <span class="p">{</span>
+	<span class="kd">public</span> <span class="kd">func</span> <span class="nf">then</span><span class="p">(</span><span class="kd">@noescape</span> <span class="nv">block</span><span class="p">:</span> <span class="k">Self</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+		<span class="nf">block</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
+		<span class="k">return</span> <span class="k">self</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSObject</span><span class="p">:</span> <span class="kt">Then</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>只有这么几行代码，就能为所有的 <code class="highlighter-rouge">NSObject</code> 添加下面的功能：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">titleLabel</span> <span class="o">=</span> <span class="kt">UILabel</span><span class="p">()</span><span class="o">.</span><span class="n">then</span> <span class="p">{</span>
+	<span class="nv">$0</span><span class="o">.</span><span class="n">textColor</span> <span class="o">=</span> <span class="o">.</span><span class="nf">blackColor</span><span class="p">()</span>
+	<span class="nv">$0</span><span class="o">.</span><span class="n">textAlignment</span> <span class="o">=</span> <span class="o">.</span><span class="kt">Center</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里没有调用任何的 runtime 相关 API，也没有在 <code class="highlighter-rouge">NSObject</code> 中进行任何的方法声明，甚至 <code class="highlighter-rouge">protocol Then {}</code> 协议本身都只有一个大括号，整个 Then 框架就是基于协议扩展来实现的。</p>
+
+<p>在 Objective-C 中同样有协议，但是这些协议只是相当于接口，遵循某个协议的类只表明实现了这些接口，每个类都需要<strong>对这些接口有单独的实现</strong>，这就很可能会导致重复代码的产生。</p>
+
+<p>而协议扩展可以调用协议中声明的方法，以及 <code class="highlighter-rouge">where Self: AnyObject</code> 中的 <code class="highlighter-rouge">AnyObject</code> 的类/实例方法，这就大大提高了可操作性，便于开发者写出一些意想不到的扩展。</p>
+
+<blockquote>
+  <p>如果读者对 Protocol Extension 兴趣或者不了解协议扩展，可以阅读最后的 <a href="#reference">Reference</a> 了解相关内容。</p>
+</blockquote>
+
+<h2 id="protocolkit">ProtocolKit</h2>
+
+<p>其实协议扩展的强大之处就在于它能为遵循协议的类添加一些方法的实现，而不只是一些接口，而今天为各位读者介绍的 <a href="https://github.com/forkingdog/ProtocolKit">ProtocolKit</a> 就实现了这一功能，为遵循协议的类添加方法。</p>
+
+<h3 id="protocolkit-的使用">ProtocolKit 的使用</h3>
+
+<p>我们先来看一下如何使用 ProtocolKit，首先定义一个协议：</p>
+
+<pre><code class="language-objectivec">@protocol TestProtocol
+
+@required
+
+- (void)fizz;
+
+@optional
+
+- (void)buzz;
+
+@end
+</code></pre>
+
+<p>在协议中定义了两个方法，必须实现的方法 <code class="highlighter-rouge">fizz</code> 以及可选实现 <code class="highlighter-rouge">buzz</code>，然后使用 ProtocolKit 提供的接口 <code class="highlighter-rouge">defs</code> 来定义协议中方法的实现了：</p>
+
+<pre><code class="language-objectivec">@defs(TestProtocol)
+
+- (void)buzz {
+	NSLog(@"Buzz");
+}
+
+@end
+</code></pre>
+
+<p>这样所有遵循 <code class="highlighter-rouge">TestProtocol</code> 协议的对象都可以调用 <code class="highlighter-rouge">buzz</code> 方法，哪怕它们没有实现：</p>
+
+<p><img src="https://img.draveness.me/2016-08-13-protocol-demo.jpeg" alt="protocol-demo" /></p>
+
+<p>上面的 <code class="highlighter-rouge">XXObject</code> 虽然没有实现 <code class="highlighter-rouge">buzz</code> 方法，但是该方法仍然成功执行了。</p>
+
+<h3 id="protocolkit-的实现">ProtocolKit 的实现</h3>
+
+<p>ProtocolKit 的主要原理仍然是 runtime 以及宏的；通过宏的使用来<strong>隐藏类的声明以及实现的代码</strong>，然后在 main 函数运行之前，<strong>将类中的方法实现加载到内存</strong>，使用 runtime 将实现<strong>注入到目标类</strong>中。</p>
+
+<blockquote>
+  <p>如果你对上面的原理有所疑惑也不是太大的问题，这里只是给你一个 ProtocolKit 原理的简单描述，让你了解它是如何工作的。</p>
+</blockquote>
+
+<p>ProtocolKit 中有两条重要的执行路线：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">_pk_extension_load</code> 将协议扩展中的方法实现加载到了内存</li>
+  <li><code class="highlighter-rouge">_pk_extension_inject_entry</code> 负责将扩展协议注入到实现协议的类</li>
+</ul>
+
+<h4 id="加载实现">加载实现</h4>
+
+<p>首先要解决的问题是如何将方法实现加载到内存中，这里可以先了解一下上面使用到的 <code class="highlighter-rouge">defs</code> 接口，它其实只是一个调用了其它宏的<strong>超级宏</strong><del>这名字是我编的</del>：</p>
+
+<pre><code class="language-objectivec">#define defs _pk_extension
+
+#define _pk_extension($protocol) _pk_extension_imp($protocol, _pk_get_container_class($protocol))
+
+#define _pk_extension_imp($protocol, $container_class) \
+	protocol $protocol; \
+	@interface $container_class : NSObject &lt;$protocol&gt; @end \
+	@implementation $container_class \
+	+ (void)load { \
+		_pk_extension_load(@protocol($protocol), $container_class.class); \
+	} \
+
+#define _pk_get_container_class($protocol) _pk_get_container_class_imp($protocol, __COUNTER__)
+#define _pk_get_container_class_imp($protocol, $counter) _pk_get_container_class_imp_concat(__PKContainer_, $protocol, $counter)
+#define _pk_get_container_class_imp_concat($a, $b, $c) $a ## $b ## _ ## $c
+</code></pre>
+
+<blockquote>
+  <p>使用 <code class="highlighter-rouge">defs</code> 作为接口的是因为它是一个保留的 keyword，Xcode 会将它渲染成与 <code class="highlighter-rouge"><span class="k">@property</span></code> 等其他关键字相同的颜色。</p>
+</blockquote>
+
+<p>上面的这一坨宏并不需要一个一个来分析，只需要看一下最后展开会变成什么：</p>
+
+<pre><code class="language-objectivec">@protocol TestProtocol;
+
+@interface __PKContainer_TestProtocol_0 : NSObject &lt;TestProtocol&gt;
+
+@end
+
+@implementation __PKContainer_TestProtocol_0
+
++ (void)load {
+	_pk_extension_load(@protocol(TestProtocol), __PKContainer_TestProtocol_0.class);
+}
+</code></pre>
+
+<p>根据上面宏的展开结果，这里可以介绍上面的一坨宏的作用：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">defs</code> 这货没什么好说的，只是 <code class="highlighter-rouge">_pk_extension</code> 的别名，为了提供一个更加合适的名字作为接口</li>
+  <li><code class="highlighter-rouge">_pk_extension</code> 向 <code class="highlighter-rouge">_pk_extension_imp </code> 中传入 <code class="highlighter-rouge">$protocol</code> 和 <code class="highlighter-rouge">_pk_get_container_class($protocol)</code> 参数
+    <ul>
+      <li><code class="highlighter-rouge">_pk_get_container_class</code> 的执行生成一个类名，上面生成的类名就是 <code class="highlighter-rouge">__PKContainer_TestProtocol_0</code>，这个类名是 <code class="highlighter-rouge">__PKContainer_</code>、 <code class="highlighter-rouge">$protocol</code> 和 <code class="highlighter-rouge">__COUNTER__</code> 拼接而成的（<code class="highlighter-rouge">__COUNTER__</code> 只是一个计数器，可以理解为每次调用时加一）</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">_pk_extension_imp</code> 会以传入的类名生成一个遵循当前 <code class="highlighter-rouge">$protocol</code> 协议的类，然后在 <code class="highlighter-rouge">+ load</code> 方法中执行 <code class="highlighter-rouge">_pk_extension_load</code> 加载扩展协议</li>
+</ul>
+
+<p>通过宏的运用成功隐藏了 <code class="highlighter-rouge">__PKContainer_TestProtocol_0</code> 类的声明以及实现，还有 <code class="highlighter-rouge">_pk_extension_load</code> 函数的调用：</p>
+
+<pre><code class="language-objectivec">void _pk_extension_load(Protocol *protocol, Class containerClass) {
+
+	pthread_mutex_lock(&amp;protocolsLoadingLock);
+
+	if (extendedProtcolCount &gt;= extendedProtcolCapacity) {
+		size_t newCapacity = 0;
+		if (extendedProtcolCapacity == 0) {
+			newCapacity = 1;
+		} else {
+			newCapacity = extendedProtcolCapacity &lt;&lt; 1;
+		}
+		allExtendedProtocols = realloc(allExtendedProtocols, sizeof(*allExtendedProtocols) * newCapacity);
+		extendedProtcolCapacity = newCapacity;
+	}
+
+	...
+
+	pthread_mutex_unlock(&amp;protocolsLoadingLock);
+}
+</code></pre>
+
+<p>ProtocolKit 使用了 <code class="highlighter-rouge">protocolsLoadingLock</code> 来保证静态变量 <code class="highlighter-rouge">allExtendedProtocols</code> 以及 <code class="highlighter-rouge">extendedProtcolCount</code> <code class="highlighter-rouge">extendedProtcolCapacity</code> 不会因为线程竞争导致问题：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">allExtendedProtocols</code> 用于保存所有的 <code class="highlighter-rouge">PKExtendedProtocol</code> 结构体</li>
+  <li>后面的两个变量确保数组不会越界，并在数组满的时候，将内存占用地址翻倍</li>
+</ul>
+
+<p>方法的后半部分会在静态变量中寻找或创建传入的 <code class="highlighter-rouge">protocol</code> 对应的 <code class="highlighter-rouge">PKExtendedProtocol</code> 结构体：</p>
+
+<pre><code class="language-objectivec">size_t resultIndex = SIZE_T_MAX;
+for (size_t index = 0; index &lt; extendedProtcolCount; ++index) {
+	if (allExtendedProtocols[index].protocol == protocol) {
+		resultIndex = index;
+		break;
+	}
+}
+
+if (resultIndex == SIZE_T_MAX) {
+	allExtendedProtocols[extendedProtcolCount] = (PKExtendedProtocol){
+		.protocol = protocol,
+		.instanceMethods = NULL,
+		.instanceMethodCount = 0,
+		.classMethods = NULL,
+		.classMethodCount = 0,
+	};
+	resultIndex = extendedProtcolCount;
+	extendedProtcolCount++;
+}
+
+_pk_extension_merge(&amp;(allExtendedProtocols[resultIndex]), containerClass);
+</code></pre>
+
+<p>这里调用的 <code class="highlighter-rouge">_pk_extension_merge</code> 方法非常重要，不过在介绍 <code class="highlighter-rouge">_pk_extension_merge</code> 之前，首先要了解一个用于保存协议扩展信息的私有结构体 <code class="highlighter-rouge">PKExtendedProtocol</code>：</p>
+
+<pre><code class="language-objectivec">typedef struct {
+	Protocol *__unsafe_unretained protocol;
+	Method *instanceMethods;
+	unsigned instanceMethodCount;
+	Method *classMethods;
+	unsigned classMethodCount;
+} PKExtendedProtocol;
+</code></pre>
+
+<p><code class="highlighter-rouge">PKExtendedProtocol</code> 结构体中保存了协议的指针、实例方法、类方法、实例方法数以及类方法数用于框架记录协议扩展的状态。</p>
+
+<p>回到 <code class="highlighter-rouge">_pk_extension_merge</code> 方法，它会将新的扩展方法追加到 <code class="highlighter-rouge">PKExtendedProtocol</code> 结构体的数组 <code class="highlighter-rouge">instanceMethods</code> 以及 <code class="highlighter-rouge">classMethods</code> 中：</p>
+
+<pre><code class="language-objectivec">void _pk_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerClass) {
+	// Instance methods
+	unsigned appendingInstanceMethodCount = 0;
+	Method *appendingInstanceMethods = class_copyMethodList(containerClass, &amp;appendingInstanceMethodCount);
+	Method *mergedInstanceMethods = _pk_extension_create_merged(extendedProtocol-&gt;instanceMethods,
+																extendedProtocol-&gt;instanceMethodCount,
+																appendingInstanceMethods,
+																appendingInstanceMethodCount);
+	free(extendedProtocol-&gt;instanceMethods);
+	extendedProtocol-&gt;instanceMethods = mergedInstanceMethods;
+	extendedProtocol-&gt;instanceMethodCount += appendingInstanceMethodCount;
+
+	// Class methods
+	...
+}
+</code></pre>
+
+<blockquote>
+  <p>因为类方法的追加与实例方法几乎完全相同，所以上述代码省略了向结构体中的类方法追加方法的实现代码。</p>
+</blockquote>
+
+<p>实现中使用 <code class="highlighter-rouge">class_copyMethodList</code> 从 <code class="highlighter-rouge">containerClass</code> 拉出方法列表以及方法数量；通过 <code class="highlighter-rouge">_pk_extension_create_merged</code> 返回一个合并之后的方法列表，最后在更新结构体中的 <code class="highlighter-rouge">instanceMethods</code> 以及 <code class="highlighter-rouge">instanceMethodCount</code> 成员变量。</p>
+
+<p><code class="highlighter-rouge">_pk_extension_create_merged</code> 只是重新 <code class="highlighter-rouge">malloc</code> 一块内存地址，然后使用 <code class="highlighter-rouge">memcpy</code> 将所有的方法都复制到了这块内存地址中，最后返回首地址：</p>
+
+<pre><code class="language-objectivec">Method *_pk_extension_create_merged(Method *existMethods, unsigned existMethodCount, Method *appendingMethods, unsigned appendingMethodCount) {
+
+	if (existMethodCount == 0) {
+		return appendingMethods;
+	}
+	unsigned mergedMethodCount = existMethodCount + appendingMethodCount;
+	Method *mergedMethods = malloc(mergedMethodCount * sizeof(Method));
+	memcpy(mergedMethods, existMethods, existMethodCount * sizeof(Method));
+	memcpy(mergedMethods + existMethodCount, appendingMethods, appendingMethodCount * sizeof(Method));
+	return mergedMethods;
+}
+</code></pre>
+
+<p>这一节的代码从使用宏生成的类中抽取方法实现，然后以结构体的形式加载到内存中，等待之后的方法注入。</p>
+
+<h4 id="注入方法实现">注入方法实现</h4>
+
+<p>注入方法的时间点在 main 函数执行之前议实现的注入并不是在 <code class="highlighter-rouge">+ load</code> 方法 <code class="highlighter-rouge">+ initialize</code> 方法调用时进行的，而是使用的编译器指令(compiler directive) <code class="highlighter-rouge">__attribute__((constructor))</code> 实现的：</p>
+
+<pre><code class="language-objectivec">__attribute__((constructor)) static void _pk_extension_inject_entry(void);
+</code></pre>
+
+<p>使用上述编译器指令的函数会在 shared library 加载的时候执行，也就是 main 函数之前，可以看 StackOverflow 上的这个问题 <a href="http://stackoverflow.com/questions/2053029/how-exactly-does-attribute-constructor-work">How exactly does <strong>attribute</strong>((constructor)) work?</a>。</p>
+
+<pre><code class="language-objectivec">__attribute__((constructor)) static void _pk_extension_inject_entry(void) {
+	#1：加锁
+	unsigned classCount = 0;
+	Class *allClasses = objc_copyClassList(&amp;classCount);
+
+	@autoreleasepool {
+		for (unsigned protocolIndex = 0; protocolIndex &lt; extendedProtcolCount; ++protocolIndex) {
+			PKExtendedProtocol extendedProtcol = allExtendedProtocols[protocolIndex];
+			for (unsigned classIndex = 0; classIndex &lt; classCount; ++classIndex) {
+				Class class = allClasses[classIndex];
+				if (!class_conformsToProtocol(class, extendedProtcol.protocol)) {
+					continue;
+				}
+				_pk_extension_inject_class(class, extendedProtcol);
+			}
+		}
+	}
+	#2：解锁并释放 allClasses、allExtendedProtocols
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">_pk_extension_inject_entry</code> 会在 main 执行之前遍历内存中的<strong>所有</strong> <code class="highlighter-rouge">Class</code>（整个遍历过程都是在一个自动释放池中进行的），如果某个类遵循了<code class="highlighter-rouge">allExtendedProtocols</code> 中的协议，调用 <code class="highlighter-rouge">_pk_extension_inject_class</code> 向类中注射（inject）方法实现：</p>
+
+<pre><code class="language-objectivec">static void _pk_extension_inject_class(Class targetClass, PKExtendedProtocol extendedProtocol) {
+
+	for (unsigned methodIndex = 0; methodIndex &lt; extendedProtocol.instanceMethodCount; ++methodIndex) {
+		Method method = extendedProtocol.instanceMethods[methodIndex];
+		SEL selector = method_getName(method);
+
+		if (class_getInstanceMethod(targetClass, selector)) {
+			continue;
+		}
+
+		IMP imp = method_getImplementation(method);
+		const char *types = method_getTypeEncoding(method);
+		class_addMethod(targetClass, selector, imp, types);
+	}
+
+	#1: 注射类方法
+}
+</code></pre>
+
+<p>如果类中没有实现该实例方法就会通过 runtime 中的 <code class="highlighter-rouge">class_addMethod</code> 注射该实例方法；而类方法的注射有些不同，因为类方法都是保存在元类中的，而一些类方法由于其特殊地位最好不要改变其原有实现，比如 <code class="highlighter-rouge">+ load</code> 和 <code class="highlighter-rouge">+ initialize</code> 这两个类方法就比较特殊，如果想要了解这两个方法的相关信息，可以在 <a href="#reference">Reference</a> 中查看相关的信息。</p>
+
+<pre><code class="language-objectivec">Class targetMetaClass = object_getClass(targetClass);
+for (unsigned methodIndex = 0; methodIndex &lt; extendedProtocol.classMethodCount; ++methodIndex) {
+	Method method = extendedProtocol.classMethods[methodIndex];
+	SEL selector = method_getName(method);
+
+	if (selector == @selector(load) || selector == @selector(initialize)) {
+		continue;
+	}
+	if (class_getInstanceMethod(targetMetaClass, selector)) {
+		continue;
+	}
+
+	IMP imp = method_getImplementation(method);
+	const char *types = method_getTypeEncoding(method);
+	class_addMethod(targetMetaClass, selector, imp, types);
+}
+</code></pre>
+
+<p>实现上的不同仅仅在获取元类、以及跳过 <code class="highlighter-rouge">+ load</code> 和 <code class="highlighter-rouge">+ initialize</code> 方法上。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>ProtocolKit 通过宏和 runtime 实现了类似协议扩展的功能，其实现代码总共也只有 200 多行，还是非常简洁的；在另一个叫做 <a href="https://github.com/jspahrsummers/libextobjc">libextobjc</a> 的框架中也实现了类似的功能，有兴趣的读者可以查看 <a href="[https://github.com/jspahrsummers/libextobjc/blob/master/extobjc/EXTConcreteProtocol.h]">EXTConcreteProtocol.h · libextobjc</a> 这个文件。</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift\_Programming\_Language/Extensions.html#//apple\_ref/doc/uid/TP40014097-CH24-ID151">Protocols · Apple Doc</a></li>
+  <li><a href="https://github.com/jspahrsummers/libextobjc/blob/master/extobjc/EXTConcreteProtocol.h">EXTConcreteProtocol.h · libextobjc</a></li>
+  <li><a href="http://nshipster.com/__attribute__/">__attribute__ · NSHipster</a></li>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/你真的了解%20load%20方法么？.md">你真的了解 load 方法么？</a></li>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/懒惰的%20initialize%20方法.md">懒惰的 initialize 方法</a></li>
+</ul>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=如何在 Objective-C 中实现协议扩展&amp;url=protocol-extension"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=protocol-extension"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=protocol-extension"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/intercept">
+            <section class="post">
+                <h2>iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求</h2>
+                <p>> 转自：[iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求](https://draveness.me/intercept) 这篇文章会提供一种在 Cocoa 层拦截所有 HTTP 请求的方法，其实标题已经说明了拦截 HTTP 请求需要的了解的就是 `NSURLProtocol`。...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/block-retain-object">
+            <section class="post">
+                <h2>iOS 中的 block 是如何持有对象的</h2>
+                <p>转自：iOS 中的 block 是如何持有对象的 关注仓库，及时获得更新：iOS-Source-Code-Analyze Block 是 Objective-C 中笔者最喜欢的特性，它为 Objective-C 这门语言提供了强大的函数式编程能力，而最近苹果推出的很多新的 API 都已经开始原生的支持 block 语法，可见它在...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

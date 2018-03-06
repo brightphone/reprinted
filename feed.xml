@@ -8,6 +8,620 @@
     
       
       <item>
+        <title>浅谈 MVC、MVP 和 MVVM 架构模式</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/talk-about-mvx&quot;&gt;浅谈 MVC、MVP 和 MVVM 架构模式&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Wed, 12 Jul 2017 09:00:00 +0800</pubDate>
+        <link>
+        /mvx</link>
+        <guid isPermaLink="true">/mvx</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>谈谈 MVX 中的 Controller</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/talk-about-controller-in-mvx&quot;&gt;谈谈 MVX 中的 Controller&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Fri, 23 Jun 2017 02:34:44 +0800</pubDate>
+        <link>
+        /mvx-controller</link>
+        <guid isPermaLink="true">/mvx-controller</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>谈谈 MVX 中的 View</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/talk-about-view-in-mvx&quot;&gt;谈谈 MVX 中的 View&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Fri, 23 Jun 2017 01:34:44 +0800</pubDate>
+        <link>
+        /mvx-view</link>
+        <guid isPermaLink="true">/mvx-view</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>谈谈 MVX 中的 Model</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/talk-about-model-in-mvx&quot;&gt;谈谈 MVX 中的 Model&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Fri, 23 Jun 2017 00:34:44 +0800</pubDate>
+        <link>
+        /mvx-model</link>
+        <guid isPermaLink="true">/mvx-model</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>如何优雅地使用 KVO</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/kvocontroller&quot;&gt;如何优雅地使用 KVO&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 06 Mar 2017 00:34:44 +0800</pubDate>
+        <link>
+        /kvocontroller</link>
+        <guid isPermaLink="true">/kvocontroller</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>从代理到 RACSignal</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racdelegateproxy&quot;&gt;从代理到 RACSignal&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sat, 25 Feb 2017 22:55:52 +0800</pubDate>
+        <link>
+        /racdelegateproxy</link>
+        <guid isPermaLink="true">/racdelegateproxy</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>理解 RACScheduler 的实现</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racscheduler&quot;&gt;理解 RACScheduler 的实现&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Fri, 17 Feb 2017 20:10:43 +0800</pubDate>
+        <link>
+        /racscheduler</link>
+        <guid isPermaLink="true">/racscheduler</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>RAC 中的双向数据绑定 RACChannel</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racchannel&quot;&gt;RAC 中的双向数据绑定 RACChannel&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Thu, 16 Feb 2017 19:59:14 +0800</pubDate>
+        <link>
+        /racchannel</link>
+        <guid isPermaLink="true">/racchannel</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>用于多播的 RACMulticastConnection</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racconnection&quot;&gt;用于多播的 RACMulticastConnection&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Wed, 15 Feb 2017 15:21:01 +0800</pubDate>
+        <link>
+        /racconnection</link>
+        <guid isPermaLink="true">/racconnection</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>优雅的 RACCommand</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/raccommand&quot;&gt;优雅的 RACCommand&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Fri, 10 Feb 2017 20:35:23 +0800</pubDate>
+        <link>
+        /raccommand</link>
+        <guid isPermaLink="true">/raccommand</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>『可变』的热信号 RACSubject</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racsubject&quot;&gt;『可变』的热信号 RACSubject&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 07 Feb 2017 19:46:08 +0800</pubDate>
+        <link>
+        /racsubject</link>
+        <guid isPermaLink="true">/racsubject</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>Pull-Driven 的数据流 RACSequence</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racsequence&quot;&gt;Pull-Driven 的数据流 RACSequence&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sat, 04 Feb 2017 22:15:57 +0800</pubDate>
+        <link>
+        /racsequence</link>
+        <guid isPermaLink="true">/racsequence</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>『状态』驱动的世界：ReactiveCocoa</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/racsignal&quot;&gt;『状态』驱动的世界：ReactiveCocoa&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 30 Jan 2017 21:06:48 +0800</pubDate>
+        <link>
+        /racsignal</link>
+        <guid isPermaLink="true">/racsignal</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>预加载与智能预加载（iOS）</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/preload&quot;&gt;预加载与智能预加载（iOS）&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Fri, 04 Nov 2016 12:24:50 +0800</pubDate>
+        <link>
+        /preload</link>
+        <guid isPermaLink="true">/preload</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/dsl&quot;&gt;谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 03 Oct 2016 15:45:45 +0800</pubDate>
+        <link>
+        /dsl</link>
+        <guid isPermaLink="true">/dsl</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>CocoaPods 都做了什么？</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/cocoapods&quot;&gt;CocoaPods 都做了什么？&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 26 Sep 2016 14:19:06 +0800</pubDate>
+        <link>
+        /cocoapods</link>
+        <guid isPermaLink="true">/cocoapods</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>从 Auto Layout 的布局算法谈性能</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/layout-performance&quot;&gt;从 Auto Layout 的布局算法谈性能&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Wed, 31 Aug 2016 21:52:25 +0800</pubDate>
+        <link>
+        /layout-performance</link>
+        <guid isPermaLink="true">/layout-performance</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/asdk-rendering&quot;&gt;使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 22 Aug 2016 20:57:31 +0800</pubDate>
+        <link>
+        /asdk-rendering</link>
+        <guid isPermaLink="true">/asdk-rendering</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>如何进行 HTTP Mock（iOS）</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/http-mock&quot;&gt;如何进行 HTTP Mock（iOS）&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 16 Aug 2016 21:58:39 +0800</pubDate>
+        <link>
+        /http-mock</link>
+        <guid isPermaLink="true">/http-mock</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/intercept&quot;&gt;iOS 开发中使用 NSURLProtocol 拦截 HTTP 请求&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 16 Aug 2016 21:46:58 +0800</pubDate>
+        <link>
+        /intercept</link>
+        <guid isPermaLink="true">/intercept</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>如何在 Objective-C 中实现协议扩展</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/protocol-extension&quot;&gt;如何在 Objective-C 中实现协议扩展&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sat, 13 Aug 2016 13:33:58 +0800</pubDate>
+        <link>
+        /protocol-extension</link>
+        <guid isPermaLink="true">/protocol-extension</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>iOS 中的 block 是如何持有对象的</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/block-retain-object&quot;&gt;iOS 中的 block 是如何持有对象的&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 09 Aug 2016 22:02:56 +0800</pubDate>
+        <link>
+        /block-retain-object</link>
+        <guid isPermaLink="true">/block-retain-object</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>对象是如何初始化的（iOS）</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/object-init&quot;&gt;对象是如何初始化的（iOS）&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sun, 07 Aug 2016 12:09:48 +0800</pubDate>
+        <link>
+        /object-init</link>
+        <guid isPermaLink="true">/object-init</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>如何实现 iOS 中的 Associated Object</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/retain-cycle3&quot;&gt;如何实现 iOS 中的 Associated Object&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 02 Aug 2016 23:13:01 +0800</pubDate>
+        <link>
+        /retain-cycle3</link>
+        <guid isPermaLink="true">/retain-cycle3</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>检测 NSObject 对象持有的强指针</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/retain-cycle2&quot;&gt;检测 NSObject 对象持有的强指针&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 01 Aug 2016 20:16:22 +0800</pubDate>
+        <link>
+        /retain-cycle2</link>
+        <guid isPermaLink="true">/retain-cycle2</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>如何在 iOS 中解决循环引用的问题</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/retain-cycle1&quot;&gt;如何在 iOS 中解决循环引用的问题&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sat, 30 Jul 2016 11:13:16 +0800</pubDate>
+        <link>
+        /retain-cycle1</link>
+        <guid isPermaLink="true">/retain-cycle1</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>动态修改 C 语言函数的实现</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/fishhook&quot;&gt;动态修改 C 语言函数的实现&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 26 Jul 2016 21:04:13 +0800</pubDate>
+        <link>
+        /fishhook</link>
+        <guid isPermaLink="true">/fishhook</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>如何在 Objective-C 的环境下实现 defer</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/defer&quot;&gt;如何在 Objective-C 的环境下实现 defer&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Tue, 19 Jul 2016 00:44:09 +0800</pubDate>
+        <link>
+        /defer</link>
+        <guid isPermaLink="true">/defer</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>『零行代码』解决键盘遮挡问题（iOS）</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/keyboard&quot;&gt;『零行代码』解决键盘遮挡问题（iOS）&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Wed, 22 Jun 2016 09:46:52 +0800</pubDate>
+        <link>
+        /keyboard</link>
+        <guid isPermaLink="true">/keyboard</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>关联对象 AssociatedObject 完全解析</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/ao&quot;&gt;关联对象 AssociatedObject 完全解析&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Wed, 08 Jun 2016 19:19:33 +0800</pubDate>
+        <link>
+        /ao</link>
+        <guid isPermaLink="true">/ao</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>黑箱中的 retain 和 release</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/rr&quot;&gt;黑箱中的 retain 和 release&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 30 May 2016 12:10:37 +0800</pubDate>
+        <link>
+        /rr</link>
+        <guid isPermaLink="true">/rr</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>自动释放池的前世今生 ---- 深入解析 autoreleasepool</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/autoreleasepool&quot;&gt;自动释放池的前世今生 —- 深入解析 autoreleasepool&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Mon, 16 May 2016 01:20:23 +0800</pubDate>
+        <link>
+        /autoreleasepool</link>
+        <guid isPermaLink="true">/autoreleasepool</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>上古时代 Objective-C 中哈希表的实现</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/hashtable&quot;&gt;上古时代 Objective-C 中哈希表的实现&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sat, 07 May 2016 00:12:56 +0800</pubDate>
+        <link>
+        /hashtable</link>
+        <guid isPermaLink="true">/hashtable</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>成熟的夜间模式解决方案</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/night&quot;&gt;成熟的夜间模式解决方案&lt;/a&gt;&lt;/p&gt;
+
+&lt;/blockquote&gt;
+&lt;iframe src=&quot;http://ghbtns.com/github-btn.html?user=draveness&amp;amp;type=follow&amp;amp;size=large&quot; height=&quot;30&quot; width=&quot;240&quot; frameborder=&quot;0&quot; scrolling=&quot;0&quot; style=&quot;width:240px; height: 30px;&quot; allowtransparency=&quot;true&quot;&gt;&lt;/iframe&gt;
+
+</description>
+        
+        <pubDate>Wed, 04 May 2016 13:41:38 +0800</pubDate>
+        <link>
+        /night</link>
+        <guid isPermaLink="true">/night</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>懒惰的 initialize 方法</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/initialize&quot;&gt;懒惰的 initialize 方法&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Sat, 30 Apr 2016 17:50:08 +0800</pubDate>
+        <link>
+        /initialize</link>
+        <guid isPermaLink="true">/initialize</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>你真的了解 load 方法么？</title>
+        
+          <description>&lt;blockquote&gt;
+  &lt;p&gt;转自：&lt;a href=&quot;https://draveness.me/load&quot;&gt;你真的了解 load 方法么？&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+</description>
+        
+        <pubDate>Thu, 28 Apr 2016 13:33:07 +0800</pubDate>
+        <link>
+        /load</link>
+        <guid isPermaLink="true">/load</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>从源代码看 ObjC 中消息的发送</title>
         
           <description>&lt;p&gt;Blog: &lt;a href=&quot;http://draveness.me&quot;&gt;Draveness&lt;/a&gt;&lt;/p&gt;

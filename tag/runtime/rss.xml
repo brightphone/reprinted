@@ -1,0 +1,3861 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+   
+      <title>brightphone.github.io/reprinted/</title>
+   
+   <link></link>
+   <description></description>
+   <language>en-uk</language>
+   <managingEditor> </managingEditor>
+   <atom:link href="rss" rel="self" type="application/rss+xml" />
+   
+	<item>
+	  <title>如何在 Objective-C 中实现协议扩展</title>
+	  <link>/reprinted//protocol-extension</link>
+	  <author></author>
+	  <pubDate>2016-08-13T05:33:58+00:00</pubDate>
+	  <guid>/reprinted//protocol-extension</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/protocol-extension">如何在 Objective-C 中实现协议扩展</a></p>
+</blockquote>
+
+<p><img src="https://img.draveness.me/2016-08-13-protocol-recordings.jpeg" alt="" /></p>
+
+<p>Swift 中的协议扩展为 iOS 开发带来了非常多的可能性，它为我们提供了一种类似多重继承的功能，帮助我们减少一切可能导致重复代码的地方。</p>
+
+<h2 id="关于-protocol-extension">关于 Protocol Extension</h2>
+
+<p>在 Swift 中比较出名的 Then 就是使用了协议扩展为所有的 <code class="highlighter-rouge">AnyObject</code> 添加方法，而且不需要调用 runtime 相关的 API，其实现简直是我见过最简单的开源框架之一：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">Then</span> <span class="p">{}</span>
+
+<span class="kd">extension</span> <span class="kt">Then</span> <span class="k">where</span> <span class="k">Self</span><span class="p">:</span> <span class="kt">AnyObject</span> <span class="p">{</span>
+	<span class="kd">public</span> <span class="kd">func</span> <span class="nf">then</span><span class="p">(</span><span class="kd">@noescape</span> <span class="nv">block</span><span class="p">:</span> <span class="k">Self</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+		<span class="nf">block</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
+		<span class="k">return</span> <span class="k">self</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">NSObject</span><span class="p">:</span> <span class="kt">Then</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>只有这么几行代码，就能为所有的 <code class="highlighter-rouge">NSObject</code> 添加下面的功能：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">titleLabel</span> <span class="o">=</span> <span class="kt">UILabel</span><span class="p">()</span><span class="o">.</span><span class="n">then</span> <span class="p">{</span>
+	<span class="nv">$0</span><span class="o">.</span><span class="n">textColor</span> <span class="o">=</span> <span class="o">.</span><span class="nf">blackColor</span><span class="p">()</span>
+	<span class="nv">$0</span><span class="o">.</span><span class="n">textAlignment</span> <span class="o">=</span> <span class="o">.</span><span class="kt">Center</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里没有调用任何的 runtime 相关 API，也没有在 <code class="highlighter-rouge">NSObject</code> 中进行任何的方法声明，甚至 <code class="highlighter-rouge">protocol Then {}</code> 协议本身都只有一个大括号，整个 Then 框架就是基于协议扩展来实现的。</p>
+
+<p>在 Objective-C 中同样有协议，但是这些协议只是相当于接口，遵循某个协议的类只表明实现了这些接口，每个类都需要<strong>对这些接口有单独的实现</strong>，这就很可能会导致重复代码的产生。</p>
+
+<p>而协议扩展可以调用协议中声明的方法，以及 <code class="highlighter-rouge">where Self: AnyObject</code> 中的 <code class="highlighter-rouge">AnyObject</code> 的类/实例方法，这就大大提高了可操作性，便于开发者写出一些意想不到的扩展。</p>
+
+<blockquote>
+  <p>如果读者对 Protocol Extension 兴趣或者不了解协议扩展，可以阅读最后的 <a href="#reference">Reference</a> 了解相关内容。</p>
+</blockquote>
+
+<h2 id="protocolkit">ProtocolKit</h2>
+
+<p>其实协议扩展的强大之处就在于它能为遵循协议的类添加一些方法的实现，而不只是一些接口，而今天为各位读者介绍的 <a href="https://github.com/forkingdog/ProtocolKit">ProtocolKit</a> 就实现了这一功能，为遵循协议的类添加方法。</p>
+
+<h3 id="protocolkit-的使用">ProtocolKit 的使用</h3>
+
+<p>我们先来看一下如何使用 ProtocolKit，首先定义一个协议：</p>
+
+<pre><code class="language-objectivec">@protocol TestProtocol
+
+@required
+
+- (void)fizz;
+
+@optional
+
+- (void)buzz;
+
+@end
+</code></pre>
+
+<p>在协议中定义了两个方法，必须实现的方法 <code class="highlighter-rouge">fizz</code> 以及可选实现 <code class="highlighter-rouge">buzz</code>，然后使用 ProtocolKit 提供的接口 <code class="highlighter-rouge">defs</code> 来定义协议中方法的实现了：</p>
+
+<pre><code class="language-objectivec">@defs(TestProtocol)
+
+- (void)buzz {
+	NSLog(@"Buzz");
+}
+
+@end
+</code></pre>
+
+<p>这样所有遵循 <code class="highlighter-rouge">TestProtocol</code> 协议的对象都可以调用 <code class="highlighter-rouge">buzz</code> 方法，哪怕它们没有实现：</p>
+
+<p><img src="https://img.draveness.me/2016-08-13-protocol-demo.jpeg" alt="protocol-demo" /></p>
+
+<p>上面的 <code class="highlighter-rouge">XXObject</code> 虽然没有实现 <code class="highlighter-rouge">buzz</code> 方法，但是该方法仍然成功执行了。</p>
+
+<h3 id="protocolkit-的实现">ProtocolKit 的实现</h3>
+
+<p>ProtocolKit 的主要原理仍然是 runtime 以及宏的；通过宏的使用来<strong>隐藏类的声明以及实现的代码</strong>，然后在 main 函数运行之前，<strong>将类中的方法实现加载到内存</strong>，使用 runtime 将实现<strong>注入到目标类</strong>中。</p>
+
+<blockquote>
+  <p>如果你对上面的原理有所疑惑也不是太大的问题，这里只是给你一个 ProtocolKit 原理的简单描述，让你了解它是如何工作的。</p>
+</blockquote>
+
+<p>ProtocolKit 中有两条重要的执行路线：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">_pk_extension_load</code> 将协议扩展中的方法实现加载到了内存</li>
+  <li><code class="highlighter-rouge">_pk_extension_inject_entry</code> 负责将扩展协议注入到实现协议的类</li>
+</ul>
+
+<h4 id="加载实现">加载实现</h4>
+
+<p>首先要解决的问题是如何将方法实现加载到内存中，这里可以先了解一下上面使用到的 <code class="highlighter-rouge">defs</code> 接口，它其实只是一个调用了其它宏的<strong>超级宏</strong><del>这名字是我编的</del>：</p>
+
+<pre><code class="language-objectivec">#define defs _pk_extension
+
+#define _pk_extension($protocol) _pk_extension_imp($protocol, _pk_get_container_class($protocol))
+
+#define _pk_extension_imp($protocol, $container_class) \
+	protocol $protocol; \
+	@interface $container_class : NSObject &lt;$protocol&gt; @end \
+	@implementation $container_class \
+	+ (void)load { \
+		_pk_extension_load(@protocol($protocol), $container_class.class); \
+	} \
+
+#define _pk_get_container_class($protocol) _pk_get_container_class_imp($protocol, __COUNTER__)
+#define _pk_get_container_class_imp($protocol, $counter) _pk_get_container_class_imp_concat(__PKContainer_, $protocol, $counter)
+#define _pk_get_container_class_imp_concat($a, $b, $c) $a ## $b ## _ ## $c
+</code></pre>
+
+<blockquote>
+  <p>使用 <code class="highlighter-rouge">defs</code> 作为接口的是因为它是一个保留的 keyword，Xcode 会将它渲染成与 <code class="highlighter-rouge"><span class="k">@property</span></code> 等其他关键字相同的颜色。</p>
+</blockquote>
+
+<p>上面的这一坨宏并不需要一个一个来分析，只需要看一下最后展开会变成什么：</p>
+
+<pre><code class="language-objectivec">@protocol TestProtocol;
+
+@interface __PKContainer_TestProtocol_0 : NSObject &lt;TestProtocol&gt;
+
+@end
+
+@implementation __PKContainer_TestProtocol_0
+
++ (void)load {
+	_pk_extension_load(@protocol(TestProtocol), __PKContainer_TestProtocol_0.class);
+}
+</code></pre>
+
+<p>根据上面宏的展开结果，这里可以介绍上面的一坨宏的作用：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">defs</code> 这货没什么好说的，只是 <code class="highlighter-rouge">_pk_extension</code> 的别名，为了提供一个更加合适的名字作为接口</li>
+  <li><code class="highlighter-rouge">_pk_extension</code> 向 <code class="highlighter-rouge">_pk_extension_imp </code> 中传入 <code class="highlighter-rouge">$protocol</code> 和 <code class="highlighter-rouge">_pk_get_container_class($protocol)</code> 参数
+    <ul>
+      <li><code class="highlighter-rouge">_pk_get_container_class</code> 的执行生成一个类名，上面生成的类名就是 <code class="highlighter-rouge">__PKContainer_TestProtocol_0</code>，这个类名是 <code class="highlighter-rouge">__PKContainer_</code>、 <code class="highlighter-rouge">$protocol</code> 和 <code class="highlighter-rouge">__COUNTER__</code> 拼接而成的（<code class="highlighter-rouge">__COUNTER__</code> 只是一个计数器，可以理解为每次调用时加一）</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">_pk_extension_imp</code> 会以传入的类名生成一个遵循当前 <code class="highlighter-rouge">$protocol</code> 协议的类，然后在 <code class="highlighter-rouge">+ load</code> 方法中执行 <code class="highlighter-rouge">_pk_extension_load</code> 加载扩展协议</li>
+</ul>
+
+<p>通过宏的运用成功隐藏了 <code class="highlighter-rouge">__PKContainer_TestProtocol_0</code> 类的声明以及实现，还有 <code class="highlighter-rouge">_pk_extension_load</code> 函数的调用：</p>
+
+<pre><code class="language-objectivec">void _pk_extension_load(Protocol *protocol, Class containerClass) {
+
+	pthread_mutex_lock(&amp;protocolsLoadingLock);
+
+	if (extendedProtcolCount &gt;= extendedProtcolCapacity) {
+		size_t newCapacity = 0;
+		if (extendedProtcolCapacity == 0) {
+			newCapacity = 1;
+		} else {
+			newCapacity = extendedProtcolCapacity &lt;&lt; 1;
+		}
+		allExtendedProtocols = realloc(allExtendedProtocols, sizeof(*allExtendedProtocols) * newCapacity);
+		extendedProtcolCapacity = newCapacity;
+	}
+
+	...
+
+	pthread_mutex_unlock(&amp;protocolsLoadingLock);
+}
+</code></pre>
+
+<p>ProtocolKit 使用了 <code class="highlighter-rouge">protocolsLoadingLock</code> 来保证静态变量 <code class="highlighter-rouge">allExtendedProtocols</code> 以及 <code class="highlighter-rouge">extendedProtcolCount</code> <code class="highlighter-rouge">extendedProtcolCapacity</code> 不会因为线程竞争导致问题：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">allExtendedProtocols</code> 用于保存所有的 <code class="highlighter-rouge">PKExtendedProtocol</code> 结构体</li>
+  <li>后面的两个变量确保数组不会越界，并在数组满的时候，将内存占用地址翻倍</li>
+</ul>
+
+<p>方法的后半部分会在静态变量中寻找或创建传入的 <code class="highlighter-rouge">protocol</code> 对应的 <code class="highlighter-rouge">PKExtendedProtocol</code> 结构体：</p>
+
+<pre><code class="language-objectivec">size_t resultIndex = SIZE_T_MAX;
+for (size_t index = 0; index &lt; extendedProtcolCount; ++index) {
+	if (allExtendedProtocols[index].protocol == protocol) {
+		resultIndex = index;
+		break;
+	}
+}
+
+if (resultIndex == SIZE_T_MAX) {
+	allExtendedProtocols[extendedProtcolCount] = (PKExtendedProtocol){
+		.protocol = protocol,
+		.instanceMethods = NULL,
+		.instanceMethodCount = 0,
+		.classMethods = NULL,
+		.classMethodCount = 0,
+	};
+	resultIndex = extendedProtcolCount;
+	extendedProtcolCount++;
+}
+
+_pk_extension_merge(&amp;(allExtendedProtocols[resultIndex]), containerClass);
+</code></pre>
+
+<p>这里调用的 <code class="highlighter-rouge">_pk_extension_merge</code> 方法非常重要，不过在介绍 <code class="highlighter-rouge">_pk_extension_merge</code> 之前，首先要了解一个用于保存协议扩展信息的私有结构体 <code class="highlighter-rouge">PKExtendedProtocol</code>：</p>
+
+<pre><code class="language-objectivec">typedef struct {
+	Protocol *__unsafe_unretained protocol;
+	Method *instanceMethods;
+	unsigned instanceMethodCount;
+	Method *classMethods;
+	unsigned classMethodCount;
+} PKExtendedProtocol;
+</code></pre>
+
+<p><code class="highlighter-rouge">PKExtendedProtocol</code> 结构体中保存了协议的指针、实例方法、类方法、实例方法数以及类方法数用于框架记录协议扩展的状态。</p>
+
+<p>回到 <code class="highlighter-rouge">_pk_extension_merge</code> 方法，它会将新的扩展方法追加到 <code class="highlighter-rouge">PKExtendedProtocol</code> 结构体的数组 <code class="highlighter-rouge">instanceMethods</code> 以及 <code class="highlighter-rouge">classMethods</code> 中：</p>
+
+<pre><code class="language-objectivec">void _pk_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerClass) {
+	// Instance methods
+	unsigned appendingInstanceMethodCount = 0;
+	Method *appendingInstanceMethods = class_copyMethodList(containerClass, &amp;appendingInstanceMethodCount);
+	Method *mergedInstanceMethods = _pk_extension_create_merged(extendedProtocol-&gt;instanceMethods,
+																extendedProtocol-&gt;instanceMethodCount,
+																appendingInstanceMethods,
+																appendingInstanceMethodCount);
+	free(extendedProtocol-&gt;instanceMethods);
+	extendedProtocol-&gt;instanceMethods = mergedInstanceMethods;
+	extendedProtocol-&gt;instanceMethodCount += appendingInstanceMethodCount;
+
+	// Class methods
+	...
+}
+</code></pre>
+
+<blockquote>
+  <p>因为类方法的追加与实例方法几乎完全相同，所以上述代码省略了向结构体中的类方法追加方法的实现代码。</p>
+</blockquote>
+
+<p>实现中使用 <code class="highlighter-rouge">class_copyMethodList</code> 从 <code class="highlighter-rouge">containerClass</code> 拉出方法列表以及方法数量；通过 <code class="highlighter-rouge">_pk_extension_create_merged</code> 返回一个合并之后的方法列表，最后在更新结构体中的 <code class="highlighter-rouge">instanceMethods</code> 以及 <code class="highlighter-rouge">instanceMethodCount</code> 成员变量。</p>
+
+<p><code class="highlighter-rouge">_pk_extension_create_merged</code> 只是重新 <code class="highlighter-rouge">malloc</code> 一块内存地址，然后使用 <code class="highlighter-rouge">memcpy</code> 将所有的方法都复制到了这块内存地址中，最后返回首地址：</p>
+
+<pre><code class="language-objectivec">Method *_pk_extension_create_merged(Method *existMethods, unsigned existMethodCount, Method *appendingMethods, unsigned appendingMethodCount) {
+
+	if (existMethodCount == 0) {
+		return appendingMethods;
+	}
+	unsigned mergedMethodCount = existMethodCount + appendingMethodCount;
+	Method *mergedMethods = malloc(mergedMethodCount * sizeof(Method));
+	memcpy(mergedMethods, existMethods, existMethodCount * sizeof(Method));
+	memcpy(mergedMethods + existMethodCount, appendingMethods, appendingMethodCount * sizeof(Method));
+	return mergedMethods;
+}
+</code></pre>
+
+<p>这一节的代码从使用宏生成的类中抽取方法实现，然后以结构体的形式加载到内存中，等待之后的方法注入。</p>
+
+<h4 id="注入方法实现">注入方法实现</h4>
+
+<p>注入方法的时间点在 main 函数执行之前议实现的注入并不是在 <code class="highlighter-rouge">+ load</code> 方法 <code class="highlighter-rouge">+ initialize</code> 方法调用时进行的，而是使用的编译器指令(compiler directive) <code class="highlighter-rouge">__attribute__((constructor))</code> 实现的：</p>
+
+<pre><code class="language-objectivec">__attribute__((constructor)) static void _pk_extension_inject_entry(void);
+</code></pre>
+
+<p>使用上述编译器指令的函数会在 shared library 加载的时候执行，也就是 main 函数之前，可以看 StackOverflow 上的这个问题 <a href="http://stackoverflow.com/questions/2053029/how-exactly-does-attribute-constructor-work">How exactly does <strong>attribute</strong>((constructor)) work?</a>。</p>
+
+<pre><code class="language-objectivec">__attribute__((constructor)) static void _pk_extension_inject_entry(void) {
+	#1：加锁
+	unsigned classCount = 0;
+	Class *allClasses = objc_copyClassList(&amp;classCount);
+
+	@autoreleasepool {
+		for (unsigned protocolIndex = 0; protocolIndex &lt; extendedProtcolCount; ++protocolIndex) {
+			PKExtendedProtocol extendedProtcol = allExtendedProtocols[protocolIndex];
+			for (unsigned classIndex = 0; classIndex &lt; classCount; ++classIndex) {
+				Class class = allClasses[classIndex];
+				if (!class_conformsToProtocol(class, extendedProtcol.protocol)) {
+					continue;
+				}
+				_pk_extension_inject_class(class, extendedProtcol);
+			}
+		}
+	}
+	#2：解锁并释放 allClasses、allExtendedProtocols
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">_pk_extension_inject_entry</code> 会在 main 执行之前遍历内存中的<strong>所有</strong> <code class="highlighter-rouge">Class</code>（整个遍历过程都是在一个自动释放池中进行的），如果某个类遵循了<code class="highlighter-rouge">allExtendedProtocols</code> 中的协议，调用 <code class="highlighter-rouge">_pk_extension_inject_class</code> 向类中注射（inject）方法实现：</p>
+
+<pre><code class="language-objectivec">static void _pk_extension_inject_class(Class targetClass, PKExtendedProtocol extendedProtocol) {
+
+	for (unsigned methodIndex = 0; methodIndex &lt; extendedProtocol.instanceMethodCount; ++methodIndex) {
+		Method method = extendedProtocol.instanceMethods[methodIndex];
+		SEL selector = method_getName(method);
+
+		if (class_getInstanceMethod(targetClass, selector)) {
+			continue;
+		}
+
+		IMP imp = method_getImplementation(method);
+		const char *types = method_getTypeEncoding(method);
+		class_addMethod(targetClass, selector, imp, types);
+	}
+
+	#1: 注射类方法
+}
+</code></pre>
+
+<p>如果类中没有实现该实例方法就会通过 runtime 中的 <code class="highlighter-rouge">class_addMethod</code> 注射该实例方法；而类方法的注射有些不同，因为类方法都是保存在元类中的，而一些类方法由于其特殊地位最好不要改变其原有实现，比如 <code class="highlighter-rouge">+ load</code> 和 <code class="highlighter-rouge">+ initialize</code> 这两个类方法就比较特殊，如果想要了解这两个方法的相关信息，可以在 <a href="#reference">Reference</a> 中查看相关的信息。</p>
+
+<pre><code class="language-objectivec">Class targetMetaClass = object_getClass(targetClass);
+for (unsigned methodIndex = 0; methodIndex &lt; extendedProtocol.classMethodCount; ++methodIndex) {
+	Method method = extendedProtocol.classMethods[methodIndex];
+	SEL selector = method_getName(method);
+
+	if (selector == @selector(load) || selector == @selector(initialize)) {
+		continue;
+	}
+	if (class_getInstanceMethod(targetMetaClass, selector)) {
+		continue;
+	}
+
+	IMP imp = method_getImplementation(method);
+	const char *types = method_getTypeEncoding(method);
+	class_addMethod(targetMetaClass, selector, imp, types);
+}
+</code></pre>
+
+<p>实现上的不同仅仅在获取元类、以及跳过 <code class="highlighter-rouge">+ load</code> 和 <code class="highlighter-rouge">+ initialize</code> 方法上。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>ProtocolKit 通过宏和 runtime 实现了类似协议扩展的功能，其实现代码总共也只有 200 多行，还是非常简洁的；在另一个叫做 <a href="https://github.com/jspahrsummers/libextobjc">libextobjc</a> 的框架中也实现了类似的功能，有兴趣的读者可以查看 <a href="[https://github.com/jspahrsummers/libextobjc/blob/master/extobjc/EXTConcreteProtocol.h]">EXTConcreteProtocol.h · libextobjc</a> 这个文件。</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift\_Programming\_Language/Extensions.html#//apple\_ref/doc/uid/TP40014097-CH24-ID151">Protocols · Apple Doc</a></li>
+  <li><a href="https://github.com/jspahrsummers/libextobjc/blob/master/extobjc/EXTConcreteProtocol.h">EXTConcreteProtocol.h · libextobjc</a></li>
+  <li><a href="http://nshipster.com/__attribute__/">__attribute__ · NSHipster</a></li>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/你真的了解%20load%20方法么？.md">你真的了解 load 方法么？</a></li>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/懒惰的%20initialize%20方法.md">懒惰的 initialize 方法</a></li>
+</ul>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>iOS 中的 block 是如何持有对象的</title>
+	  <link>/reprinted//block-retain-object</link>
+	  <author></author>
+	  <pubDate>2016-08-09T14:02:56+00:00</pubDate>
+	  <guid>/reprinted//block-retain-object</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/block-retain-object">iOS 中的 block 是如何持有对象的</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>Block 是 Objective-C 中笔者最喜欢的特性，它为 Objective-C 这门语言提供了强大的函数式编程能力，而最近苹果推出的很多新的 API 都已经开始原生的支持 block 语法，可见它在 Objective-C 中变得越来越重要。</p>
+
+<p>这篇文章并不会详细介绍 block 在内存中到底是以什么形式存在的，主要会介绍 block 是如何持有并且释放对象的。文章中的代码都出自 Facebook 开源的<strong>用于检测循环引用</strong>的框架 <a href="https://github.com/facebook/FBRetainCycleDetector">FBRetainCycleDetector</a>，这是分析该框架文章中的最后一篇，也是笔者觉得最有意思的一部分。</p>
+
+<blockquote>
+  <p>如果你希望了解 FBRetainCycleDetector 的原理可以阅读<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/FBRetainCycleDetector/如何在%20iOS%20中解决循环引用的问题.md">如何在 iOS 中解决循环引用的问题</a>以及后续文章。</p>
+</blockquote>
+
+<h2 id="为什么会谈到-block">为什么会谈到 block</h2>
+
+<p>可能很多读者会有这样的疑问，本文既然是对 <code class="highlighter-rouge">FBRetainCycleDetector</code> 解析的文章，为什么会提到 block？原因其实很简单，因为在 iOS 开发中大多数的循环引用都是因为 block 使用不当导致的，由于 block 会 retain 它持有的对象，这样就很容易造成循环引用，最终导致内存泄露。</p>
+
+<p>在 <code class="highlighter-rouge">FBRetainCycleDetector</code> 中存在这样一个类 <code class="highlighter-rouge">FBObjectiveCBlock</code>，这个类的 <code class="highlighter-rouge">- allRetainedObjects</code> 方法就会返回所有 block 持有的强引用，这也是文章需要关注的重点。</p>
+
+<pre><code class="language-objectivec">- (NSSet *)allRetainedObjects {
+	NSMutableArray *results = [[[super allRetainedObjects] allObjects] mutableCopy];
+
+	__attribute__((objc_precise_lifetime)) id anObject = self.object;
+
+	void *blockObjectReference = (__bridge void *)anObject;
+	NSArray *allRetainedReferences = FBGetBlockStrongReferences(blockObjectReference);
+
+	for (id object in allRetainedReferences) {
+		FBObjectiveCGraphElement *element = FBWrapObjectGraphElement(self, object, self.configuration);
+		if (element) {
+			[results addObject:element];
+		}
+	}
+
+	return [NSSet setWithArray:results];
+}
+</code></pre>
+
+<p>这部分代码中的大部分都不重要，只是在开头调用父类方法，在最后将获取的对象包装成一个系列 <code class="highlighter-rouge">FBObjectiveCGraphElement</code>，最后返回一个数组，也就是当前对象 block 持有的全部强引用了。</p>
+
+<h2 id="block-是什么">Block 是什么？</h2>
+
+<p>对 block 稍微有了解的人都知道，block 其实是一个结构体，其结构大概是这样的：</p>
+
+<pre><code class="language-objectivec">struct BlockLiteral {
+	void *isa;
+	int flags;
+	int reserved;
+	void (*invoke)(void *, ...);
+	struct BlockDescriptor *descriptor;
+};
+
+struct BlockDescriptor {
+	unsigned long int reserved;
+	unsigned long int size;
+	void (*copy_helper)(void *dst, void *src);
+	void (*dispose_helper)(void *src);
+	const char *signature;
+};
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">BlockLiteral</code> 结构体中有一个 <code class="highlighter-rouge">isa</code> 指针，而对 <code class="highlighter-rouge">isa</code>了解的人也都知道，这里的 <code class="highlighter-rouge">isa</code> 其实指向了一个类，每一个 block 指向的类可能是 <code class="highlighter-rouge">__NSGlobalBlock__</code>、<code class="highlighter-rouge">__NSMallocBlock__</code> 或者 <code class="highlighter-rouge">__NSStackBlock__</code>，但是这些 block，它们继承自一个共同的父类，也就是 <code class="highlighter-rouge">NSBlock</code>，我们可以使用下面的代码来获取这个类：</p>
+
+<pre><code class="language-objectivec">static Class _BlockClass() {
+	static dispatch_once_t onceToken;
+	static Class blockClass;
+	dispatch_once(&amp;onceToken, ^{
+		void (^testBlock)() = [^{} copy];
+		blockClass = [testBlock class];
+		while(class_getSuperclass(blockClass) &amp;&amp; class_getSuperclass(blockClass) != [NSObject class]) {
+			blockClass = class_getSuperclass(blockClass);
+		}
+		[testBlock release];
+	});
+	return blockClass;
+}
+</code></pre>
+
+<p>Objective-C 中的三种 block <code class="highlighter-rouge">__NSMallocBlock__</code>、<code class="highlighter-rouge">__NSStackBlock__</code> 和 <code class="highlighter-rouge">__NSGlobalBlock__</code> 会在下面的情况下出现：</p>
+
+<p><img src="/content/images/2016/08/block-table.png" alt="" /></p>
+
+<ul>
+  <li>在 ARC 中，捕获外部了变量的 block 的类会是 <code class="highlighter-rouge">__NSMallocBlock__</code> 或者 <code class="highlighter-rouge">__NSStackBlock__</code>，如果 block 被赋值给了某个变量在这个过程中会执行 <code class="highlighter-rouge">_Block_copy</code> 将原有的 <code class="highlighter-rouge">__NSStackBlock__</code> 变成 <code class="highlighter-rouge">__NSMallocBlock__</code>；但是如果 block 没有被赋值给某个变量，那它的类型就是 <code class="highlighter-rouge">__NSStackBlock__</code>；没有捕获外部变量的 block 的类会是 <code class="highlighter-rouge">__NSGlobalBlock__</code> 即不在堆上，也不在栈上，它类似 C 语言函数一样会在代码段中。</li>
+  <li>在非 ARC 中，捕获了外部变量的 block 的类会是 <code class="highlighter-rouge">__NSStackBlock__</code>，放置在栈上，没有捕获外部变量的 block 时与 ARC 环境下情况相同。</li>
+</ul>
+
+<p>如果我们不断打印一个 block 的 <code class="highlighter-rouge">superclass</code> 的话最后就会在继承链中找到 <code class="highlighter-rouge">NSBlock</code> 的身影：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-block-superclass.png-1000width" alt="block-superclass" /></p>
+
+<p>然后可以通过这种办法来判断当前对象是不是 block：</p>
+
+<pre><code class="language-objectivec">BOOL FBObjectIsBlock(void *object) {
+	Class blockClass = _BlockClass();
+
+	Class candidate = object_getClass((__bridge id)object);
+	return [candidate isSubclassOfClass:blockClass];
+}
+</code></pre>
+
+<h2 id="block-如何持有对象">Block 如何持有对象</h2>
+
+<p>在这一小节，我们将讨论 block 是<strong>如何持有对象</strong>的，我们会通过对 FBRetainCycleDetector 的源代码进行分析最后尽量详尽地回答这一问题。</p>
+
+<p>重新回到文章开头提到的 <code class="highlighter-rouge">- allRetainedObjects</code> 方法：</p>
+
+<pre><code class="language-objectivec">- (NSSet *)allRetainedObjects {
+	NSMutableArray *results = [[[super allRetainedObjects] allObjects] mutableCopy];
+
+	__attribute__((objc_precise_lifetime)) id anObject = self.object;
+
+	void *blockObjectReference = (__bridge void *)anObject;
+	NSArray *allRetainedReferences = FBGetBlockStrongReferences(blockObjectReference);
+
+	for (id object in allRetainedReferences) {
+		FBObjectiveCGraphElement *element = FBWrapObjectGraphElement(self, object, self.configuration);
+		if (element) {
+			[results addObject:element];
+		}
+	}
+
+	return [NSSet setWithArray:results];
+}
+</code></pre>
+
+<p>通过函数的符号我们也能够猜测出，上述方法中通过 <code class="highlighter-rouge">FBGetBlockStrongReferences</code> 获取 block 持有的所有强引用：</p>
+
+<pre><code class="language-objectivec">NSArray *FBGetBlockStrongReferences(void *block) {
+	if (!FBObjectIsBlock(block)) {
+		return nil;
+	}
+
+	NSMutableArray *results = [NSMutableArray new];
+
+	void **blockReference = block;
+	NSIndexSet *strongLayout = _GetBlockStrongLayout(block);
+	[strongLayout enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+		void **reference = &amp;blockReference[idx];
+
+		if (reference &amp;&amp; (*reference)) {
+			id object = (id)(*reference);
+
+			if (object) {
+				[results addObject:object];
+			}
+		}
+	}];
+
+	return [results autorelease];
+}
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">FBGetBlockStrongReferences</code> 是对另一个私有函数 <code class="highlighter-rouge">_GetBlockStrongLayout</code> 的封装，也是实现最有意思的部分。</p>
+
+<h3 id="几个必要的概念">几个必要的概念</h3>
+
+<p>在具体介绍 <code class="highlighter-rouge">_GetBlockStrongLayout</code> 函数的源代码之前，我希望先对其原理有一个简单的介绍，便于各位读者的理解；在这里有三个概念需要介绍，首先是 block 持有的对象都存在的位置。</p>
+
+<h4 id="如何持有对象">如何持有对象</h4>
+
+<p>在文章的上面曾经出现过 block 的结构体，不知道各位读者是否还有印象：</p>
+
+<pre><code class="language-objectivec">struct BlockLiteral {
+	void *isa;
+	int flags;
+	int reserved;
+	void (*invoke)(void *, ...);
+	struct BlockDescriptor *descriptor;
+	// imported variables
+};
+</code></pre>
+
+<p>在每个 block 结构体的下面就会存放当前 block 持有的所有对象，无论强弱。我们可以做一个小实验来验证这个观点，我们在程序中声明这样一个 block：</p>
+
+<pre><code class="language-objectivec">NSObject *firstObject = [NSObject new];
+__attribute__((objc_precise_lifetime)) NSObject *object = [NSObject new];
+__weak NSObject *secondObject = object;
+NSObject *thirdObject = [NSObject new];
+
+__unused void (^block)() = ^{
+	__unused NSObject *first = firstObject;
+	__unused NSObject *second = secondObject;
+	__unused NSObject *third = thirdObject;
+};
+</code></pre>
+
+<p>然后在代码中打一个断点：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-block-capture-var-layout.png-1000width" alt="block-capture-var-layout" /></p>
+
+<blockquote>
+  <p>上面代码中 block 由于被变量引用，执行了 <code class="highlighter-rouge">_Block_copy</code>，所以其类型为 <code class="highlighter-rouge">__NSMallocBlock__</code>，没有被变量引用的 block 都是 <code class="highlighter-rouge">__NSStackBlock__</code>。</p>
+</blockquote>
+
+<ol>
+  <li>首先打印 block 变量的大小，因为 block 变量其实只是一个指向结构体的指针，所以大小为 8，而结构体的大小为 32；</li>
+  <li>以 block 的地址为基址，偏移 32，得到一个指针</li>
+  <li>使用 <code class="highlighter-rouge">$3[0]</code> <code class="highlighter-rouge">$3[1]</code> <code class="highlighter-rouge">$3[2]</code> 依次打印地址为 <code class="highlighter-rouge">0x1001023b0</code> <code class="highlighter-rouge">0x1001023b8</code> <code class="highlighter-rouge">0x1001023c0</code> 的内容，可以发现它们就是 block 捕获的全部引用，前两个是强引用，最后的是弱引用</li>
+</ol>
+
+<p>这可以得出一个结论：block 将其捕获的引用存放在结构体的下面，但是为什么这里的顺序并不是按照引用的顺序呢？接下来增加几个变量，再做另一次实验：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-block-capture-strong-weak-order.png-1000width" alt="block-capture-strong-weak-orde" /></p>
+
+<p>在代码中多加入了几个对象之后，block 对持有的对象的布局的顺序依然是<strong>强引用在前、弱引用在后</strong>，我们不妨做一个假设：<strong>block 会将强引用的对象排放在弱引用对象的前面</strong>。但是这个假设能够帮助我们在<strong>只有 block 但是没有上下文信息的情况下</strong>区分哪些是强引用么？我觉得并不能，因为我们没有办法知道它们之间的分界线到底在哪里。</p>
+
+<h4 id="dispose_helper">dispose_helper</h4>
+
+<p>第二个需要介绍的是 <code class="highlighter-rouge">dispose_helper</code>，这是 <code class="highlighter-rouge">BlockDescriptor</code> 结构体中的一个指针：</p>
+
+<pre><code class="language-objectivec">struct BlockDescriptor {
+	unsigned long int reserved;                // NULL
+	unsigned long int size;
+	// optional helper functions
+	void (*copy_helper)(void *dst, void *src); // IFF (1&lt;&lt;25)
+	void (*dispose_helper)(void *src);         // IFF (1&lt;&lt;25)
+	const char *signature;                     // IFF (1&lt;&lt;30)
+};
+</code></pre>
+
+<p>上面的结构体中有两个函数指针，<code class="highlighter-rouge">copy_helper</code> 用于 block 的拷贝，<code class="highlighter-rouge">dispose_helper</code> 用于 block 的 <code class="highlighter-rouge">dispose</code> 也就是 block 在析构的时候会调用这个函数指针，销毁自己持有的对象，而这个原理也是区别强弱引用的关键，因为在 <code class="highlighter-rouge">dispose_helper</code> 会对强引用发送 <code class="highlighter-rouge">release</code> 消息，对弱引用不会做任何的处理。</p>
+
+<h4 id="fbblockstrongrelationdetector">FBBlockStrongRelationDetector</h4>
+
+<p>最后就是用于从 <code class="highlighter-rouge">dispose_helper</code> 接收消息的类 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 了；它的实例在接受 <code class="highlighter-rouge">release</code> 消息时，并不会真正的释放，只会将标记 <code class="highlighter-rouge">_strong</code> 为 YES：</p>
+
+<pre><code class="language-objectivec">- (oneway void)release {
+	_strong = YES;
+}
+
+- (oneway void)trueRelease {
+	[super release];
+}
+</code></pre>
+
+<p>只有真正执行 <code class="highlighter-rouge">trueRelease</code> 的时候才会向对象发送 <code class="highlighter-rouge">release</code> 消息。</p>
+
+<p>因为这个文件覆写了 <code class="highlighter-rouge">release</code> 方法，所以要在非 ARC 下编译：</p>
+
+<pre><code class="language-objectivec">#if __has_feature(objc_arc)
+#error This file must be compiled with MRR. Use -fno-objc-arc flag.
+#endif
+</code></pre>
+
+<p>如果 block 持有了另一个 block 对象，<code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 也可以将自身 fake 成为一个假的 block 防止在接收到关于 block 释放的消息时发生 crash：</p>
+
+<pre><code class="language-objectivec">struct _block_byref_block;
+@interface FBBlockStrongRelationDetector : NSObject {
+	// __block fakery
+	void *forwarding;
+	int flags;   //refcount;
+	int size;
+	void (*byref_keep)(struct _block_byref_block *dst, struct _block_byref_block *src);
+	void (*byref_dispose)(struct _block_byref_block *);
+	void *captured[16];
+}
+</code></pre>
+
+<p>该类的实例在初始化时，会设置 <code class="highlighter-rouge">forwarding</code>、<code class="highlighter-rouge">byref_keep</code> 和 <code class="highlighter-rouge">byref_dispose</code>，后两个方法的实现都是空的，只是为了防止 crash：</p>
+
+<pre><code class="language-objectivec">+ (id)alloc {
+	FBBlockStrongRelationDetector *obj = [super alloc];
+
+	// Setting up block fakery
+	obj-&gt;forwarding = obj;
+	obj-&gt;byref_keep = byref_keep_nop;
+	obj-&gt;byref_dispose = byref_dispose_nop;
+
+	return obj;
+}
+
+static void byref_keep_nop(struct _block_byref_block *dst, struct _block_byref_block *src) {}
+static void byref_dispose_nop(struct _block_byref_block *param) {}
+</code></pre>
+
+<h3 id="获取-block-强引用的对象">获取 block 强引用的对象</h3>
+
+<p>到现在为止，获取 block 强引用对象所需要的知识都介绍完了，接下来可以对私有方法 <code class="highlighter-rouge">_GetBlockStrongLayout</code> 进行分析了：</p>
+
+<pre><code class="language-objectivec">static NSIndexSet *_GetBlockStrongLayout(void *block) {
+	struct BlockLiteral *blockLiteral = block;
+
+	if ((blockLiteral-&gt;flags &amp; BLOCK_HAS_CTOR)
+		|| !(blockLiteral-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE)) {
+		return nil;
+	}
+
+	...
+}
+</code></pre>
+
+<ul>
+  <li>如果 block 有 Cpp 的构造器/析构器，说明它<strong>持有的对象很有可能没有按照指针大小对齐</strong>，我们很难检测到所有的对象</li>
+  <li>如果 block 没有 <code class="highlighter-rouge">dispose</code> 函数，说明它无法 <code class="highlighter-rouge">retain</code> 对象，也就是说我们也没有办法测试其强引用了哪些对象</li>
+</ul>
+
+<pre><code class="language-objectivec">static NSIndexSet *_GetBlockStrongLayout(void *block) {
+	...
+	void (*dispose_helper)(void *src) = blockLiteral-&gt;descriptor-&gt;dispose_helper;
+	const size_t ptrSize = sizeof(void *);
+	const size_t elements = (blockLiteral-&gt;descriptor-&gt;size + ptrSize - 1) / ptrSize;
+
+	void *obj[elements];
+	void *detectors[elements];
+
+	for (size_t i = 0; i &lt; elements; ++i) {
+		FBBlockStrongRelationDetector *detector = [FBBlockStrongRelationDetector new];
+		obj[i] = detectors[i] = detector;
+	}
+
+	@autoreleasepool {
+		dispose_helper(obj);
+	}
+	...
+}
+</code></pre>
+
+<ol>
+  <li>从 <code class="highlighter-rouge">BlockDescriptor</code> 取出 <code class="highlighter-rouge">dispose_helper</code> 以及 <code class="highlighter-rouge">size</code>（block 持有的所有对象的大小）</li>
+  <li>通过 <code class="highlighter-rouge">(blockLiteral-&gt;descriptor-&gt;size + ptrSize - 1) / ptrSize</code> 向上取整，获取 block 持有的指针的数量</li>
+  <li>初始化两个包含 <code class="highlighter-rouge">elements</code> 个 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 实例的数组，其中第一个数组用于传入 <code class="highlighter-rouge">dispose_helper</code>，第二个数组用于检测 <code class="highlighter-rouge">_strong</code> 是否被标记为 <code class="highlighter-rouge">YES</code></li>
+  <li>在自动释放池中执行 <code class="highlighter-rouge">dispose_helper(obj)</code>，释放 block 持有的对象</li>
+</ol>
+
+<pre><code class="language-objectivec">static NSIndexSet *_GetBlockStrongLayout(void *block) {
+	...
+	NSMutableIndexSet *layout = [NSMutableIndexSet indexSet];
+
+	for (size_t i = 0; i &lt; elements; ++i) {
+		FBBlockStrongRelationDetector *detector = (FBBlockStrongRelationDetector *)(detectors[i]);
+		if (detector.isStrong) {
+			[layout addIndex:i];
+		}
+
+		[detector trueRelease];
+	}
+
+	return layout;
+}
+</code></pre>
+
+<p>因为 <code class="highlighter-rouge">dispose_helper</code> 只会调用 <code class="highlighter-rouge">release</code> 方法，但是这并不会导致我们的 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 实例被释放掉，反而会标记 <code class="highlighter-rouge">_string</code> 属性，在这里我们只需要判断这个属性的真假，将对应索引加入数组，最后再调用 <code class="highlighter-rouge">trueRelease</code> 真正的释放对象。</p>
+
+<p>我们可以执行下面的代码，分析其工作过程：</p>
+
+<pre><code class="language-objectivec">NSObject *firstObject = [NSObject new];
+__attribute__((objc_precise_lifetime)) NSObject *object = [NSObject new];
+__weak NSObject *secondObject = object;
+NSObject *thirdObject = [NSObject new];
+
+__unused void (^block)() = ^{
+	__unused NSObject *first = firstObject;
+	__unused NSObject *second = secondObject;
+	__unused NSObject *third = thirdObject;
+};
+
+FBRetainCycleDetector *detector = [FBRetainCycleDetector new];
+[detector addCandidate:block];
+[detector findRetainCycles];
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">dispose_helper</code> 调用之前：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-before-dispose-helper.jpeg" alt="before-dispose-helpe" /></p>
+
+<p><code class="highlighter-rouge">obj</code> 数组中的每一个位置都存储了 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 的实例，但是在 <code class="highlighter-rouge">dispose_helper</code> 调用之后：</p>
+
+<p><img src="https://img.draveness.me/2016-08-05-after-dispose-helper.png-1000width" alt="after-dispose-helpe" /></p>
+
+<p>索引为 4 和 5 处的实例已经被清空了，这里对应的 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 实例的 <code class="highlighter-rouge">strong</code> 已经被标记为 <code class="highlighter-rouge">YES</code>、加入到数组中并返回；最后也就获取了所有强引用的索引，同时得到了 block 强引用的对象。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>其实最开始笔者对这个 <code class="highlighter-rouge">dispose_helper</code> 实现的机制并不是特别的肯定，只是有一个猜测，但是在询问了 <code class="highlighter-rouge">FBBlockStrongRelationDetector</code> 的作者之后，才确定 <code class="highlighter-rouge">dispose_helper</code> 确实会负责向所有捕获的变量发送 <code class="highlighter-rouge">release</code> 消息，如果有兴趣可以看这个 <a href="https://github.com/facebook/FBRetainCycleDetector/issues/15">issue</a>。这部分的代码其实最开始源于 mikeash 大神的 <a href="https://github.com/mikeash/Circle">Circle</a>，不过对于他是如何发现这一点的，笔者并不清楚，如果各位有相关的资料或者合理的解释，可以随时联系我。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>对象是如何初始化的（iOS）</title>
+	  <link>/reprinted//object-init</link>
+	  <author></author>
+	  <pubDate>2016-08-07T04:09:48+00:00</pubDate>
+	  <guid>/reprinted//object-init</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/object-init">对象是如何初始化的（iOS）</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>在之前，我们已经讨论了非常多的问题了，关于 objc 源代码系列的文章也快结束了，其实关于对象是如何初始化的这篇文章本来是我要写的第一篇文章，但是由于有很多前置内容不得不说，所以留到了这里。</p>
+
+<p><code class="highlighter-rouge">+ alloc</code> 和 <code class="highlighter-rouge">- init</code> 这一对我们在 iOS 开发中每天都要用到的初始化方法一直困扰着我, 于是笔者仔细研究了一下 objc 源码中 <code class="highlighter-rouge">NSObject</code> 如何进行初始化。</p>
+
+<p>在具体分析对象的初始化过程之前，我想先放出结论，以免文章中的细枝末节对读者的理解有所影响；整个对象的初始化过程其实只是<strong>为一个分配内存空间，并且初始化 isa_t 结构体的过程</strong>。</p>
+
+<h2 id="alloc-方法分析">alloc 方法分析</h2>
+
+<p>先来看一下 <code class="highlighter-rouge">+ alloc</code> 方法的调用栈(在调用栈中省略了很多不必要的方法的调用):open</p>
+
+<pre><code class="language-objectivec">id _objc_rootAlloc(Class cls)
+└── static id callAlloc(Class cls, bool checkNil, bool allocWithZone=false)
+    └── id class_createInstance(Class cls, size_t extraBytes)
+    	└── id _class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone, bool cxxConstruct, size_t *outAllocatedSize)
+            ├── size_t instanceSize(size_t extraBytes)
+            ├── void	*calloc(size_t, size_t)
+            └── inline void objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)
+</code></pre>
+
+<p>这个调用栈中的方法涉及了多个文件中的代码，在下面的章节中会对调用的方法逐步进行分析，如果这个调用栈让你觉得很头疼，也不是什么问题。</p>
+
+<h3 id="alloc-的实现">alloc 的实现</h3>
+
+<pre><code class="language-objectivec">+ (id)alloc {
+    return _objc_rootAlloc(self);
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">alloc</code> 方法的实现真的是非常的简单, 它直接调用了另一个私有方法 <code class="highlighter-rouge">id _objc_rootAlloc(Class cls)</code></p>
+
+<pre><code class="language-objectivec">id _objc_rootAlloc(Class cls) {
+    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);
+}
+</code></pre>
+
+<p>这就是上帝类 <code class="highlighter-rouge">NSObject</code> 对 <code class="highlighter-rouge">callAlloc</code> 的实现，我们省略了非常多的代码，展示了最常见的执行路径：</p>
+
+<pre><code class="language-objectivec">static id callAlloc(Class cls, bool checkNil, bool allocWithZone=false) {
+    id obj = class_createInstance(cls, 0);
+    return obj;
+}
+
+id class_createInstance(Class cls, size_t extraBytes) {
+    return _class_createInstanceFromZone(cls, extraBytes, nil);
+}
+</code></pre>
+
+<p>对象初始化中最重要的操作都在 <code class="highlighter-rouge">_class_createInstanceFromZone</code> 方法中执行：</p>
+
+<pre><code class="language-objectivec">static id _class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone, bool cxxConstruct = true, size_t *outAllocatedSize = nil) {
+    size_t size = cls-&gt;instanceSize(extraBytes);
+
+    id obj = (id)calloc(1, size);
+    if (!obj) return nil;
+    obj-&gt;initInstanceIsa(cls, hasCxxDtor);
+
+    return obj;
+}
+</code></pre>
+
+<h3 id="对象的大小">对象的大小</h3>
+
+<p>在使用 <code class="highlighter-rouge">calloc</code> 为对象分配一块内存空间之前，我们要先获取对象在内存的大小：</p>
+
+<pre><code class="language-objectivec">size_t instanceSize(size_t extraBytes) {
+    size_t size = alignedInstanceSize() + extraBytes;
+    if (size &lt; 16) size = 16;
+    return size;
+}
+
+uint32_t alignedInstanceSize() {
+    return word_align(unalignedInstanceSize());
+}
+
+uint32_t unalignedInstanceSize() {
+    assert(isRealized());
+    return data()-&gt;ro-&gt;instanceSize;
+}
+</code></pre>
+
+<p>实例大小 <code class="highlighter-rouge">instanceSize</code> 会存储在类的 <code class="highlighter-rouge">isa_t</code> 结构体中，然后经过对齐最后返回。</p>
+
+<blockquote>
+  <p>Core Foundation 需要所有的对象的大小都必须大于或等于 16 字节。</p>
+</blockquote>
+
+<p>在获取对象大小之后，直接调用 <code class="highlighter-rouge">calloc</code> 函数就可以为对象分配内存空间了。</p>
+
+<h3 id="isa-的初始化">isa 的初始化</h3>
+
+<p>在对象的初始化过程中除了使用 <code class="highlighter-rouge">calloc</code> 来分配内存之外，还需要根据类初始化 <code class="highlighter-rouge">isa_t</code> 结构体：</p>
+
+<pre><code class="language-objectivec">inline void objc_object::initIsa(Class cls, bool indexed, bool hasCxxDtor) {
+    if (!indexed) {
+        isa.cls = cls;
+    } else {
+        isa.bits = ISA_MAGIC_VALUE;
+        isa.has_cxx_dtor = hasCxxDtor;
+        isa.shiftcls = (uintptr_t)cls &gt;&gt; 3;
+    }
+}
+</code></pre>
+
+<p>上面的代码只是对 <code class="highlighter-rouge">isa_t</code> 结构体进行初始化而已：</p>
+
+<pre><code class="language-objectivec">union isa_t {
+   isa_t() { }
+   isa_t(uintptr_t value) : bits(value) { }
+
+   Class cls;
+   uintptr_t bits;
+
+   struct {
+       uintptr_t indexed           : 1;
+       uintptr_t has_assoc         : 1;
+       uintptr_t has_cxx_dtor      : 1;
+       uintptr_t shiftcls          : 44;
+       uintptr_t magic             : 6;
+       uintptr_t weakly_referenced : 1;
+       uintptr_t deallocating      : 1;
+       uintptr_t has_sidetable_rc  : 1;
+       uintptr_t extra_rc          : 8;
+   };
+};
+</code></pre>
+
+<blockquote>
+  <p>在这里并不想过多介绍关于 <code class="highlighter-rouge">isa_t</code> 结构体的内容，你可以看<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/从%20NSObject%20的初始化了解%20isa.md">从 NSObject 的初始化了解 isa</a> 了解你想知道的关于 <code class="highlighter-rouge">isa_t</code> 的全部内容。</p>
+</blockquote>
+
+<h2 id="init-方法">init 方法</h2>
+
+<p><code class="highlighter-rouge">NSObject</code> 的 <code class="highlighter-rouge">- init</code> 方法只是调用了 <code class="highlighter-rouge">_objc_rootInit</code> 并返回了当前对象：</p>
+
+<pre><code class="language-objectivec">- (id)init {
+    return _objc_rootInit(self);
+}
+
+id _objc_rootInit(id obj) {
+    return obj;
+}
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p>在 iOS 中一个对象的初始化过程很符合直觉，只是分配内存空间、然后初始化 <code class="highlighter-rouge">isa_t</code> 结构体，其实现也并不复杂，这篇文章也是这个系列文章中较为简单并且简短的一篇。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>关联对象 AssociatedObject 完全解析</title>
+	  <link>/reprinted//ao</link>
+	  <author></author>
+	  <pubDate>2016-06-08T11:19:33+00:00</pubDate>
+	  <guid>/reprinted//ao</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/ao">关联对象 AssociatedObject 完全解析</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<p>我们在 iOS 开发中经常需要使用分类（Category），为已经存在的类添加属性的需求，但是使用 <code class="highlighter-rouge"><span class="k">@property</span></code> 并不能在分类中<strong>正确</strong>创建实例变量和存取方法。</p>
+
+<p>不过，通过 Objective-C 运行时中的关联对象，也就是 Associated Object，我们可以实现上述需求。</p>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>这篇文章包含了两方面的内容：</p>
+
+<ul>
+  <li><a href="#关联对象的应用">使用关联对象为已经存在的类中添加属性</a></li>
+  <li><a href="#关联对象的实现">关联对象在底层 Objective-C 中的实现</a></li>
+</ul>
+
+<blockquote>
+  <p>注：如果你刚刚入门 iOS 开发，笔者相信了解第一部分的内容会对你的日常开发中有所帮助，不过第二部分的内容可能有些难以理解。</p>
+
+  <p>如果你对关联对象的使用非常熟悉，可以直接跳过第一部分的内容，从<a href="#关联对象的实现">这里</a>开始深入了解其底层实现。</p>
+</blockquote>
+
+<h2 id="关联对象的应用">关联对象的应用</h2>
+
+<p>关于关联对象的使用相信已经成为了一个老生常谈的问题了，不过为了保证这篇文章的完整性，笔者还是会在这里为各位介绍这部分的内容的。</p>
+
+<h3 id="分类中的-property">分类中的 @property</h3>
+
+<p><code class="highlighter-rouge"><span class="k">@property</span></code> 可以说是一个 Objective-C 编程中的“宏”，它有<a href="https://zh.wikipedia.org/zh/元编程">元编程</a>的思想。</p>
+
+<pre><code class="language-objectivec">@interface DKObject : NSObject
+
+@property (nonatomic, strong) NSString *property;
+
+@end
+</code></pre>
+
+<p>在使用上述代码时会做三件事：</p>
+
+<ul>
+  <li>生成实例变量 <code class="highlighter-rouge">_property</code></li>
+  <li>生成 <code class="highlighter-rouge">getter</code> 方法 <code class="highlighter-rouge">- property</code></li>
+  <li>生成 <code class="highlighter-rouge">setter</code> 方法 <code class="highlighter-rouge">- setProperty:</code></li>
+</ul>
+
+<pre><code class="language-objectivec">@implementation DKObject {
+    NSString *_property;
+}
+
+- (NSString *)property {
+    return _property;
+}
+
+- (void)setProperty:(NSString *)property {
+    _property = property;
+}
+
+@end
+</code></pre>
+
+<p>这些代码都是编译器为我们生成的，虽然你看不到它，但是它确实在这里，我们既然可以在类中使用 <code class="highlighter-rouge"><span class="k">@property</span></code> 生成一个属性，那么为什么在分类中不可以呢？</p>
+
+<p>我们来做一个小实验：创建一个 <code class="highlighter-rouge">DKObject</code> 的分类 <code class="highlighter-rouge">Category</code>，并添加一个属性 <code class="highlighter-rouge">categoryProperty</code>：</p>
+
+<pre><code class="language-objectivec">@interface DKObject (Category)
+
+@property (nonatomic, strong) NSString *categoryProperty;
+
+@end
+</code></pre>
+
+<p>看起来还是很不错的，不过 Build 一下这个 Demo，会发现有这么一个警告：</p>
+
+<p><img src="https://img.draveness.me/2016-06-08-objc-ao-warning-category-property.png-1000width" alt="objc-ao-warning-category-property" /></p>
+
+<p>在这里的警告告诉我们 <code class="highlighter-rouge">categoryProperty</code> 属性的存取方法需要自己手动去实现，或者使用 <code class="highlighter-rouge">@dynamic</code> 在运行时实现这些方法。</p>
+
+<p>换句话说，分类中的 <code class="highlighter-rouge"><span class="k">@property</span></code> 并没有为我们生成实例变量以及存取方法，而需要我们手动实现。</p>
+
+<h3 id="使用关联对象">使用关联对象</h3>
+
+<p>Q：我们为什么要使用关联对象？</p>
+
+<p>A：因为在分类中 <code class="highlighter-rouge"><span class="k">@property</span></code> 并不会自动生成实例变量以及存取方法，所以<strong>一般使用关联对象为已经存在的类添加『属性』</strong>。</p>
+
+<p>上一小节的内容已经给了我们需要使用关联对象的理由。在这里，我们会介绍 ObjC 运行时为我们提供的与关联对象有关的 API，并在分类中实现一个<strong>伪属性</strong>：</p>
+
+<pre><code class="language-objectivec">#import "DKObject+Category.h"
+#import &lt;objc/runtime.h&gt;
+
+@implementation DKObject (Category)
+
+- (NSString *)categoryProperty {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setCategoryProperty:(NSString *)categoryProperty {
+    objc_setAssociatedObject(self, @selector(categoryProperty), categoryProperty, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+@end
+</code></pre>
+
+<blockquote>
+  <p>这里的 <code class="highlighter-rouge">_cmd</code> 代指当前方法的选择子，也就是 <code class="highlighter-rouge">@selector(categoryProperty)</code>。</p>
+</blockquote>
+
+<p>我们使用了两个方法 <code class="highlighter-rouge">objc_getAssociatedObject</code> 以及 <code class="highlighter-rouge">objc_setAssociatedObject</code> 来模拟『属性』的存取方法，而使用关联对象模拟实例变量。</p>
+
+<p>在这里有必要解释两个问题：</p>
+
+<ol>
+  <li>为什么向方法中传入 <code class="highlighter-rouge">@selector(categoryProperty)</code>？</li>
+  <li><code class="highlighter-rouge">OBJC_ASSOCIATION_RETAIN_NONATOMIC</code> 是干什么的？</li>
+</ol>
+
+<p>关于第一个问题，我们需要看一下这两个方法的原型：</p>
+
+<pre><code class="language-objectivec">id objc_getAssociatedObject(id object, const void *key);
+void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy);
+</code></pre>
+
+<p><code class="highlighter-rouge">@selector(categoryProperty)</code> 也就是参数中的 <code class="highlighter-rouge">key</code>，其实可以使用静态指针 <code class="highlighter-rouge">static void *</code> 类型的参数来代替，不过在这里，笔者强烈推荐使用 <code class="highlighter-rouge">@selector(categoryProperty)</code> 作为 <code class="highlighter-rouge">key</code> 传入。因为这种方法省略了声明参数的代码，并且能很好地保证 <code class="highlighter-rouge">key</code> 的唯一性。</p>
+
+<p><code class="highlighter-rouge">OBJC_ASSOCIATION_RETAIN_NONATOMIC</code> 又是什么呢？如果我们使用 <code class="highlighter-rouge">Command</code> 加左键查看它的定义：</p>
+
+<pre><code class="language-objectivec">typedef OBJC_ENUM(uintptr_t, objc_AssociationPolicy) {
+    OBJC_ASSOCIATION_ASSIGN = 0,           /**&lt; Specifies a weak reference to the associated object. */
+    OBJC_ASSOCIATION_RETAIN_NONATOMIC = 1, /**&lt; Specifies a strong reference to the associated object.
+                                            *   The association is not made atomically. */
+    OBJC_ASSOCIATION_COPY_NONATOMIC = 3,   /**&lt; Specifies that the associated object is copied.
+                                            *   The association is not made atomically. */
+    OBJC_ASSOCIATION_RETAIN = 01401,       /**&lt; Specifies a strong reference to the associated object.
+                                            *   The association is made atomically. */
+    OBJC_ASSOCIATION_COPY = 01403          /**&lt; Specifies that the associated object is copied.
+                                            *   The association is made atomically. */
+};
+</code></pre>
+
+<p>从这里的注释我们能看到很多东西，也就是说不同的 <code class="highlighter-rouge">objc_AssociationPolicy</code> 对应了不通的属性修饰符：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">objc_AssociationPolicy</th>
+      <th style="text-align: center">modifier</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">OBJC_ASSOCIATION_ASSIGN</td>
+      <td style="text-align: center">assign</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">OBJC_ASSOCIATION_RETAIN_NONATOMIC</td>
+      <td style="text-align: center">nonatomic, strong</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">OBJC_ASSOCIATION_COPY_NONATOMIC</td>
+      <td style="text-align: center">nonatomic, copy</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">OBJC_ASSOCIATION_RETAIN</td>
+      <td style="text-align: center">atomic, strong</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">OBJC_ASSOCIATION_COPY</td>
+      <td style="text-align: center">atomic, copy</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>而我们在代码中实现的属性 <code class="highlighter-rouge">categoryProperty</code> 就相当于使用了 <code class="highlighter-rouge">nonatomic</code> 和 <code class="highlighter-rouge">strong</code> 修饰符。</p>
+
+<blockquote>
+  <p>关于属性修饰符的区别，并不是这篇文章的主要内容，如果你需要了解它们的区别，<a href="https://google.com">Google</a> 是一个很好的选择。</p>
+</blockquote>
+
+<p>到这里，我们已经完成了对关联对象应用的介绍，再来回顾一下小节的内容。</p>
+
+<p>@property` 其实有元编程的思想，它能够为我们自动生成<strong>实例变量以及存取方法</strong>，而这三者构成了属性这个类似于语法糖的概念，为我们提供了更便利的点语法来访问属性：</p>
+
+<pre><code class="language-objectivec">self.property &lt;=&gt; [self property]
+self.property = value &lt;=&gt; [self setProperty:value]
+</code></pre>
+
+<p>在分类中，因为类的实例变量的布局已经固定，使用 <code class="highlighter-rouge"><span class="k">@property</span></code> 已经<strong>无法向固定的布局中添加新的实例变量（这样做可能会覆盖子类的实例变量）</strong>，所以我们需要<strong>使用关联对象以及两个方法来模拟构成属性的三个要素</strong>。</p>
+
+<blockquote>
+  <p>如果你是一个 iOS 开发方面的新手，我相信这篇文章的前半部分对已经足够使用了，不过，如果你还对关联对象的实现非常感兴趣，也可以尝试阅读下面的内容。</p>
+</blockquote>
+
+<h2 id="关联对象的实现">关联对象的实现</h2>
+
+<blockquote>
+  <p>探索关联对象的实现一直是我想要做的一件事情，直到最近，我才有足够的时间来完成这篇文章，希望能够对各位读者有所帮助。</p>
+</blockquote>
+
+<p>这一部分会从三个 objc 运行时的方法为入口来对关联对象的实现一探究竟，其中两个方法是上一部分使用到的方法：</p>
+
+<pre><code class="language-objectivec">void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy);
+id objc_getAssociatedObject(id object, const void *key);
+void objc_removeAssociatedObjects(id object);
+</code></pre>
+
+<p>三个方法的作用分别是：</p>
+
+<ul>
+  <li>以键值对形式添加关联对象</li>
+  <li>根据 <code class="highlighter-rouge">key</code> 获取关联对象</li>
+  <li>移除所有关联对象</li>
+</ul>
+
+<p>而接下来的内容自然就是围绕这三个方法进行的，我们会对它们的实现进行分析。</p>
+
+<h3 id="objc_setassociatedobject">objc_setAssociatedObject</h3>
+
+<p>首先是 <code class="highlighter-rouge">objc_setAssociatedObject</code> 方法，这个方法的调用栈并不复杂：</p>
+
+<pre><code class="language-objectivec">void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy)
+└── void objc_setAssociatedObject_non_gc(id object, const void *key, id value, objc_AssociationPolicy policy)
+    └── void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy)
+</code></pre>
+
+<p>调用栈中的 <code class="highlighter-rouge">_object_set_associative_reference</code> 方法实际完成了设置关联对象的任务：</p>
+
+<pre><code class="language-objectivec">void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
+    ObjcAssociation old_association(0, nil);
+    id new_value = value ? acquireValue(value, policy) : nil;
+    {
+        AssociationsManager manager;
+        AssociationsHashMap &amp;associations(manager.associations());
+        ObjectAssociationMap *refs = i-&gt;second;
+        ...
+    }
+    if (old_association.hasValue()) ReleaseValue()(old_association);
+}
+</code></pre>
+
+<blockquote>
+  <p>在这里的实现省略了大多的实现代码，而且忽略了很多逻辑上的顺序，不过不要在意这里的代码能否执行。</p>
+</blockquote>
+
+<p>我们需要注意其中的几个类和数据结构，因为在具体分析这个方法的实现之前，我们需要了解其中它们的作用：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">AssociationsManager</code></li>
+  <li><code class="highlighter-rouge">AssociationsHashMap</code></li>
+  <li><code class="highlighter-rouge">ObjcAssociationMap</code></li>
+  <li><code class="highlighter-rouge">ObjcAssociation</code></li>
+</ul>
+
+<h4 id="associationsmanager">AssociationsManager</h4>
+
+<p><code class="highlighter-rouge">AssociationsManager</code> 在源代码中的定义是这样的：</p>
+
+<pre><code class="language-objectivec">class AssociationsManager {
+    static spinlock_t _lock;
+    static AssociationsHashMap *_map;
+public:
+    AssociationsManager()   { _lock.lock(); }
+    ~AssociationsManager()  { _lock.unlock(); }
+
+    AssociationsHashMap &amp;associations() {
+        if (_map == NULL)
+            _map = new AssociationsHashMap();
+        return *_map;
+    }
+};
+
+spinlock_t AssociationsManager::_lock;
+AssociationsHashMap *AssociationsManager::_map = NULL;
+</code></pre>
+
+<p>它维护了 <code class="highlighter-rouge">spinlock_t</code> 和 <code class="highlighter-rouge">AssociationsHashMap</code> 的单例，初始化它的时候会调用 <code class="highlighter-rouge">lock.lock()</code> 方法，在析构时会调用 <code class="highlighter-rouge">lock.unlock()</code>，而 <code class="highlighter-rouge">associations</code> 方法用于取得一个全局的 <code class="highlighter-rouge">AssociationsHashMap</code> 单例。</p>
+
+<p>也就是说 <code class="highlighter-rouge">AssociationsManager</code> 通过持有一个<a href="https://en.wikipedia.org/wiki/Spinlock">自旋锁</a> <code class="highlighter-rouge">spinlock_t</code> 保证对 <code class="highlighter-rouge">AssociationsHashMap</code> 的操作是线程安全的，即<strong>每次只会有一个线程对 AssociationsHashMap 进行操作</strong>。</p>
+
+<h4 id="如何存储-objcassociation">如何存储 ObjcAssociation</h4>
+
+<p><code class="highlighter-rouge">ObjcAssociation</code> 就是真正的关联对象的类，上面的所有数据结构只是为了更好的存储它。</p>
+
+<p>首先，<code class="highlighter-rouge">AssociationsHashMap</code> 用与保存从对象的 <code class="highlighter-rouge">disguised_ptr_t</code> 到 <code class="highlighter-rouge">ObjectAssociationMap</code> 的映射：</p>
+
+<pre><code class="language-objectivec">class AssociationsHashMap : public unordered_map&lt;disguised_ptr_t, ObjectAssociationMap *, DisguisedPointerHash, DisguisedPointerEqual, AssociationsHashMapAllocator&gt; {
+public:
+    void *operator new(size_t n) { return ::malloc(n); }
+    void operator delete(void *ptr) { ::free(ptr); }
+};
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">ObjectAssociationMap</code> 则保存了从 <code class="highlighter-rouge">key</code> 到关联对象 <code class="highlighter-rouge">ObjcAssociation</code> 的映射，<strong>这个数据结构保存了当前对象对应的所有关联对象</strong>：</p>
+
+<pre><code class="language-objectivec">class ObjectAssociationMap : public std::map&lt;void *, ObjcAssociation, ObjectPointerLess, ObjectAssociationMapAllocator&gt; {
+public:
+   void *operator new(size_t n) { return ::malloc(n); }
+   void operator delete(void *ptr) { ::free(ptr); }
+};
+</code></pre>
+
+<p>最关键的 <code class="highlighter-rouge">ObjcAssociation</code> 包含了 <code class="highlighter-rouge">policy</code> 以及 <code class="highlighter-rouge">value</code>：</p>
+
+<pre><code class="language-objectivec">class ObjcAssociation {
+    uintptr_t _policy;
+    id _value;
+public:
+    ObjcAssociation(uintptr_t policy, id value) : _policy(policy), _value(value) {}
+    ObjcAssociation() : _policy(0), _value(nil) {}
+
+    uintptr_t policy() const { return _policy; }
+    id value() const { return _value; }
+
+    bool hasValue() { return _value != nil; }
+};
+</code></pre>
+
+<p>举一个简单的例子来说明关联对象在内存中以什么形式存储的，以下面的代码为例：</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+
+        NSObject *obj = [NSObject new];
+        objc_setAssociatedObject(obj, @selector(hello), @"Hello", OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    }
+    return 0;
+}
+</code></pre>
+
+<p>这里的关联对象 <code class="highlighter-rouge">ObjcAssociation(OBJC_ASSOCIATION_RETAIN_NONATOMIC, @"Hello")</code> 在内存中是这么存储的：</p>
+
+<p><img src="https://img.draveness.me/2016-06-08-objc-ao-associateobjcect.png-1000width" alt="objc-ao-associateobjcect" /></p>
+
+<hr />
+
+<p>接下来我们可以重新回到对 <code class="highlighter-rouge">objc_setAssociatedObject</code> 方法的分析了。</p>
+
+<p>在这里会将方法的执行分为两种情况：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">new_value != nil</code> 设置/更新关联对象的值</li>
+  <li><code class="highlighter-rouge">new_value == nil</code> 删除一个关联对象</li>
+</ul>
+
+<h4 id="new_value--nil">new_value != nil</h4>
+
+<p>先来分析在 <code class="highlighter-rouge">new_value != nil</code> 的情况下，该方法的执行是什么样的：</p>
+
+<pre><code class="language-objectivec">void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
+    ObjcAssociation old_association(0, nil);
+    id new_value = value ? acquireValue(value, policy) : nil;
+    {
+        AssociationsManager manager;
+        AssociationsHashMap &amp;associations(manager.associations());
+        disguised_ptr_t disguised_object = DISGUISE(object);
+
+        AssociationsHashMap::iterator i = associations.find(disguised_object);
+        if (i != associations.end()) {
+            ObjectAssociationMap *refs = i-&gt;second;
+            ObjectAssociationMap::iterator j = refs-&gt;find(key);
+            if (j != refs-&gt;end()) {
+                old_association = j-&gt;second;
+                j-&gt;second = ObjcAssociation(policy, new_value);
+            } else {
+                (*refs)[key] = ObjcAssociation(policy, new_value);
+            }
+        } else {
+            ObjectAssociationMap *refs = new ObjectAssociationMap;
+            associations[disguised_object] = refs;
+            (*refs)[key] = ObjcAssociation(policy, new_value);
+            object-&gt;setHasAssociatedObjects();
+        }
+    }
+    if (old_association.hasValue()) ReleaseValue()(old_association);
+}
+</code></pre>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">old_association(0, nil)</code> 创建一个临时的 <code class="highlighter-rouge">ObjcAssociation</code> 对象（用于持有原有的关联对象，方便在方法调用的最后释放值）</li>
+  <li>
+    <p>调用 <code class="highlighter-rouge">acquireValue</code> 对 <code class="highlighter-rouge">new_value</code> 进行 <code class="highlighter-rouge">retain</code> 或者 <code class="highlighter-rouge">copy</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> static id acquireValue(id value, uintptr_t policy) {
+     switch (policy &amp; 0xFF) {
+     case OBJC_ASSOCIATION_SETTER_RETAIN:
+         return ((id(*)(id, SEL))objc_msgSend)(value, SEL_retain);
+     case OBJC_ASSOCIATION_SETTER_COPY:
+         return ((id(*)(id, SEL))objc_msgSend)(value, SEL_copy);
+     }
+     return value;
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>初始化一个 <code class="highlighter-rouge">AssociationsManager</code>，并获取唯一的保存关联对象的哈希表 <code class="highlighter-rouge">AssociationsHashMap</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> AssociationsManager manager;
+ AssociationsHashMap &amp;associations(manager.associations());
+</code></pre></div>    </div>
+  </li>
+  <li>先使用 <code class="highlighter-rouge">DISGUISE(object)</code> 作为 key 寻找对应的 <code class="highlighter-rouge">ObjectAssociationMap</code></li>
+  <li>
+    <p>如果没有找到，初始化一个 <code class="highlighter-rouge">ObjectAssociationMap</code>，再实例化 <code class="highlighter-rouge">ObjcAssociation</code> 对象添加到 Map 中，并调用 <code class="highlighter-rouge">setHasAssociatedObjects</code> 方法，表明当前对象含有关联对象</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ObjectAssociationMap *refs = new ObjectAssociationMap;
+ associations[disguised_object] = refs;
+ (*refs)[key] = ObjcAssociation(policy, new_value);
+ object-&gt;setHasAssociatedObjects();
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>如果找到了对应的 <code class="highlighter-rouge">ObjectAssociationMap</code>，就要看 <code class="highlighter-rouge">key</code> 是否存在了，由此来决定是更新原有的关联对象，还是增加一个</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ObjectAssociationMap *refs = i-&gt;second;
+ ObjectAssociationMap::iterator j = refs-&gt;find(key);
+ if (j != refs-&gt;end()) {
+     old_association = j-&gt;second;
+     j-&gt;second = ObjcAssociation(policy, new_value);
+ } else {
+     (*refs)[key] = ObjcAssociation(policy, new_value);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>最后的最后，如果原来的关联对象有值的话，会调用 <code class="highlighter-rouge">ReleaseValue()</code> 释放关联对象的值</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> struct ReleaseValue {
+     void operator() (ObjcAssociation &amp;association) {
+         releaseValue(association.value(), association.policy());
+     }
+ };
+
+ static void releaseValue(id value, uintptr_t policy) {
+     if (policy &amp; OBJC_ASSOCIATION_SETTER_RETAIN) {
+         ((id(*)(id, SEL))objc_msgSend)(value, SEL_release);
+     }
+ }
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>到这里，该条件下的方法实现就结束了。</p>
+
+<h4 id="new_value--nil-1">new_value == nil</h4>
+
+<p>如果 <code class="highlighter-rouge">new_value == nil</code>，就说明我们要删除对应 <code class="highlighter-rouge">key</code> 的关联对象，实现如下：</p>
+
+<pre><code class="language-objectivec">void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
+    ObjcAssociation old_association(0, nil);
+    id new_value = value ? acquireValue(value, policy) : nil;
+    {
+        AssociationsManager manager;
+        AssociationsHashMap &amp;associations(manager.associations());
+        disguised_ptr_t disguised_object = DISGUISE(object);
+
+        AssociationsHashMap::iterator i = associations.find(disguised_object);
+        if (i !=  associations.end()) {
+            ObjectAssociationMap *refs = i-&gt;second;
+            ObjectAssociationMap::iterator j = refs-&gt;find(key);
+            if (j != refs-&gt;end()) {
+                old_association = j-&gt;second;
+                refs-&gt;erase(j);
+            }
+        }
+    }
+    if (old_association.hasValue()) ReleaseValue()(old_association);
+}
+</code></pre>
+
+<p>这种情况下方法的实现与前面的唯一区别就是，我们会调用 <code class="highlighter-rouge">erase</code> 方法，擦除 <code class="highlighter-rouge">ObjectAssociationMap</code> 中 <code class="highlighter-rouge">key</code> 对应的节点。</p>
+
+<h4 id="sethasassociatedobjects">setHasAssociatedObjects()</h4>
+
+<p>其实上面的两种情况已经将 <code class="highlighter-rouge">objc_setAssociatedObject</code> 方法的实现分析得很透彻了，不过，这里还有一个小问题来等待我们解决，<code class="highlighter-rouge">setHasAssociatedObjects()</code> 方法的作用是什么？</p>
+
+<pre><code class="language-objectivec">inline void objc_object::setHasAssociatedObjects() {
+    if (isTaggedPointer()) return;
+
+ retry:
+    isa_t oldisa = LoadExclusive(&amp;isa.bits);
+    isa_t newisa = oldisa;
+    if (!newisa.indexed) return;
+    if (newisa.has_assoc) return;
+    newisa.has_assoc = true;
+    if (!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)) goto retry;
+}
+</code></pre>
+
+<p>它会将 <code class="highlighter-rouge">isa</code> 结构体中的标记位 <code class="highlighter-rouge">has_assoc</code> 标记为 <code class="highlighter-rouge">true</code>，也就是表示当前对象有关联对象，在这里我还想祭出这张图来介绍 <code class="highlighter-rouge">isa</code> 中的各个标记位都是干什么的。</p>
+
+<p><img src="https://img.draveness.me/2016-06-08-objc-ao-isa-struct.png-1000width" alt="objc-ao-isa-struct" /></p>
+
+<blockquote>
+  <p>如果想要了解关于 isa 的知识，可以阅读<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/从%20NSObject%20的初始化了解%20isa.md">从 NSObject 的初始化了解 isa</a></p>
+</blockquote>
+
+<h3 id="objc_getassociatedobject">objc_getAssociatedObject</h3>
+
+<p>我们既然已经对 <code class="highlighter-rouge">objc_setAssociatedObject</code> 的实现已经比较熟悉了，相信对于 <code class="highlighter-rouge">objc_getAssociatedObject</code> 的理解也会更加容易。</p>
+
+<p>方法的调用栈和 <code class="highlighter-rouge">objc_setAssociatedObject</code> 非常相似：</p>
+
+<pre><code class="language-objectivec">id objc_getAssociatedObject(id object, const void *key)
+└── id objc_getAssociatedObject_non_gc(id object, const void *key);
+    └── id _object_get_associative_reference(id object, void *key)
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">_object_get_associative_reference</code> 相比于前面方法的实现更加简单。</p>
+
+<pre><code class="language-objectivec">id _object_get_associative_reference(id object, void *key) {
+    id value = nil;
+    uintptr_t policy = OBJC_ASSOCIATION_ASSIGN;
+    {
+        AssociationsManager manager;
+        AssociationsHashMap &amp;associations(manager.associations());
+        disguised_ptr_t disguised_object = DISGUISE(object);
+        AssociationsHashMap::iterator i = associations.find(disguised_object);
+        if (i != associations.end()) {
+            ObjectAssociationMap *refs = i-&gt;second;
+            ObjectAssociationMap::iterator j = refs-&gt;find(key);
+            if (j != refs-&gt;end()) {
+                ObjcAssociation &amp;entry = j-&gt;second;
+                value = entry.value();
+                policy = entry.policy();
+                if (policy &amp; OBJC_ASSOCIATION_GETTER_RETAIN) ((id(*)(id, SEL))objc_msgSend)(value, SEL_retain);
+            }
+        }
+    }
+    if (value &amp;&amp; (policy &amp; OBJC_ASSOCIATION_GETTER_AUTORELEASE)) {
+        ((id(*)(id, SEL))objc_msgSend)(value, SEL_autorelease);
+    }
+    return value;
+}
+</code></pre>
+
+<p>代码中寻找关联对象的逻辑和 <code class="highlighter-rouge">objc_setAssociatedObject</code> 差不多：</p>
+
+<ol>
+  <li>获取静态变量 <code class="highlighter-rouge">AssociationsHashMap</code></li>
+  <li>以 <code class="highlighter-rouge">DISGUISE(object)</code> 为 key 查找 <code class="highlighter-rouge">AssociationsHashMap</code></li>
+  <li>以 <code class="highlighter-rouge">void *key</code> 为 key 查找 <code class="highlighter-rouge">ObjcAssociation</code></li>
+  <li>
+    <p>根据 <code class="highlighter-rouge">policy</code> 调用相应的方法</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (policy &amp; OBJC_ASSOCIATION_GETTER_RETAIN) ((id(*)(id, SEL))objc_msgSend)(value, SEL_retain);
+
+ if (value &amp;&amp; (policy &amp; OBJC_ASSOCIATION_GETTER_AUTORELEASE)) {
+     ((id(*)(id, SEL))objc_msgSend)(value, SEL_autorelease);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>返回关联对象 <code class="highlighter-rouge">ObjcAssociation</code> 的值</li>
+</ol>
+
+<h3 id="objc_removeassociatedobjects">objc_removeAssociatedObjects</h3>
+
+<p>关于最后的 <code class="highlighter-rouge">objc_removeAssociatedObjects</code> 方法，其实现也相对简单，这是方法的调用栈：</p>
+
+<pre><code class="language-objectivec">void objc_removeAssociatedObjects(id object)
+└── void _object_remove_assocations(id object)
+</code></pre>
+
+<p>这是简化版本的 <code class="highlighter-rouge">objc_removeAssociatedObjects</code> 方法实现：</p>
+
+<pre><code class="language-objectivec">void objc_removeAssociatedObjects(id object) {
+    if (object &amp;&amp; object-&gt;hasAssociatedObjects()) {
+        _object_remove_assocations(object);
+    }
+}
+</code></pre>
+
+<p>为了加速移除对象的关联对象的速度，我们会通过标记位 <code class="highlighter-rouge">has_assoc</code> 来避免不必要的方法调用，在确认了对象和关联对象的存在之后，才会调用 <code class="highlighter-rouge">_object_remove_assocations</code> 方法移除对象上所有的关联对象：</p>
+
+<pre><code class="language-objectivec">void _object_remove_assocations(id object) {
+    vector&lt; ObjcAssociation,ObjcAllocator&lt;ObjcAssociation&gt; &gt; elements;
+    {
+        AssociationsManager manager;
+        AssociationsHashMap &amp;associations(manager.associations());
+        if (associations.size() == 0) return;
+        disguised_ptr_t disguised_object = DISGUISE(object);
+        AssociationsHashMap::iterator i = associations.find(disguised_object);
+        if (i != associations.end()) {
+            ObjectAssociationMap *refs = i-&gt;second;
+            for (ObjectAssociationMap::iterator j = refs-&gt;begin(), end = refs-&gt;end(); j != end; ++j) {
+                elements.push_back(j-&gt;second);
+            }
+            delete refs;
+            associations.erase(i);
+        }
+    }
+    for_each(elements.begin(), elements.end(), ReleaseValue());
+}
+</code></pre>
+
+<p>方法会将对象包含的所有关联对象加入到一个 <code class="highlighter-rouge">vector</code> 中，然后对所有的 <code class="highlighter-rouge">ObjcAssociation</code> 对象调用 <code class="highlighter-rouge">ReleaseValue()</code> 方法，释放不再被需要的值。</p>
+
+<h2 id="小结">小结</h2>
+
+<h3 id="关于应用">关于应用</h3>
+
+<p>本来在这个系列的文章中并不会涉及关联对象这个话题，不过，有人问过我这么一个问题：在分类中到底能否实现属性？其实在回答这个问题之前，首先要知道到底属性是什么？而属性的概念决定了这个问题的答案。</p>
+
+<ul>
+  <li>如果你把属性理解为<strong>通过方法访问的实例变量</strong>，我相信这个问题的答案是不能，<strong>因为分类不能为类增加额外的实例变量</strong>。</li>
+  <li>不过如果属性只是一个<strong>存取方法以及存储值的容器的集合</strong>，那么分类是可以实现属性的。</li>
+</ul>
+
+<blockquote>
+  <p><strong>分类中对属性的实现其实只是实现了一个看起来像属性的接口而已</strong>。</p>
+</blockquote>
+
+<h3 id="关于实现">关于实现</h3>
+
+<p>关联对象又是如何实现并且管理的呢：</p>
+
+<ul>
+  <li>关联对象其实就是 <code class="highlighter-rouge">ObjcAssociation</code> 对象</li>
+  <li>关联对象由 <code class="highlighter-rouge">AssociationsManager</code> 管理并在  <code class="highlighter-rouge">AssociationsHashMap</code> 存储</li>
+  <li>对象的指针以及其对应 <code class="highlighter-rouge">ObjectAssociationMap</code> 以键值对的形式存储在 <code class="highlighter-rouge">AssociationsHashMap</code> 中</li>
+  <li><code class="highlighter-rouge">ObjectAssociationMap</code> 则是用于存储关联对象的数据结构</li>
+  <li>每一个对象都有一个标记位 <code class="highlighter-rouge">has_assoc</code> 指示对象是否含有关联对象</li>
+</ul>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>黑箱中的 retain 和 release</title>
+	  <link>/reprinted//rr</link>
+	  <author></author>
+	  <pubDate>2016-05-30T04:10:37+00:00</pubDate>
+	  <guid>/reprinted//rr</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/rr">黑箱中的 retain 和 release</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+  <p>由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 <code class="highlighter-rouge">autorelease</code> 方法，另一部分分析 <code class="highlighter-rouge">retain</code>、<code class="highlighter-rouge">release</code> 方法的实现以及自动引用计数。</p>
+</blockquote>
+
+<ul>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/自动释放池的前世今生.md">自动释放池的前世今生</a></li>
+  <li><a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/黑箱中的%20retain%20和%20release.md">黑箱中的 retain 和 release</a></li>
+</ul>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>在接口设计时，我们经常要考虑某些意义上的平衡。在内存管理中也是这样，Objective-C 同时为我们提供了增加引用计数的 <code class="highlighter-rouge">retain</code> 和减少引用计数的 <code class="highlighter-rouge">release</code> 方法。</p>
+
+<p>这篇文章会在源代码层面介绍 Objective-C 中 <code class="highlighter-rouge">retain</code> 和 <code class="highlighter-rouge">release</code> 的实现，它们是如何达到平衡的。</p>
+
+<h2 id="从-retain-开始">从 retain 开始</h2>
+
+<p>如今我们已经进入了全面使用 ARC 的时代，几年前还经常使用的 <code class="highlighter-rouge">retain</code> 和 <code class="highlighter-rouge">release</code> 方法已经很难出现于我们的视野中了，绝大多数内存管理的实现细节都由编译器代劳。</p>
+
+<p>在这里，我们还要从 <code class="highlighter-rouge">retain</code> 方法开始，对内存管理的实现细节一探究竟。</p>
+
+<p>下面是 <code class="highlighter-rouge">retain</code> 方法的调用栈：</p>
+
+<pre><code class="language-objectivec">- [NSObject retain]
+└── id objc_object::rootRetain()
+    └── id objc_object::rootRetain(bool tryRetain, bool handleOverflow)
+        ├── uintptr_t LoadExclusive(uintptr_t *src)
+        ├── uintptr_t addc(uintptr_t lhs, uintptr_t rhs, uintptr_t carryin, uintptr_t *carryout)
+        ├── uintptr_t bits
+        │   └── uintptr_t has_sidetable_rc  
+        ├── bool StoreExclusive(uintptr_t *dst, uintptr_t oldvalue, uintptr_t value)
+        └── bool objc_object::sidetable_addExtraRC_nolock(size_t delta_rc)                
+            └── uintptr_t addc(uintptr_t lhs, uintptr_t rhs, uintptr_t carryin, uintptr_t *carryout)
+</code></pre>
+
+<p>调用栈中的前两个方法的实现直接调用了下一个方法：</p>
+
+<pre><code class="language-objectivec">- (id)retain {
+    return ((id)self)-&gt;rootRetain();
+}
+
+id objc_object::rootRetain() {
+    return rootRetain(false, false);
+}
+</code></pre>
+
+<p>而 <code class="highlighter-rouge">id objc_object::rootRetain(bool tryRetain, bool handleOverflow)</code> 方法是调用栈中最重要的方法，其原理就是将 <code class="highlighter-rouge">isa</code> 结构体中的 <code class="highlighter-rouge">extra_rc</code> 的值加一。</p>
+
+<p><code class="highlighter-rouge">extra_rc</code> 就是用于保存自动引用计数的标志位，下面就是 <code class="highlighter-rouge">isa</code> 结构体中的结构：</p>
+
+<p><img src="https://img.draveness.me/2016-05-27-objc-rr-isa-struct.png-1000width" alt="objc-rr-isa-struct" /></p>
+
+<p>接下来我们会分三种情况对 <code class="highlighter-rouge">rootRetain</code> 进行分析。</p>
+
+<h3 id="正常的-rootretain">正常的 rootRetain</h3>
+
+<p>这是简化后的 <code class="highlighter-rouge">rootRetain</code> 方法的实现，其中只有处理一般情况的代码：</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain(bool tryRetain, bool handleOverflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);
+    } while (!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    return (id)this;
+}
+</code></pre>
+
+<blockquote>
+  <p>在这里我们假设的条件是 <code class="highlighter-rouge">isa</code> 中的 <code class="highlighter-rouge">extra_rc</code> 的位数足以存储 <code class="highlighter-rouge">retainCount</code>。</p>
+</blockquote>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">LoadExclusive</code> 加载 <code class="highlighter-rouge">isa</code> 的值</li>
+  <li>调用 <code class="highlighter-rouge">addc(newisa.bits, RC_ONE, 0, &amp;carry)</code> 方法将 <code class="highlighter-rouge">isa</code> 的值加一</li>
+  <li>调用 <code class="highlighter-rouge">StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)</code> 更新 <code class="highlighter-rouge">isa</code> 的值</li>
+  <li>返回当前对象</li>
+</ol>
+
+<h3 id="有进位版本的-rootretain">有进位版本的 rootRetain</h3>
+
+<p>在这里调用 <code class="highlighter-rouge">addc</code> 方法为 <code class="highlighter-rouge">extra_rc</code> 加一时，8 位的 <code class="highlighter-rouge">extra_rc</code> 可能不足以保存引用计数。</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain(bool tryRetain, bool handleOverflow) {
+    transcribeToSideTable = false;
+    isa_t oldisa = LoadExclusive(&amp;isa.bits);
+    isa_t newisa = oldisa;
+
+    uintptr_t carry;
+    newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);
+
+    if (carry &amp;&amp; !handleOverflow)
+        return rootRetain_overflow(tryRetain);
+}
+</code></pre>
+
+<blockquote>
+  <p><code class="highlighter-rouge">extra_rc</code> 不足以保存引用计数，并且 <code class="highlighter-rouge">handleOverflow = false</code>。</p>
+</blockquote>
+
+<p>当方法传入的 <code class="highlighter-rouge">handleOverflow = false</code> 时（这也是通常情况），我们会调用 <code class="highlighter-rouge">rootRetain_overflow</code> 方法：</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain_overflow(bool tryRetain) {
+    return rootRetain(tryRetain, true);
+}
+</code></pre>
+
+<p>这个方法其实就是重新执行 <code class="highlighter-rouge">rootRetain</code> 方法，并传入 <code class="highlighter-rouge">handleOverflow = true</code>。</p>
+
+<h3 id="有进位版本的-rootretain处理溢出">有进位版本的 rootRetain（处理溢出）</h3>
+
+<p>当传入的 <code class="highlighter-rouge">handleOverflow = true</code> 时，我们就会在 <code class="highlighter-rouge">rootRetain</code> 方法中处理引用计数的溢出。</p>
+
+<pre><code class="language-objectivec">id objc_object::rootRetain(bool tryRetain, bool handleOverflow) {
+    bool sideTableLocked = false;
+
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+        uintptr_t carry;
+        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);
+
+        if (carry) {
+            newisa.extra_rc = RC_HALF;
+            newisa.has_sidetable_rc = true;
+        }
+    } while (!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    sidetable_addExtraRC_nolock(RC_HALF);
+
+    return (id)this;
+}
+</code></pre>
+
+<p>当调用这个方法，并且 <code class="highlighter-rouge">handleOverflow = true</code> 时，我们就可以确定 <code class="highlighter-rouge">carry</code> 一定是存在的了，</p>
+
+<p>因为 <code class="highlighter-rouge">extra_rc</code> 已经溢出了，所以要更新它的值为 <code class="highlighter-rouge">RC_HALF</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define RC_HALF (1ULL&lt;&lt;7)
+</span></code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">extra_rc</code> 总共为 8 位，<code class="highlighter-rouge">RC_HALF = 0b10000000</code>。</p>
+</blockquote>
+
+<p>然后设置 <code class="highlighter-rouge">has_sidetable_rc</code> 为真，存储新的 <code class="highlighter-rouge">isa</code> 的值之后，调用 <code class="highlighter-rouge">sidetable_addExtraRC_nolock</code> 方法。</p>
+
+<pre><code class="language-objectivec">bool objc_object::sidetable_addExtraRC_nolock(size_t delta_rc) {
+    SideTable&amp; table = SideTables()[this];
+
+    size_t&amp; refcntStorage = table.refcnts[this];
+    size_t oldRefcnt = refcntStorage;
+
+    if (oldRefcnt &amp; SIDE_TABLE_RC_PINNED) return true;
+
+    uintptr_t carry;
+    size_t newRefcnt =
+        addc(oldRefcnt, delta_rc &lt;&lt; SIDE_TABLE_RC_SHIFT, 0, &amp;carry);
+    if (carry) {
+        refcntStorage = SIDE_TABLE_RC_PINNED | (oldRefcnt &amp; SIDE_TABLE_FLAG_MASK);
+        return true;
+    } else {
+        refcntStorage = newRefcnt;
+        return false;
+    }
+}
+</code></pre>
+
+<p>这里我们将溢出的一位 <code class="highlighter-rouge">RC_HALF</code> 添加到 <code class="highlighter-rouge">oldRefcnt</code> 中，其中的各种 <code class="highlighter-rouge">SIDE_TABLE</code> 宏定义如下：</p>
+
+<pre><code class="language-objectivec">#define SIDE_TABLE_WEAKLY_REFERENCED (1UL&lt;&lt;0)
+#define SIDE_TABLE_DEALLOCATING      (1UL&lt;&lt;1)
+#define SIDE_TABLE_RC_ONE            (1UL&lt;&lt;2)
+#define SIDE_TABLE_RC_PINNED         (1UL&lt;&lt;(WORD_BITS-1))
+
+#define SIDE_TABLE_RC_SHIFT 2
+#define SIDE_TABLE_FLAG_MASK (SIDE_TABLE_RC_ONE-1)
+</code></pre>
+
+<p>因为 <code class="highlighter-rouge">refcnts</code> 中的 64 为的最低两位是有意义的标志位，所以在使用 <code class="highlighter-rouge">addc</code> 时要将 <code class="highlighter-rouge">delta_rc</code> 左移两位，获得一个新的引用计数 <code class="highlighter-rouge">newRefcnt</code>。</p>
+
+<p>如果这时出现了溢出，那么就会撤销这次的行为。否则，会将新的引用计数存储到 <code class="highlighter-rouge">refcntStorage</code> 指针中。</p>
+
+<hr />
+
+<p>也就是说，在 iOS 的内存管理中，我们使用了 <code class="highlighter-rouge">isa</code> 结构体中的 <code class="highlighter-rouge">extra_rc</code> 和 <code class="highlighter-rouge">SideTable</code> 来存储某个对象的自动引用计数。</p>
+
+<p>更重要的是，<strong>如果自动引用计数为 1，<code class="highlighter-rouge">extra_rc</code> 实际上为 0</strong>，因为它保存的是额外的引用计数，我们通过这个行为能够减少很多不必要的函数调用。</p>
+
+<p>到目前为止，我们已经从头梳理了 <code class="highlighter-rouge">retain</code> 方法的调用栈及其实现。下面要介绍的是在内存管理中，我们是如何使用 <code class="highlighter-rouge">release</code> 方法平衡这个方法的。</p>
+
+<h2 id="以-release-结束">以 release 结束</h2>
+
+<p>与 release 方法相似，我们看一下这个方法简化后的调用栈：</p>
+
+<pre><code class="language-objectivec">- [NSObject release]
+└── id objc_object::rootRelease()
+    └── id objc_object::rootRetain(bool performDealloc, bool handleUnderflow)
+</code></pre>
+
+<p>前面的两个方法的实现和 <code class="highlighter-rouge">retain</code> 中的相差无几，这里就直接跳过了。</p>
+
+<p>同样，在分析 <code class="highlighter-rouge">release</code> 方法时，我们也根据上下文的不同，将 <code class="highlighter-rouge">release</code> 方法的实现拆分为三部分，说明它到底是如何调用的。</p>
+
+<h3 id="正常的-release">正常的 release</h3>
+
+<p>这一个版本的方法调用可以说是最简版本的方法调用了：</p>
+
+<pre><code class="language-objectivec">bool objc_object::rootRelease(bool performDealloc, bool handleUnderflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);
+    } while (!StoreReleaseExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    return false;
+}
+</code></pre>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">LoadExclusive</code> 获取 <code class="highlighter-rouge">isa</code> 内容</li>
+  <li>将 <code class="highlighter-rouge">isa</code> 中的引用计数减一</li>
+  <li>调用 <code class="highlighter-rouge">StoreReleaseExclusive</code> 方法保存新的 <code class="highlighter-rouge">isa</code></li>
+</ol>
+
+<h3 id="从-sidetable-借位">从 SideTable 借位</h3>
+
+<p>接下来，我们就要看两种相对比较复杂的情况了，首先是从 <code class="highlighter-rouge">SideTable</code> 借位的版本：</p>
+
+<pre><code class="language-objectivec">bool objc_object::rootRelease(bool performDealloc, bool handleUnderflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);
+        if (carry) goto underflow;
+    } while (!StoreReleaseExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    ...
+
+ underflow:
+    newisa = oldisa;
+
+    if (newisa.has_sidetable_rc) {
+        if (!handleUnderflow) {
+            return rootRelease_underflow(performDealloc);
+        }
+
+        size_t borrowed = sidetable_subExtraRC_nolock(RC_HALF);
+
+        if (borrowed &gt; 0) {
+            newisa.extra_rc = borrowed - 1;
+            bool stored = StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits);
+
+            return false;
+        }
+    }
+}
+</code></pre>
+
+<blockquote>
+  <p>这里省去了使用锁来<strong>防止竞争条件</strong>以及<strong>调用 <code class="highlighter-rouge">StoreExclusive</code> 失败后恢复现场</strong>的代码。
+我们会默认这里存在 <code class="highlighter-rouge">SideTable</code>，也就是 <code class="highlighter-rouge">has_sidetable_rc = true</code>。</p>
+</blockquote>
+
+<p>你可以看到，这里也有一个 <code class="highlighter-rouge">handleUnderflow</code>，与 retain 中的相同，如果发生了 <code class="highlighter-rouge">underflow</code>，会重新调用该 <code class="highlighter-rouge">rootRelease</code> 方法，并传入 <code class="highlighter-rouge">handleUnderflow = true</code>。</p>
+
+<p>在调用 <code class="highlighter-rouge">sidetable_subExtraRC_nolock</code> 成功借位之后，我们会重新设置 <code class="highlighter-rouge">newisa</code> 的值 <code class="highlighter-rouge">newisa.extra_rc = borrowed - 1</code> 并更新 <code class="highlighter-rouge">isa</code>。</p>
+
+<h3 id="release-中调用-dealloc">release 中调用 dealloc</h3>
+
+<p>如果在 <code class="highlighter-rouge">SideTable</code> 中也没有获取到借位的话，就说明没有任何的变量引用了当前对象（即 <code class="highlighter-rouge">retainCount = 0</code>），就需要向它发送 <code class="highlighter-rouge">dealloc</code> 消息了。</p>
+
+<pre><code class="language-objectivec">bool objc_object::rootRelease(bool performDealloc, bool handleUnderflow) {
+    isa_t oldisa;
+    isa_t newisa;
+
+ retry:
+    do {
+        oldisa = LoadExclusive(&amp;isa.bits);
+        newisa = oldisa;
+
+        uintptr_t carry;
+        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);
+        if (carry) goto underflow;
+    } while (!StoreReleaseExclusive(&amp;isa.bits, oldisa.bits, newisa.bits));
+
+    ...
+
+ underflow:
+    newisa = oldisa;
+
+    if (newisa.deallocating) {
+        return overrelease_error();
+    }
+    newisa.deallocating = true;
+    StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits);
+
+    if (performDealloc) {
+        ((void(*)(objc_object *, SEL))objc_msgSend)(this, SEL_dealloc);
+    }
+    return true;
+}
+</code></pre>
+
+<p>上述代码会直接调用 <code class="highlighter-rouge">objc_msgSend</code> 向当前对象发送 <code class="highlighter-rouge">dealloc</code> 消息。</p>
+
+<p>不过为了确保消息只会发送一次，我们使用 <code class="highlighter-rouge">deallocating</code> 标记位。</p>
+
+<h2 id="获取自动引用计数">获取自动引用计数</h2>
+
+<p>在文章的最结尾，笔者想要介绍一下 <code class="highlighter-rouge">retainCount</code> 的值是怎么计算的，我们直接来看 <code class="highlighter-rouge">retainCount</code> 方法的实现：</p>
+
+<pre><code class="language-objectivec">- (NSUInteger)retainCount {
+    return ((id)self)-&gt;rootRetainCount();
+}
+
+inline uintptr_t objc_object::rootRetainCount() {
+    isa_t bits = LoadExclusive(&amp;isa.bits);
+    uintptr_t rc = 1 + bits.extra_rc;
+    if (bits.has_sidetable_rc) {
+        rc += sidetable_getExtraRC_nolock();
+    }
+    return rc;
+}
+</code></pre>
+
+<p>根据方法的实现，retainCount 有三部分组成：</p>
+
+<ul>
+  <li>1</li>
+  <li><code class="highlighter-rouge">extra_rc</code> 中存储的值</li>
+  <li><code class="highlighter-rouge">sidetable_getExtraRC_nolock</code> 返回的值</li>
+</ul>
+
+<p>这也就证明了我们之前得到的结论。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>我们在这篇文章中已经介绍了 <code class="highlighter-rouge">retain</code> 和 <code class="highlighter-rouge">release</code> 这一对用于内存管理的方法是如何实现的，这里总结一下文章一下比较重要的问题。</p>
+
+<ul>
+  <li><code class="highlighter-rouge">extra_rc</code> 只会保存额外的自动引用计数，对象实际的引用计数会在这个基础上 +1</li>
+  <li>Objective-C 使用 <code class="highlighter-rouge">isa</code> 中的 <code class="highlighter-rouge">extra_rc</code> 和 <code class="highlighter-rouge">SideTable</code> 来存储对象的引用计数</li>
+  <li>在对象的引用计数归零时，会调用 <code class="highlighter-rouge">dealloc</code> 方法回收对象</li>
+</ul>
+
+<p>有关于自动释放池实现的介绍，可以看<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/自动释放池的前世今生.md">自动释放池的前世今生</a>。</p>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>自动释放池的前世今生 ---- 深入解析 autoreleasepool</title>
+	  <link>/reprinted//autoreleasepool</link>
+	  <author></author>
+	  <pubDate>2016-05-15T17:20:23+00:00</pubDate>
+	  <guid>/reprinted//autoreleasepool</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/autoreleasepool">自动释放池的前世今生 —- 深入解析 autoreleasepool</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+  <p>由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 <code class="highlighter-rouge">autorelease</code> 方法，另一部分分析 <code class="highlighter-rouge">retain</code>、<code class="highlighter-rouge">release</code> 方法的实现以及自动引用计数。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>这篇文章会在源代码层面介绍 Objective-C 中自动释放池，以及方法的 <code class="highlighter-rouge">autorelease</code> 的具体实现。</p>
+
+<h2 id="从-main-函数开始">从 main 函数开始</h2>
+
+<p><code class="highlighter-rouge">main</code> 函数可以说是在整个 iOS 开发中非常不起眼的一个函数，它很好地隐藏在 <code class="highlighter-rouge">Supporting Files</code> 文件夹中，却是整个 iOS 应用的入口。
+<img src="https://img.draveness.me/2016-05-16-objc-autorelease-main.png-1000width" alt="objc-autorelease-main" /></p>
+
+<p><code class="highlighter-rouge">main.m</code> 文件中的内容是这样的：</p>
+
+<pre><code class="language-objectivec">int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
+    }
+}
+</code></pre>
+
+<p>在这个 <code class="highlighter-rouge">@autoreleasepool</code> block 中只包含了一行代码，这行代码将所有的事件、消息全部交给了 <code class="highlighter-rouge">UIApplication</code> 来处理，但是这不是本文关注的重点。</p>
+
+<p>需要注意的是：<strong>整个 iOS 的应用都是包含在一个自动释放池 block 中的</strong>。</p>
+
+<h2 id="autoreleasepool">@autoreleasepool</h2>
+
+<p><code class="highlighter-rouge">@autoreleasepool</code> 到底是什么？我们在命令行中使用 <code class="highlighter-rouge">clang -rewrite-objc main.m</code> 让编译器重新改写这个文件：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span> <span class="n">clang</span> <span class="o">-</span><span class="n">rewrite</span><span class="o">-</span><span class="n">objc</span> <span class="n">main</span><span class="p">.</span><span class="n">m</span>
+</code></pre></div></div>
+
+<p>在生成了一大堆警告之后，当前目录下多了一个 <code class="highlighter-rouge">main.cpp</code> 文件</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-main-cpp.png-1000width" alt="objc-autorelease-main-cpp" /></p>
+
+<blockquote>
+  <p>这里删除了 <code class="highlighter-rouge">main</code> 函数中其他无用的代码。</p>
+</blockquote>
+
+<p>在这个文件中，有一个非常奇怪的 <code class="highlighter-rouge">__AtAutoreleasePool</code> 的结构体，前面的注释写到 <code class="highlighter-rouge">/* @autoreleasepopl */</code>。也就是说 <code class="highlighter-rouge">@autoreleasepool {}</code> 被转换为一个 <code class="highlighter-rouge">__AtAutoreleasePool</code> 结构体：</p>
+
+<pre><code class="language-objectivec">{
+    __AtAutoreleasePool __autoreleasepool;
+}
+</code></pre>
+
+<p>想要弄清楚这行代码的意义，我们要在 <code class="highlighter-rouge">main.cpp</code> 中查找名为 <code class="highlighter-rouge">__AtAutoreleasePool</code> 的结构体：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-main-cpp-struct.png-1000width" alt="objc-autorelease-main-cpp-struct" /></p>
+
+<pre><code class="language-objectivec">struct __AtAutoreleasePool {
+  __AtAutoreleasePool() {atautoreleasepoolobj = objc_autoreleasePoolPush();}
+  ~__AtAutoreleasePool() {objc_autoreleasePoolPop(atautoreleasepoolobj);}
+  void * atautoreleasepoolobj;
+};
+</code></pre>
+
+<p>这个结构体会在初始化时调用 <code class="highlighter-rouge">objc_autoreleasePoolPush()</code> 方法，会在析构时调用 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 方法。</p>
+
+<p>这表明，我们的 <code class="highlighter-rouge">main</code> 函数在实际工作时其实是这样的：</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    {
+        void * atautoreleasepoolobj = objc_autoreleasePoolPush();
+
+        // do whatever you want
+
+        objc_autoreleasePoolPop(atautoreleasepoolobj);
+    }
+    return 0;
+}
+</code></pre>
+
+<p><code class="highlighter-rouge">@autoreleasepool</code> 只是帮助我们少写了这两行代码而已，让代码看起来更美观，然后要根据上述两个方法来分析自动释放池的实现。</p>
+
+<h2 id="autoreleasepool-是什么">AutoreleasePool 是什么</h2>
+
+<p>这一节开始分析方法 <code class="highlighter-rouge">objc_autoreleasePoolPush</code> 和 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 的实现：</p>
+
+<pre><code class="language-objectivec">void *objc_autoreleasePoolPush(void) {
+    return AutoreleasePoolPage::push();
+}
+
+void objc_autoreleasePoolPop(void *ctxt) {
+    AutoreleasePoolPage::pop(ctxt);
+}
+</code></pre>
+
+<p>上面的方法看上去是对 <code class="highlighter-rouge">AutoreleasePoolPage</code> 对应<strong>静态方法</strong> <code class="highlighter-rouge">push</code> 和 <code class="highlighter-rouge">pop</code> 的封装。</p>
+
+<p>这一小节会按照下面的顺序逐步解析代码中的内容：</p>
+
+<ul>
+  <li><a href="#AutoreleasePoolPage">AutoreleasePoolPage 的结构</a></li>
+  <li><a href="#objc_autoreleasePoolPush">objc_autoreleasePoolPush 方法</a></li>
+  <li><a href="#objc_autoreleasePoolPop">objc_autoreleasePoolPop 方法</a></li>
+</ul>
+
+<h3 id="autoreleasepoolpage-的结构">AutoreleasePoolPage 的结构</h3>
+
+<p><code class="highlighter-rouge">AutoreleasePoolPage</code> 是一个 C++ 中的类：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-AutoreleasePoolPage.png-1000width" alt="objc-autorelease-AutoreleasePoolPage" /></p>
+
+<p>它在 <code class="highlighter-rouge">NSObject.mm</code> 中的定义是这样的：</p>
+
+<pre><code class="language-objectivec">class AutoreleasePoolPage {
+    magic_t const magic;
+    id *next;
+    pthread_t const thread;
+    AutoreleasePoolPage * const parent;
+    AutoreleasePoolPage *child;
+    uint32_t const depth;
+    uint32_t hiwat;
+};
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">magic</code> 用于对当前 <code class="highlighter-rouge">AutoreleasePoolPage</code> <strong>完整性</strong>的校验</li>
+  <li><code class="highlighter-rouge">thread</code> 保存了当前页所在的线程</li>
+</ul>
+
+<p><strong>每一个自动释放池都是由一系列的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 组成的，并且每一个 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的大小都是 <code class="highlighter-rouge">4096</code> 字节（16 进制 0x1000）</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define I386_PGBYTES 4096
+#define PAGE_SIZE I386_PGBYTES
+</span></code></pre></div></div>
+
+<h4 id="双向链表">双向链表</h4>
+
+<p>自动释放池中的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 是以<strong>双向链表</strong>的形式连接起来的：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-AutoreleasePoolPage-linked-list.png-1000width" alt="objc-autorelease-AutoreleasePoolPage-linked-list" /></p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">parent</code> 和 <code class="highlighter-rouge">child</code> 就是用来构造双向链表的指针。</p>
+</blockquote>
+
+<h4 id="自动释放池中的栈">自动释放池中的栈</h4>
+
+<p>如果我们的一个 <code class="highlighter-rouge">AutoreleasePoolPage</code> 被初始化在内存的 <code class="highlighter-rouge">0x100816000 ~ 0x100817000</code> 中，它在内存中的结构如下：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-page-in-memory.png-1000width" alt="objc-autorelease-page-in-memory" /></p>
+
+<p>其中有 56 bit 用于存储 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的成员变量，剩下的 <code class="highlighter-rouge">0x100816038 ~ 0x100817000</code> 都是用来存储<strong>加入到自动释放池中的对象</strong>。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">begin()</code> 和 <code class="highlighter-rouge">end()</code> 这两个类的实例方法帮助我们快速获取 <code class="highlighter-rouge">0x100816038 ~ 0x100817000</code> 这一范围的边界地址。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">next</code> 指向了下一个为空的内存地址，如果 <code class="highlighter-rouge">next</code> 指向的地址加入一个 <code class="highlighter-rouge">object</code>，它就会如下图所示<strong>移动到下一个为空的内存地址中</strong>：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-after-insert-to-page.png-1000width" alt="objc-autorelease-after-insert-to-page" /></p>
+
+<blockquote>
+  <p>关于 <code class="highlighter-rouge">hiwat</code> 和 <code class="highlighter-rouge">depth</code> 在文章中并不会进行介绍，因为它们并不影响整个自动释放池的实现，也不在关键方法的调用栈中。</p>
+</blockquote>
+
+<h4 id="pool_sentinel哨兵对象">POOL_SENTINEL（哨兵对象）</h4>
+
+<p>到了这里，你可能想要知道 <code class="highlighter-rouge">POOL_SENTINEL</code> 到底是什么，还有它为什么在栈中。</p>
+
+<p>首先回答第一个问题： <code class="highlighter-rouge">POOL_SENTINEL</code> 只是 <code class="highlighter-rouge">nil</code> 的别名。</p>
+
+<pre><code class="language-objectivec">#define POOL_SENTINEL nil
+</code></pre>
+
+<p>在每个自动释放池初始化调用 <code class="highlighter-rouge">objc_autoreleasePoolPush</code> 的时候，都会把一个 <code class="highlighter-rouge">POOL_SENTINEL</code> push 到自动释放池的栈顶，并且返回这个 <code class="highlighter-rouge">POOL_SENTINEL</code> 哨兵对象。</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    {
+        void * atautoreleasepoolobj = objc_autoreleasePoolPush();
+
+        // do whatever you want
+
+        objc_autoreleasePoolPop(atautoreleasepoolobj);
+    }
+    return 0;
+}
+</code></pre>
+
+<blockquote>
+  <p>上面的 <code class="highlighter-rouge">atautoreleasepoolobj</code> 就是一个 <code class="highlighter-rouge">POOL_SENTINEL</code>。</p>
+</blockquote>
+
+<p>而当方法 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 调用时，就会向自动释放池中的对象发送 <code class="highlighter-rouge">release</code> 消息，直到第一个 <code class="highlighter-rouge">POOL_SENTINEL</code>：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-pop-stack.png-1000width" alt="objc-autorelease-pop-stack" /></p>
+
+<h3 id="objc_autoreleasepoolpush-方法"><a id="objc_autoreleasePoolPush"></a>objc_autoreleasePoolPush 方法</h3>
+
+<p>了解了 <code class="highlighter-rouge">POOL_SENTINEL</code>，我们来重新回顾一下 <code class="highlighter-rouge">objc_autoreleasePoolPush</code> 方法：</p>
+
+<pre><code class="language-objectivec">void *objc_autoreleasePoolPush(void) {
+    return AutoreleasePoolPage::push();
+}
+</code></pre>
+
+<p>它调用 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的类方法 <code class="highlighter-rouge">push</code>，也非常简单：</p>
+
+<pre><code class="language-objectivec">static inline void *push() {
+   return autoreleaseFast(POOL_SENTINEL);
+}
+</code></pre>
+
+<p><a id="autoreleaseFast"></a>在这里会进入一个比较关键的方法 <code class="highlighter-rouge">autoreleaseFast</code>，并传入哨兵对象 <code class="highlighter-rouge">POOL_SENTINEL</code>：</p>
+
+<pre><code class="language-objectivec">static inline id *autoreleaseFast(id obj)
+{
+   AutoreleasePoolPage *page = hotPage();
+   if (page &amp;&amp; !page-&gt;full()) {
+       return page-&gt;add(obj);
+   } else if (page) {
+       return autoreleaseFullPage(obj, page);
+   } else {
+       return autoreleaseNoPage(obj);
+   }
+}
+</code></pre>
+
+<p>上述方法分三种情况选择不同的代码执行：</p>
+
+<ul>
+  <li>有 <code class="highlighter-rouge">hotPage</code> 并且当前 <code class="highlighter-rouge">page</code> 不满
+    <ul>
+      <li>调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 方法将对象添加至 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+    </ul>
+  </li>
+  <li>有 <code class="highlighter-rouge">hotPage</code> 并且当前 <code class="highlighter-rouge">page</code> 已满
+    <ul>
+      <li>调用 <code class="highlighter-rouge">autoreleaseFullPage</code> 初始化一个新的页</li>
+      <li>调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 方法将对象添加至 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+    </ul>
+  </li>
+  <li>无 <code class="highlighter-rouge">hotPage</code>
+    <ul>
+      <li>调用 <code class="highlighter-rouge">autoreleaseNoPage</code> 创建一个 <code class="highlighter-rouge">hotPage</code></li>
+      <li>调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 方法将对象添加至 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+    </ul>
+  </li>
+</ul>
+
+<p>最后的都会调用 <code class="highlighter-rouge">page-&gt;add(obj)</code> 将对象添加到自动释放池中。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">hotPage</code> 可以理解为当前正在使用的 <code class="highlighter-rouge">AutoreleasePoolPage</code>。</p>
+</blockquote>
+
+<h4 id="page-add-添加对象">page-&gt;add 添加对象</h4>
+
+<p><code class="highlighter-rouge">id *add(id obj)</code> 将对象添加到自动释放池页中：</p>
+
+<pre><code class="language-objectivec">id *add(id obj) {
+    id *ret = next;
+    *next = obj;
+    next++;
+    return ret;
+}
+</code></pre>
+
+<blockquote>
+  <p>笔者对这个方法进行了处理，更方便理解。</p>
+</blockquote>
+
+<p>这个方法其实就是一个压栈的操作，将对象加入 <code class="highlighter-rouge">AutoreleasePoolPage</code> 然后移动栈顶的指针。</p>
+
+<h4 id="autoreleasefullpage当前-hotpage-已满">autoreleaseFullPage（当前 hotPage 已满）</h4>
+
+<p><code class="highlighter-rouge">autoreleaseFullPage</code> 会在当前的 <code class="highlighter-rouge">hotPage</code> 已满的时候调用：</p>
+
+<pre><code class="language-objectivec">static id *autoreleaseFullPage(id obj, AutoreleasePoolPage *page) {
+    do {
+        if (page-&gt;child) page = page-&gt;child;
+        else page = new AutoreleasePoolPage(page);
+    } while (page-&gt;full());
+
+    setHotPage(page);
+    return page-&gt;add(obj);
+}
+</code></pre>
+
+<p>它会从传入的 <code class="highlighter-rouge">page</code> 开始遍历整个双向链表，直到：</p>
+
+<ol>
+  <li>查找到一个未满的 <code class="highlighter-rouge">AutoreleasePoolPage</code></li>
+  <li>使用构造器传入 <code class="highlighter-rouge">parent</code> 创建一个新的 <code class="highlighter-rouge">AutoreleasePoolPage</code></li>
+</ol>
+
+<p>在查找到一个可以使用的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 之后，会将该页面标记成 <code class="highlighter-rouge">hotPage</code>，然后调动上面分析过的 <code class="highlighter-rouge">page-&gt;add</code> 方法添加对象。</p>
+
+<h4 id="autoreleasenopage没有-hotpage">autoreleaseNoPage（没有 hotPage)</h4>
+
+<p>如果当前内存中不存在 <code class="highlighter-rouge">hotPage</code>，就会调用 <code class="highlighter-rouge">autoreleaseNoPage</code> 方法初始化一个 <code class="highlighter-rouge">AutoreleasePoolPage</code>：</p>
+
+<pre><code class="language-objectivec">static id *autoreleaseNoPage(id obj) {
+    AutoreleasePoolPage *page = new AutoreleasePoolPage(nil);
+    setHotPage(page);
+
+    if (obj != POOL_SENTINEL) {
+        page-&gt;add(POOL_SENTINEL);
+    }
+
+    return page-&gt;add(obj);
+}
+</code></pre>
+
+<p>既然当前内存中不存在 <code class="highlighter-rouge">AutoreleasePoolPage</code>，就要<strong>从头开始构建这个自动释放池的双向链表</strong>，也就是说，新的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 是没有 <code class="highlighter-rouge">parent</code> 指针的。</p>
+
+<p>初始化之后，将当前页标记为 <code class="highlighter-rouge">hotPage</code>，然后会先向这个 <code class="highlighter-rouge">page</code> 中添加一个 <code class="highlighter-rouge">POOL_SENTINEL</code> 对象，来确保在 <code class="highlighter-rouge">pop</code> 调用的时候，不会出现异常。</p>
+
+<p>最后，将 <code class="highlighter-rouge">obj</code> 添加到自动释放池中。</p>
+
+<h3 id="objc_autoreleasepoolpop-方法"><a id="objc_autoreleasePoolPop"></a>objc_autoreleasePoolPop 方法</h3>
+
+<p>同样，回顾一下上面提到的 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 方法：</p>
+
+<pre><code class="language-objectivec">void objc_autoreleasePoolPop(void *ctxt) {
+    AutoreleasePoolPage::pop(ctxt);
+}
+</code></pre>
+
+<blockquote>
+  <p>看起来传入任何一个指针都是可以的，但是在整个工程并没有发现传入其他对象的例子。不过在这个方法中<strong>传入其它的指针也是可行的</strong>，会将自动释放池释放到相应的位置。</p>
+</blockquote>
+
+<p>我们一般都会在这个方法中传入一个哨兵对象 <code class="highlighter-rouge">POOL_SENTINEL</code>，如下图一样释放对象：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-pop-stack.png-1000width" alt="objc-autorelease-pop-stack" /></p>
+
+<h4 id="对-objc_autoreleasepoolpop-行为的测试">对 objc_autoreleasePoolPop 行为的测试</h4>
+
+<p>在继续分析这个方法之前做一个小测试，在 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 传入非哨兵对象，测试一下这个方法的行为。</p>
+
+<p>下面是 <code class="highlighter-rouge">main.m</code> 文件中的源代码：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+
+        NSString *s = @"Draveness";
+        [s stringByAppendingString:@"-Suffix"];
+
+    }
+    return 0;
+}
+</code></pre>
+
+<p>在代码的这一行打一个断点，因为这里会调用 <code class="highlighter-rouge">autorelease</code> 方法，将字符串加入自动释放池：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-breakpoint-main.png-1000width" alt="objc-autorelease-breakpoint-main" /></p>
+
+<p>当代码运行到这里时，通过 lldb 打印出当前 <code class="highlighter-rouge">hotPage</code> 中的栈内容：</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-print-pool-content.png-1000width" alt="objc-autorelease-print-pool-content" /></p>
+
+<ol>
+  <li>通过 <code class="highlighter-rouge">static</code> 方法获取当前 <code class="highlighter-rouge">hotPage</code></li>
+  <li>打印 <code class="highlighter-rouge">AutoreleasePoolPage</code> 中的内容</li>
+  <li>打印当前 <code class="highlighter-rouge">next</code> 指针指向的内容，以及之前的内容，<code class="highlighter-rouge">-2 </code>时已经到了 <code class="highlighter-rouge">begin()</code> 位置</li>
+  <li>使用 <code class="highlighter-rouge">print() </code>和 <code class="highlighter-rouge">printAll() </code>打印自动释放池中内容</li>
+</ol>
+
+<p>然后将字符串 <code class="highlighter-rouge">@"Draveness-Suffix"</code> 的指针传入 <code class="highlighter-rouge">pop</code> 方法，测试 <code class="highlighter-rouge">pop</code> 方法能否传入非哨兵参数。</p>
+
+<p><img src="https://img.draveness.me/2016-05-16-objc-autorelease-pop-string.png-1000width" alt="objc-autorelease-pop-string" /></p>
+
+<p>再次打印当前 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的内容时，字符串已经不存在了，这说明<strong>向 <code class="highlighter-rouge">pop</code> 方法传入非哨兵参数是可行的</strong>，只是我们一般不会传入非哨兵对象。</p>
+
+<hr />
+
+<p>让我们重新回到对 <code class="highlighter-rouge">objc_autoreleasePoolPop</code> 方法的分析，也就是 <code class="highlighter-rouge">AutoreleasePoolPage::pop</code> 方法的调用：</p>
+
+<pre><code class="language-objectivec">static inline void pop(void *token) {
+    AutoreleasePoolPage *page = pageForPointer(token);
+    id *stop = (id *)token;
+
+    page-&gt;releaseUntil(stop);
+
+    if (page-&gt;child) {
+        if (page-&gt;lessThanHalfFull()) {
+            page-&gt;child-&gt;kill();
+        } else if (page-&gt;child-&gt;child) {
+            page-&gt;child-&gt;child-&gt;kill();
+        }
+    }
+}
+</code></pre>
+
+<blockquote>
+  <p>在这个方法中删除了大量无关的代码，以及对格式进行了调整。</p>
+</blockquote>
+
+<p>该静态方法总共做了三件事情：</p>
+
+<ol>
+  <li>使用 <code class="highlighter-rouge">pageForPointer</code> 获取当前 <code class="highlighter-rouge">token</code> 所在的 <code class="highlighter-rouge">AutoreleasePoolPage</code></li>
+  <li>调用 <code class="highlighter-rouge">releaseUntil</code> 方法释放<strong>栈中的</strong>对象，直到 <code class="highlighter-rouge">stop</code></li>
+  <li>调用 <code class="highlighter-rouge">child</code> 的 <code class="highlighter-rouge">kill</code> 方法</li>
+</ol>
+
+<blockquote>
+  <p>我到现在也不是很清楚为什么要根据当前页的不同状态 <code class="highlighter-rouge">kill</code> 掉不同 <code class="highlighter-rouge">child</code> 的页面。</p>
+</blockquote>
+
+<pre><code class="language-objectivec">if (page-&gt;lessThanHalfFull()) {
+    page-&gt;child-&gt;kill();
+} else if (page-&gt;child-&gt;child) {
+    page-&gt;child-&gt;child-&gt;kill();
+}
+</code></pre>
+
+<h4 id="pageforpointer-获取-autoreleasepoolpage">pageForPointer 获取 AutoreleasePoolPage</h4>
+
+<p><code class="highlighter-rouge">pageForPointer</code> 方法主要是通过内存地址的操作，获取当前指针所在页的首地址：</p>
+
+<pre><code class="language-objectivec">static AutoreleasePoolPage *pageForPointer(const void *p) {
+    return pageForPointer((uintptr_t)p);
+}
+
+static AutoreleasePoolPage *pageForPointer(uintptr_t p) {
+    AutoreleasePoolPage *result;
+    uintptr_t offset = p % SIZE;
+
+    assert(offset &gt;= sizeof(AutoreleasePoolPage));
+
+    result = (AutoreleasePoolPage *)(p - offset);
+    result-&gt;fastcheck();
+
+    return result;
+}
+</code></pre>
+
+<p>将指针与页面的大小，也就是 4096 取模，得到当前指针的偏移量，因为所有的 <code class="highlighter-rouge">AutoreleasePoolPage</code> 在内存中都是对齐的：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>p = 0x100816048
+p % SIZE = 0x48
+result = 0x100816000
+</code></pre></div></div>
+
+<p>而最后调用的方法 <code class="highlighter-rouge">fastCheck()</code> 用来检查当前的 <code class="highlighter-rouge">result</code> 是不是一个 <code class="highlighter-rouge">AutoreleasePoolPage</code>。</p>
+
+<blockquote>
+  <p>通过检查 <code class="highlighter-rouge">magic_t</code> 结构体中的某个成员是否为 <code class="highlighter-rouge">0xA1A1A1A1</code>。</p>
+</blockquote>
+
+<h4 id="releaseuntil-释放对象">releaseUntil 释放对象</h4>
+
+<p><code class="highlighter-rouge">releaseUntil</code> 方法的实现如下：</p>
+
+<pre><code class="language-objectivec">void releaseUntil(id *stop) {
+    while (this-&gt;next != stop) {
+        AutoreleasePoolPage *page = hotPage();
+
+        while (page-&gt;empty()) {
+            page = page-&gt;parent;
+            setHotPage(page);
+        }
+
+        page-&gt;unprotect();
+        id obj = *--page-&gt;next;
+        memset((void*)page-&gt;next, SCRIBBLE, sizeof(*page-&gt;next));
+        page-&gt;protect();
+
+        if (obj != POOL_SENTINEL) {
+            objc_release(obj);
+        }
+    }
+
+    setHotPage(this);
+}
+</code></pre>
+
+<p>它的实现还是很容易的，用一个 <code class="highlighter-rouge">while</code> 循环持续释放 <code class="highlighter-rouge">AutoreleasePoolPage</code> 中的内容，直到 <code class="highlighter-rouge">next</code> 指向了 <code class="highlighter-rouge">stop</code> 。</p>
+
+<p>使用 <code class="highlighter-rouge">memset</code> 将内存的内容设置成 <code class="highlighter-rouge">SCRIBBLE</code>，然后使用 <code class="highlighter-rouge">objc_release</code> 释放对象。</p>
+
+<h4 id="kill-方法">kill() 方法</h4>
+
+<p>到这里，没有分析的方法就只剩下 <code class="highlighter-rouge">kill</code> 了，而它会将当前页面以及子页面全部删除：</p>
+
+<pre><code class="language-objectivec">void kill() {
+    AutoreleasePoolPage *page = this;
+    while (page-&gt;child) page = page-&gt;child;
+
+    AutoreleasePoolPage *deathptr;
+    do {
+        deathptr = page;
+        page = page-&gt;parent;
+        if (page) {
+            page-&gt;unprotect();
+            page-&gt;child = nil;
+            page-&gt;protect();
+        }
+        delete deathptr;
+    } while (deathptr != this);
+}
+</code></pre>
+
+<h3 id="autorelease-方法">autorelease 方法</h3>
+
+<p>我们已经对自动释放池生命周期有一个比较好的了解，最后需要了解的话题就是 <code class="highlighter-rouge">autorelease</code> 方法的实现，先来看一下方法的调用栈：</p>
+
+<pre><code class="language-objectivec">- [NSObject autorelease]
+└── id objc_object::rootAutorelease()
+    └── id objc_object::rootAutorelease2()
+        └── static id AutoreleasePoolPage::autorelease(id obj)
+            └── static id AutoreleasePoolPage::autoreleaseFast(id obj)
+                ├── id *add(id obj)
+                ├── static id *autoreleaseFullPage(id obj, AutoreleasePoolPage *page)
+                │   ├── AutoreleasePoolPage(AutoreleasePoolPage *newParent)
+                │   └── id *add(id obj)
+                └── static id *autoreleaseNoPage(id obj)
+                    ├── AutoreleasePoolPage(AutoreleasePoolPage *newParent)
+                    └── id *add(id obj)
+</code></pre>
+
+<p>在 <code class="highlighter-rouge">autorelease</code> 方法的调用栈中，最终都会调用上面提到的 <a href="#autoreleaseFast">autoreleaseFast</a> 方法，将当前对象加到 <code class="highlighter-rouge">AutoreleasePoolPage</code> 中。</p>
+
+<p>这一小节中这些方法的实现都非常容易，只是进行了一些参数上的检查，最终还要调用 <a href="#autoreleaseFast">autoreleaseFast</a> 方法：</p>
+
+<pre><code class="language-objectivec">inline id objc_object::rootAutorelease() {
+    if (isTaggedPointer()) return (id)this;
+    if (prepareOptimizedReturn(ReturnAtPlus1)) return (id)this;
+
+    return rootAutorelease2();
+}
+
+__attribute__((noinline,used)) id objc_object::rootAutorelease2() {
+    return AutoreleasePoolPage::autorelease((id)this);
+}
+
+static inline id autorelease(id obj) {
+   id *dest __unused = autoreleaseFast(obj);
+   return obj;
+}
+</code></pre>
+
+<p>由于在上面已经分析过 <code class="highlighter-rouge">autoreleaseFast</code> 方法的实现，这里就不会多说了。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>整个自动释放池 <code class="highlighter-rouge">AutoreleasePool</code> 的实现以及 <code class="highlighter-rouge">autorelease</code> 方法都已经分析完了，我们再来回顾一下文章中的一些内容：</p>
+
+<ul>
+  <li>自动释放池是由 <code class="highlighter-rouge">AutoreleasePoolPage</code> 以双向链表的方式实现的</li>
+  <li>当对象调用 <code class="highlighter-rouge">autorelease</code> 方法时，会将对象加入 <code class="highlighter-rouge">AutoreleasePoolPage</code> 的栈中</li>
+  <li>调用 <code class="highlighter-rouge">AutoreleasePoolPage::pop</code> 方法会向栈中的对象发送 <code class="highlighter-rouge">release</code> 消息</li>
+</ul>
+
+<h2 id="参考资料">参考资料</h2>
+
+<ul>
+  <li><a href="http://stackoverflow.com/questions/14677049/what-is-autoreleasepool-objective-c">What is autoreleasepool? - Objective-C</a></li>
+  <li><a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmAutoreleasePools.html">Using Autorelease Pool Blocks</a></li>
+  <li><a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSAutoreleasePool_Class/index.html#//apple_ref/occ/cl/NSAutoreleasePool">NSAutoreleasePool</a></li>
+  <li><a href="http://blog.sunnyxx.com/2014/10/15/behind-autorelease/">黑幕背后的 Autorelease</a></li>
+</ul>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>上古时代 Objective-C 中哈希表的实现</title>
+	  <link>/reprinted//hashtable</link>
+	  <author></author>
+	  <pubDate>2016-05-06T16:12:56+00:00</pubDate>
+	  <guid>/reprinted//hashtable</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/hashtable">上古时代 Objective-C 中哈希表的实现</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+<blockquote>
+  <p>因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 <code class="highlighter-rouge">x86_64</code> 架构下运行的，对于在 arm64 中运行的代码会特别说明。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>文章会介绍上古时代 Objective-C 哈希表，也就是 <code class="highlighter-rouge">NXHashTable</code> ：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">NXHashTable</code> 的实现</li>
+  <li><code class="highlighter-rouge">NXHashTable</code> 的性能分析</li>
+  <li><code class="highlighter-rouge">NXHashTable</code> 的作用</li>
+</ul>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 的实现有着将近 30 年的历史，不过仍然作为重要的底层数据结构存储整个应用中的类。</p>
+
+<blockquote>
+  <p>文中会涉及一些数据结构方面的简单知识，例如<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists">拉链法</a>。</p>
+
+  <p>注意：<strong>文章中分析的不是 <code class="highlighter-rouge">NSHashTable</code> 而是 <code class="highlighter-rouge">NXHashTable</code>。</strong></p>
+</blockquote>
+
+<h2 id="nxhashtable">NXHashTable</h2>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 的实现位于 <code class="highlighter-rouge">hashtable2.mm</code> 文件，我们先来看一下 <code class="highlighter-rouge">NXHashTable</code> 的结构以及重要的接口：</p>
+
+<pre><code class="language-objectivec">typedef struct {
+    const NXHashTablePrototype *prototype;
+    unsigned count;
+    unsigned nbBuckets;
+    void *buckets;
+    const void *info;
+} NXHashTable;
+</code></pre>
+
+<p>对于结构体中的 <code class="highlighter-rouge">NXHashTablePrototype</code> 属性暂且不说，其中的 <code class="highlighter-rouge">buckets</code> 是真正用来<strong>存储数据的数组</strong>。</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTableFromZone (NXHashTablePrototype prototype, unsigned capacity, const void *info, void *z);
+unsigned NXCountHashTable (NXHashTable *table);
+int NXHashMember (NXHashTable *table, const void *data);
+void *NXHashGet (NXHashTable *table, const void *data);
+void *NXHashInsert (NXHashTable *table, const void *data);
+void *NXHashRemove (NXHashTable *table, const void *data);
+</code></pre>
+
+<p>我们会以上面的这些方法作为切入点，分析 <code class="highlighter-rouge">NXHashTable</code> 的实现。</p>
+
+<h3 id="nxcreatehashtablefromzone">NXCreateHashTableFromZone</h3>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 使用 <code class="highlighter-rouge">NXCreateHashTableFromZone</code> 方法初始化：</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTableFromZone (NXHashTablePrototype prototype, unsigned capacity, const void *info, void *z) {
+    NXHashTable			*table;
+    NXHashTablePrototype	 *proto;
+
+    table = ALLOCTABLE(z);
+    if (! prototypes) bootstrap ();
+    if (! prototype.hash) prototype.hash = NXPtrHash;
+    if (! prototype.isEqual) prototype.isEqual = NXPtrIsEqual;
+    if (! prototype.free) prototype.free = NXNoEffectFree;
+
+    proto = (NXHashTablePrototype *)NXHashGet (prototypes, &amp;prototype);
+    if (! proto) {
+        proto = (NXHashTablePrototype *) malloc(sizeof (NXHashTablePrototype));
+        bcopy ((const char*)&amp;prototype, (char*)proto, sizeof (NXHashTablePrototype));
+        (void) NXHashInsert (prototypes, proto);
+        proto = (NXHashTablePrototype *)NXHashGet (prototypes, &amp;prototype);
+    };
+    table-&gt;prototype = proto;
+    table-&gt;count = 0;
+    table-&gt;info = info;
+    table-&gt;nbBuckets = GOOD_CAPACITY(capacity);
+    table-&gt;buckets = ALLOCBUCKETS(z, table-&gt;nbBuckets);
+    return table;
+}
+</code></pre>
+
+<p>在这个方法中，绝大多数代码都是用来初始化 <code class="highlighter-rouge">table-&gt;prototype</code> 的，我们先把这部分全部忽略，分析一下简略版本的实现。</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTableFromZone (NXHashTablePrototype prototype, unsigned capacity, const void *info, void *z) {
+    NXHashTable			*table;
+    NXHashTablePrototype	 *proto;
+
+    table = ALLOCTABLE(z);
+
+    ...
+
+    table-&gt;count = 0;
+    table-&gt;info = info;
+    table-&gt;nbBuckets = GOOD_CAPACITY(capacity);
+    table-&gt;buckets = ALLOCBUCKETS(z, table-&gt;nbBuckets);
+    return table;
+}
+</code></pre>
+
+<p>其中 <code class="highlighter-rouge">ALLOCTABLE</code>、<code class="highlighter-rouge">GOOD_CAPACITY</code> 以及 <code class="highlighter-rouge">ALLOCBUCKETS</code> 都是用来辅助初始化的宏：</p>
+
+<pre><code class="language-objectivec">#define	 ALLOCTABLE(z) ((NXHashTable *) malloc_zone_malloc ((malloc_zone_t *)z,sizeof (NXHashTable)))
+#define GOOD_CAPACITY(c) (exp2m1u (log2u (c)+1))
+#define ALLOCBUCKETS(z,nb) ((HashBucket *) malloc_zone_calloc ((malloc_zone_t *)z, nb, sizeof (HashBucket)))
+</code></pre>
+
+<p><code class="highlighter-rouge">ALLOCTABLE</code> 和 <code class="highlighter-rouge">ALLOCBUCKETS</code> 只是调用了 <code class="highlighter-rouge">malloc_zone_calloc</code> 来初始化相应的结构体，而 <code class="highlighter-rouge">GOOD_CAPACITY</code> 有一些特殊，我们来举个例子说明：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>c   binary  result
+1   1       1
+2   10      3(0b11)
+6   110     7(0b111)
+100 1100100 127(0b111 1111)
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">c</code> 表示传入参数，<code class="highlighter-rouge">binary</code> 表示二进制下的参数，而 <code class="highlighter-rouge">result</code> 就是 <code class="highlighter-rouge">GOOD_CAPACITY</code> 返回的结果。</p>
+
+<blockquote>
+  <p>每次返回当前位数下的二进制最大值。</p>
+</blockquote>
+
+<p>获得 <code class="highlighter-rouge">table-&gt;nbBuckets</code> 之后，再初始化 <code class="highlighter-rouge">table-&gt;nbBuckets * sizeof (HashBucket)</code> 大小的内存空间。</p>
+
+<h4 id="nxhashtableprototype">NXHashTablePrototype</h4>
+
+<p>在继续分析其它方法之前，我们需要先知道 <code class="highlighter-rouge">NXHashTablePrototype</code> 是什么：</p>
+
+<pre><code class="language-objectivec">typedef struct {
+    uintptr_t (*hash)(const void *info, const void *data);
+    int (*isEqual)(const void *info, const void *data1, const void *data2);
+    void (*free)(const void *info, void *data);
+    int style; /* reserved for future expansion; currently 0 */
+} NXHashTablePrototype;
+</code></pre>
+
+<p><code class="highlighter-rouge">NXHashTablePrototype</code> 中存储了 <code class="highlighter-rouge">hash</code>、<code class="highlighter-rouge">isEqual</code> 和 <code class="highlighter-rouge">free</code> 的函数指针（用于获取数据的哈希、判断两个数据是否相等以及释放数据）。</p>
+
+<p>在 <code class="highlighter-rouge">hashtable2.mm</code> 文件中有一个宏 <code class="highlighter-rouge">ISEQUAL</code> 就是用了 <code class="highlighter-rouge">NXHashTablePrototype</code> 中的 <code class="highlighter-rouge">isEqual</code> 来判断两个数据是否相等：</p>
+
+<pre><code class="language-objectivec">#define ISEQUAL(table, data1, data2) ((data1 == data2) || (*table-&gt;prototype-&gt;isEqual)(table-&gt;info, data1, data2))
+</code></pre>
+
+<p>可以说，<code class="highlighter-rouge">NXHashTablePrototype</code> 中存储了一些<strong>构建哈希表必要的函数指针</strong>。</p>
+
+<blockquote>
+  <p>因为 <code class="highlighter-rouge">NXHashTable</code> 使用<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists">拉链法</a>来实现哈希表，在存入表前对数据执行 hash，然后找到对应的 buckets，如果与 buckets 中的数据相同（使用 isEqual 判断），就替换原数据，否则将数据添加到链表中。</p>
+</blockquote>
+
+<h4 id="hashbucket">HashBucket</h4>
+
+<p>在这里另一个需要注意的数据结构就是 <code class="highlighter-rouge">HashBucket</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span>	<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="n">count</span><span class="p">;</span>
+    <span class="n">oneOrMany</span> <span class="n">elements</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">HashBucket</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">oneOrMany</code> 是一个 <code class="highlighter-rouge">union</code> 结构体：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">union</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">one</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span> <span class="o">**</span><span class="n">many</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">oneOrMany</span><span class="p">;</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>这么设计的主要原因是<strong>提升性能</strong>。</p>
+</blockquote>
+
+<p>如果 <code class="highlighter-rouge">HashBucket</code> 中只有一个元素，那么就直接访问 <code class="highlighter-rouge">one</code>，否则访问 <code class="highlighter-rouge">many</code>，遍历这个 <code class="highlighter-rouge">many</code> 列表。</p>
+
+<h3 id="nxcounthashtable">NXCountHashTable</h3>
+
+<p><code class="highlighter-rouge">NXCountHashTable</code> 方法应该是我们要介绍的方法中的最简单的一个，它会直接返回 <code class="highlighter-rouge">NXHashTable</code> 结构体中的 <code class="highlighter-rouge">count</code>。</p>
+
+<pre><code class="language-objectivec">unsigned NXCountHashTable (NXHashTable *table) {
+    return table-&gt;count;
+}
+</code></pre>
+
+<h3 id="nxhashmember">NXHashMember</h3>
+
+<p><code class="highlighter-rouge">NXHashMember</code> 的函数签名虽然会返回 <code class="highlighter-rouge">int</code>，其实它是一个布尔值，会判断当前的 <code class="highlighter-rouge">NXHashTable</code> 中是否包含传入的数据：</p>
+
+<pre><code class="language-objectivec">int NXHashMember (NXHashTable *table, const void *data) {
+    HashBucket	*bucket = BUCKETOF(table, data);
+    unsigned	j = bucket-&gt;count;
+    const void	**pairs;
+
+    if (! j) return 0;
+    if (j == 1) {
+        return ISEQUAL(table, data, bucket-&gt;elements.one);
+    };
+    pairs = bucket-&gt;elements.many;
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) return 1;
+        pairs ++;
+    };
+    return 0;
+}
+</code></pre>
+
+<p>使用 <code class="highlighter-rouge">BUCKETOF</code> 对 <code class="highlighter-rouge">data</code> 进行 hash，将结果与哈希表的 <code class="highlighter-rouge">buckets</code> 数取模，返回 <code class="highlighter-rouge">buckets</code> 数组中对应的 <code class="highlighter-rouge">NXHashBucket</code>。</p>
+
+<pre><code class="language-objectivec">#define BUCKETOF(table, data) (((HashBucket *)table-&gt;buckets)+((*table-&gt;prototype-&gt;hash)(table-&gt;info, data) % table-&gt;nbBuckets))
+</code></pre>
+
+<p>在获取了 <code class="highlighter-rouge">bucket</code> 之后，根据其中元素个数的不同，选择不同的分支：</p>
+
+<pre><code class="language-objectivec">if (! j) return 0;
+if (j == 1) {
+    return ISEQUAL(table, data, bucket-&gt;elements.one);
+};
+pairs = bucket-&gt;elements.many;
+while (j--) {
+    if (ISEQUAL(table, data, *pairs)) return 1;
+    pairs ++;
+};
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">count == 0</code>，直接返回</li>
+  <li><code class="highlighter-rouge">count == 1</code>，使用 <code class="highlighter-rouge">ISEQUAL</code> 比较查找的数据与 <code class="highlighter-rouge">bucket-&gt;elements.one</code></li>
+  <li>
+    <p><code class="highlighter-rouge">count &gt; 1</code>，依次与 <code class="highlighter-rouge">bucket-&gt;elements.many</code> 中的值进行比较</p>
+
+    <blockquote>
+      <p>你可能觉得到这里的时间复杂度比较糟糕，然而这个列表并不会很长，具体会在 <a href="#nxhashinsert">NXHashInsert</a> 中解释。</p>
+    </blockquote>
+  </li>
+</ul>
+
+<h3 id="nxhashget">NXHashGet</h3>
+
+<blockquote>
+  <p>其实我一直觉得这个方法可能用处不是很大，尤其是在使用默认的 <code class="highlighter-rouge">NXHashTablePrototype</code> 时，因为默认的 <code class="highlighter-rouge">NXHashTablePrototype</code> 中的 <code class="highlighter-rouge">isEqual</code> 函数指针只是比较两个数据的指针是否相同。</p>
+
+  <p>其最大作用就是查看当前 <code class="highlighter-rouge">data</code> 是不是在表中。</p>
+
+  <p>如果当前数据在表中，那么这个方法只会返回一个相同的指针，没有太多的意义。</p>
+</blockquote>
+
+<p>它的实现跟上面的 <code class="highlighter-rouge">NXHashMember</code> 区别并不大，这里就不过多介绍了：</p>
+
+<pre><code class="language-objectivec">void *NXHashGet (NXHashTable *table, const void *data) {
+    HashBucket	*bucket = BUCKETOF(table, data);
+    unsigned	j = bucket-&gt;count;
+    const void	**pairs;
+
+    if (! j) return NULL;
+    if (j == 1) {
+        return ISEQUAL(table, data, bucket-&gt;elements.one)
+        ? (void *) bucket-&gt;elements.one : NULL;
+    };
+    pairs = bucket-&gt;elements.many;
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) return (void *) *pairs;
+        pairs ++;
+    };
+    return NULL;
+}
+</code></pre>
+
+<h3 id="nxhashinsert">NXHashInsert</h3>
+
+<p><code class="highlighter-rouge">NXHashInsert</code> 是 <code class="highlighter-rouge">NXHashTable</code> 中比较重要的方法，其作用就是向表中插入数据：</p>
+
+<pre><code class="language-objectivec">void *NXHashInsert (NXHashTable *table, const void *data) {
+    HashBucket *bucket = BUCKETOF(table, data);
+    unsigned j = bucket-&gt;count;
+    const void **pairs;
+    const void **newt;
+
+    if (! j) {
+        bucket-&gt;count++;
+        bucket-&gt;elements.one = data;
+        table-&gt;count++;
+        return NULL;
+    };
+    if (j == 1) {
+        if (ISEQUAL(table, data, bucket-&gt;elements.one)) {
+            const void *old = bucket-&gt;elements.one;
+            bucket-&gt;elements.one = data;
+            return (void *) old;
+        };
+        newt = ALLOCPAIRS(z, 2);
+        newt[1] = bucket-&gt;elements.one;
+        *newt = data;
+        bucket-&gt;count++;
+        bucket-&gt;elements.many = newt;
+        table-&gt;count++;
+        if (table-&gt;count &gt; table-&gt;nbBuckets) _NXHashRehash (table);
+        return NULL;
+    };
+    pairs = bucket-&gt;elements.many;
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) {
+            const void	*old = *pairs;
+            *pairs = data;
+            return (void *) old;
+        };
+        pairs ++;
+    };
+    newt = ALLOCPAIRS(z, bucket-&gt;count+1);
+    if (bucket-&gt;count) bcopy ((const char*)bucket-&gt;elements.many, (char*)(newt+1), bucket-&gt;count * PTRSIZE);
+    *newt = data;
+    FREEPAIRS (bucket-&gt;elements.many);
+    bucket-&gt;count++;
+    bucket-&gt;elements.many = newt;
+    table-&gt;count++;
+    if (table-&gt;count &gt; table-&gt;nbBuckets) _NXHashRehash (table);
+    return NULL;
+}
+</code></pre>
+
+<p>虽然这里的实现比上面的两个方法复杂得多，但是脉络仍然很清晰，我们将插入的过程分为三种情况：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">bucket-&gt;count == 0</code></li>
+  <li><code class="highlighter-rouge">bucket-&gt;count == 1</code></li>
+  <li><code class="highlighter-rouge">bucket-&gt;count &gt; 1</code></li>
+</ul>
+
+<p>如果对应的 <code class="highlighter-rouge">bucket</code> 为空：</p>
+
+<pre><code class="language-objectivec">if (! j) {
+    bucket-&gt;count++;
+    bucket-&gt;elements.one = data;
+    table-&gt;count++;
+    return NULL;
+};
+</code></pre>
+
+<p>将数据直接填入 <code class="highlighter-rouge">bucket</code>，增加 <code class="highlighter-rouge">bucket</code> 中元素的数目，以及 <code class="highlighter-rouge">table</code> 中存储的元素的数目：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-insert-empty.gif" alt="objc-hashtable-insert-empty" /></p>
+
+<p>如果原来的 <code class="highlighter-rouge">buckets</code> 中有一个元素，它会替换或者使用 <code class="highlighter-rouge">many</code> 替换原来的 <code class="highlighter-rouge">one</code>：</p>
+
+<pre><code class="language-objectivec">if (j == 1) {
+    if (ISEQUAL(table, data, bucket-&gt;elements.one)) {
+        const void	*old = bucket-&gt;elements.one;
+        bucket-&gt;elements.one = data;
+        return (void *) old;
+    };
+    newt = ALLOCPAIRS(z, 2);
+    newt[1] = bucket-&gt;elements.one;
+    *newt = data;
+    bucket-&gt;count++;
+    bucket-&gt;elements.many = newt;
+    table-&gt;count++;
+
+    ...
+
+    return NULL;
+};
+</code></pre>
+
+<p>当前数据 <code class="highlighter-rouge">data</code> 如果与 <code class="highlighter-rouge">bucket</code> 中存储的数据相同，就会更新这个数据，否则就会使用 <code class="highlighter-rouge">ALLOCPAIRS</code> 初始化一个新的数组，然后将 <code class="highlighter-rouge">data</code> 和原来的数据传入。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-insert-one.gif.gif" alt="objc-hashtable-insert-one.gif" /></p>
+
+<p>但是如果原来的 <code class="highlighter-rouge">bucket</code> 中存储的元素大于 1，那么会在链表的头部追加一个新的元素：</p>
+
+<pre><code class="language-objectivec">while (j--) {
+    if (ISEQUAL(table, data, *pairs)) {
+        const void	*old = *pairs;
+        *pairs = data;
+        return (void *) old;
+    };
+    pairs ++;
+};
+newt = ALLOCPAIRS(z, bucket-&gt;count+1);
+if (bucket-&gt;count) bcopy ((const char*)bucket-&gt;elements.many, (char*)(newt+1), bucket-&gt;count * PTRSIZE);
+*newt = data;
+FREEPAIRS (bucket-&gt;elements.many);
+bucket-&gt;count++;
+bucket-&gt;elements.many = newt;
+table-&gt;count++;
+</code></pre>
+
+<p>上面的代码使用 <code class="highlighter-rouge">bcopy</code> 将原链表中元素拷贝到新的数组 <code class="highlighter-rouge">newt</code> 中。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-insert-many.gif.gif" alt="objc-hashtable-insert-many.gif" /></p>
+
+<p>在每次添加完一个元素之后，都会进行下面的判断：</p>
+
+<pre><code class="language-objectivec">if (table-&gt;count &gt; table-&gt;nbBuckets) _NXHashRehash (table);
+</code></pre>
+
+<blockquote>
+  <p>上面的这行代码会保证<strong>哈希表中的元素数据小于等于表中的 bucket 数量</strong>。</p>
+</blockquote>
+
+<p>这就是 <code class="highlighter-rouge">buckets</code> 后面的列表非常短的原因，在理想情况下，<strong>每一个 <code class="highlighter-rouge">buckets</code> 中都只存储一个或零个元素</strong>。</p>
+
+<h4 id="_nxhashrehash">_NXHashRehash</h4>
+
+<p>如果哈希表在添加元素后，其中的数据多于 <code class="highlighter-rouge">buckets</code> 数量，就会对 <code class="highlighter-rouge">NXHashTable</code> 进行 <code class="highlighter-rouge">_NXHashRehash</code> 操作。</p>
+
+<pre><code class="language-objectivec">static void _NXHashRehash (NXHashTable *table) {
+    _NXHashRehashToCapacity (table, MORE_CAPACITY(table-&gt;nbBuckets));
+}
+</code></pre>
+
+<p>它调用 <code class="highlighter-rouge">_NXHashRehashToCapacity</code> 方法来扩大 <code class="highlighter-rouge">NXHashTable</code> 的容量（<code class="highlighter-rouge">HashBucket</code> 的个数）。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define MORE_CAPACITY(b) (b*2+1)
+</span></code></pre></div></div>
+
+<p>而 <code class="highlighter-rouge">MORE_CAPACITY</code> 会将当前哈希表的容量翻倍，并将新的容量传入 <code class="highlighter-rouge">_NXHashRehashToCapacity</code> 中：</p>
+
+<pre><code class="language-objectivec">void _NXHashRehashToCapacity (NXHashTable *table, unsigned newCapacity) {
+    NXHashTable	*old;
+    NXHashState	state;
+    void	*aux;
+    __unused void *z = ZONE_FROM_PTR(table);
+
+    old = ALLOCTABLE(z);
+    old-&gt;prototype = table-&gt;prototype; old-&gt;count = table-&gt;count;
+    old-&gt;nbBuckets = table-&gt;nbBuckets; old-&gt;buckets = table-&gt;buckets;
+    table-&gt;nbBuckets = newCapacity;
+    table-&gt;count = 0; table-&gt;buckets = ALLOCBUCKETS(z, table-&gt;nbBuckets);
+    state = NXInitHashState (old);
+    while (NXNextHashState (old, &amp;state, &amp;aux))
+        (void) NXHashInsert (table, aux);
+    freeBuckets (old, NO);
+
+    free (old-&gt;buckets);
+    free (old);
+}
+</code></pre>
+
+<ol>
+  <li>创建一个 <code class="highlighter-rouge">NXHashTable</code> 的指针指向原哈希表</li>
+  <li>改变哈希表的 <code class="highlighter-rouge">nbBuckets</code>，并重新初始化哈希表的 <code class="highlighter-rouge">buckets</code> 数组</li>
+  <li>重新将元素插入到哈希表中</li>
+  <li>释放原哈希表 <code class="highlighter-rouge">old</code> 以及 <code class="highlighter-rouge">buckets</code></li>
+</ol>
+
+<h4 id="nxhashstate">NXHashState</h4>
+
+<p>在将元素重新插入到哈希表中涉及了一个非常奇怪的结构体 <code class="highlighter-rouge">NXHashState</code>，这个结构体主要作用是遍历 <code class="highlighter-rouge">NXHashTable</code> 中的元素。</p>
+
+<pre><code class="language-objectivec">typedef struct {
+    int i;
+    int j;
+} NXHashState;
+</code></pre>
+
+<p>我们可以使用如下的代码对哈希表中的元素进行遍历：</p>
+
+<pre><code class="language-objectivec"> unsigned count = 0;
+ MyData	 *data;
+ NXHashState state = NXInitHashState(table);
+ while (NXNextHashState(table, &amp;state, &amp;data)) {
+    count++;
+ }
+</code></pre>
+
+<p>代码片段中调用了两个方法，分别是 <code class="highlighter-rouge">NXInitHashState</code> 以及 <code class="highlighter-rouge">NXNextHashState</code>：</p>
+
+<pre><code class="language-objectivec">NXHashState NXInitHashState (NXHashTable *table) {
+    NXHashState	state;
+
+    state.i = table-&gt;nbBuckets;
+    state.j = 0;
+    return state;
+};
+</code></pre>
+
+<p><code class="highlighter-rouge">NXInitHashState</code> 会将 <code class="highlighter-rouge">NXHashState</code> 指向哈希表的最末端：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-hash-state-init.png" alt="objc-hashtable-hash-state-init" /></p>
+
+<blockquote>
+  <p>这个位置其实并不属于 <code class="highlighter-rouge">NXHashTable</code>，它一定会为空。</p>
+</blockquote>
+
+<p>而每次调用 <code class="highlighter-rouge">NXNextHashState</code> 都会向『前』移动一次：</p>
+
+<pre><code class="language-objectivec">int NXNextHashState (NXHashTable *table, NXHashState *state, void **data) {
+    HashBucket		*buckets = (HashBucket *) table-&gt;buckets;
+
+    while (state-&gt;j == 0) {
+        if (state-&gt;i == 0) return NO;
+        state-&gt;i--; state-&gt;j = buckets[state-&gt;i].count;
+    }
+    state-&gt;j--;
+    buckets += state-&gt;i;
+    *data = (void *) ((buckets-&gt;count == 1)
+                      ? buckets-&gt;elements.one : buckets-&gt;elements.many[state-&gt;j]);
+    return YES;
+};
+</code></pre>
+
+<p>下面的 gif 为我们展示了每一次调用 <code class="highlighter-rouge">NXNextHashState</code> 方法之后当前的 <code class="highlighter-rouge">NXHashState</code>：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-hashstate-next.gif" alt="objc-hashtable-hashstate-next" /></p>
+
+<h3 id="nxhashremove">NXHashRemove</h3>
+
+<p>这里的 <code class="highlighter-rouge">NXHashRemove</code>在某种意义上是 <code class="highlighter-rouge">NXHashInsert</code> 的逆操作：</p>
+
+<pre><code class="language-objectivec">void *NXHashRemove (NXHashTable *table, const void *data) {
+    HashBucket	*bucket = BUCKETOF(table, data);
+    unsigned	j = bucket-&gt;count;
+    const void	**pairs;
+    const void	**newt;
+    __unused void *z = ZONE_FROM_PTR(table);
+
+    if (! j) return NULL;
+    if (j == 1) {
+        if (! ISEQUAL(table, data, bucket-&gt;elements.one)) return NULL;
+        data = bucket-&gt;elements.one;
+        table-&gt;count--; bucket-&gt;count--; bucket-&gt;elements.one = NULL;
+        return (void *) data;
+    };
+    pairs = bucket-&gt;elements.many;
+    if (j == 2) {
+        if (ISEQUAL(table, data, pairs[0])) {
+            bucket-&gt;elements.one = pairs[1]; data = pairs[0];
+        }
+        else if (ISEQUAL(table, data, pairs[1])) {
+            bucket-&gt;elements.one = pairs[0]; data = pairs[1];
+        }
+        else return NULL;
+        FREEPAIRS (pairs);
+        table-&gt;count--; bucket-&gt;count--;
+        return (void *) data;
+    };
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) {
+            data = *pairs;
+            /* we shrink this bucket */
+            newt = (bucket-&gt;count-1)
+            ? ALLOCPAIRS(z, bucket-&gt;count-1) : NULL;
+            if (bucket-&gt;count-1 != j)
+                bcopy ((const char*)bucket-&gt;elements.many, (char*)newt, PTRSIZE*(bucket-&gt;count-j-1));
+            if (j)
+                bcopy ((const char*)(bucket-&gt;elements.many + bucket-&gt;count-j), (char*)(newt+bucket-&gt;count-j-1), PTRSIZE*j);
+            FREEPAIRS (bucket-&gt;elements.many);
+            table-&gt;count--; bucket-&gt;count--; bucket-&gt;elements.many = newt;
+            return (void *) data;
+        };
+        pairs ++;
+    };
+    return NULL;
+}
+</code></pre>
+
+<p>它的实现也分为三种情况，不过在这里就不多说了。</p>
+
+<h2 id="nxhashtable-的性能">NXHashTable 的性能</h2>
+
+<p>在已经熟悉了 <code class="highlighter-rouge">NXHashTable</code> 的具体实现之后，我们要分析插入<strong>不同数据量级</strong>的情况下，所需要的时间，这里是主程序的代码，分别测试了在 <code class="highlighter-rouge">100, 1000, 10000, 100000, 1000000, 2000000, 3000000, 5000000, 10000000</code> 数据下 <code class="highlighter-rouge">NXHashTable</code> 的性能表现：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import "hashtable2.h"
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSArray&lt;NSNumber *&gt; *capacities = @[
+            @100,
+            @1000,
+            @10000,
+            @100000,
+            @1000000,
+            @2000000,
+            @3000000,
+            @5000000,
+            @10000000
+        ];
+
+        for (NSNumber *capacity in capacities) {
+            NXHashTable *hashTable = NXCreateHashTable(NXPtrPrototype, 0, NULL);
+            NSDate *methodStart = [NSDate date];
+            for (NSInteger i = 0; i &lt; capacity.integerValue; i++) {
+                NSString *value = [NSString stringWithFormat:@"%ld", (long)i];
+                NXHashInsert(hashTable, (__bridge void *)value);
+            }
+            NSDate *methodFinish = [NSDate date];
+            NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
+            NSLog(@"Capacities: %@, executionTime = %f, meanTime = %.10f", capacity, executionTime, executionTime / capacity.integerValue);
+
+            free(hashTable);
+        }
+
+    }
+    return 0;
+}
+</code></pre>
+
+<p>代码中初始化了一个 <code class="highlighter-rouge">capacities</code> 存储需要测量的数据量级，然后调用 <code class="highlighter-rouge">NXHashInsert</code> 方法将相当数量级的数据添加到哈希表中：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000334</td>
+      <td style="text-align: right">0.0000033402</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.001962</td>
+      <td style="text-align: right">0.0000019619</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.022001</td>
+      <td style="text-align: right">0.0000022001</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.349998</td>
+      <td style="text-align: right">0.0000035000</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">2.622551</td>
+      <td style="text-align: right">0.0000026226</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">4.165023</td>
+      <td style="text-align: right">0.0000020825</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">6.973098</td>
+      <td style="text-align: right">0.0000023244</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">13.179743</td>
+      <td style="text-align: right">0.0000026359</td>
+    </tr>
+    <tr>
+      <td style="text-align: right"><strong>10000000</strong></td>
+      <td style="text-align: right"><strong>53.387356</strong></td>
+      <td style="text-align: right"><strong>0.0000053387</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在对 <code class="highlighter-rouge">NXHashTable</code> 的性能测试中，当数据量小于 5000000 时，执行时间的增长还是线性的，平均时间也基本稳定，但是一旦数据量达到了千万级，执行时间就会出现显著的增长。</p>
+
+<p>如果仅仅在哈希表中插入数据，相信其时间增长应该都是线性的，这里出现问题的原因推测是<strong>在对哈希表进行 Rehash 的时候，迁移原数据至新的数组所造成的</strong>。</p>
+
+<p>如何避免哈希表的 Rehash 呢，重新回顾一下创建哈希表的函数：</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTable (NXHashTablePrototype prototype, unsigned capacity, const void *info);
+</code></pre>
+
+<p>这个函数的签名中包含一个 <code class="highlighter-rouge">capacity</code> 的参数，我们在上面的代码中传入了 0，也就是最开始的 <code class="highlighter-rouge">buckets</code> 数为 0，但是它的数目并不是固定的，它会随着哈希表中数据的增多，逐渐变大。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">capacity</code> 只是一个提示，帮助 NXHashTable 了解其中会存储多少数据。</p>
+</blockquote>
+
+<p>如果在创建 <code class="highlighter-rouge">NXHashTable</code> 时传入 <code class="highlighter-rouge">capacity.integerValue</code>：</p>
+
+<pre><code class="language-objectivec">  NXHashTable *hashTable = NXCreateHashTable(NXPtrPrototype, capacity.integerValue, NULL);
+</code></pre>
+
+<p>重新运行代码，测量性能：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000740</td>
+      <td style="text-align: right">0.0000073999</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.003442</td>
+      <td style="text-align: right">0.0000034420</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.023341</td>
+      <td style="text-align: right">0.0000023341</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.215209</td>
+      <td style="text-align: right">0.0000021521</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">1.836802</td>
+      <td style="text-align: right">0.0000018368</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">3.683246</td>
+      <td style="text-align: right">0.0000018416</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">5.474610</td>
+      <td style="text-align: right">0.0000018249</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">10.576254</td>
+      <td style="text-align: right">0.0000021153</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000000</td>
+      <td style="text-align: right">46.725459</td>
+      <td style="text-align: right">0.0000046725</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>虽然在测试 <code class="highlighter-rouge">10,000,000</code> 数据时其平均时间依然是 <code class="highlighter-rouge">5,000,000</code> 时的二倍，不过整体的性能都有所提升，然而这部分性能的损耗暂时还不是很清楚原因。</p>
+
+<p>如果我们使用 Instrument 对有无 <code class="highlighter-rouge">capacity</code> 的情况进行比较（这是在使用 <code class="highlighter-rouge">2,000,000</code> 数据时进行的测试）：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-instrument.png" alt="objc-hashtable-instrument" /></p>
+
+<p>没有传入 <code class="highlighter-rouge">capacity</code> 的哈希表会在多次插入之后出现一个峰值（由于 Rehash 引起的，其宽度就是 Rehash 使用的时间），而传入 <code class="highlighter-rouge">capacity</code> 的哈希表会在代码刚运行时就初始化足够大的数组。</p>
+
+<h2 id="nsmutablearray-性能">NSMutableArray 性能</h2>
+
+<blockquote>
+  <p>这部分只算是一个小插曲，你可以选择跳过这一小节的内容。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">NSMutableArray</code> 的构造器 <code class="highlighter-rouge">- (instancetype)initWithCapacity:(NSUInteger)numItems</code> 也有一个参数 <code class="highlighter-rouge">capacity</code>，虽然数组和哈希表是两种数据结构。</p>
+
+<blockquote>
+  <p>不过我们这里主要研究的是：<strong>传入 <code class="highlighter-rouge">capacity</code> 是否会对性能造成影响</strong>。</p>
+</blockquote>
+
+<p>首先是使用 <code class="highlighter-rouge">init</code> 创建的 <code class="highlighter-rouge">NSMutableArray</code> 数组，也就是没有传入 <code class="highlighter-rouge">capacity</code>：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000539</td>
+      <td style="text-align: right">0.0000053900</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.003185</td>
+      <td style="text-align: right">0.0000031850</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.074033</td>
+      <td style="text-align: right">0.0000074033</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.370899</td>
+      <td style="text-align: right">0.0000037090</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">1.504855</td>
+      <td style="text-align: right">0.0000015049</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">2.852519</td>
+      <td style="text-align: right">0.0000014263</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">3.995536</td>
+      <td style="text-align: right">0.0000013318</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">6.833879</td>
+      <td style="text-align: right">0.0000013668</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000000</td>
+      <td style="text-align: right">14.444605</td>
+      <td style="text-align: right">0.0000014445</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>下面是使用 <code class="highlighter-rouge">initWithCapacity:</code> 创建的数组：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000256</td>
+      <td style="text-align: right">0.0000025600</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.001775</td>
+      <td style="text-align: right">0.0000017750</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.015906</td>
+      <td style="text-align: right">0.0000015906</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.174376</td>
+      <td style="text-align: right">0.0000017438</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">1.650481</td>
+      <td style="text-align: right">0.0000016505</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">2.802310</td>
+      <td style="text-align: right">0.0000014012</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">4.451261</td>
+      <td style="text-align: right">0.0000014838</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">7.093753</td>
+      <td style="text-align: right">0.0000014188</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000000</td>
+      <td style="text-align: right">14.598415</td>
+      <td style="text-align: right">0.0000014598</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>你可以在表格中看到，两者在执行效率上并没有显著的差异或者区别。</p>
+
+<p>但是如果使用 instrument 来查看两者的内存分配，可以很明显的看到，没有传入 <code class="highlighter-rouge">capacity</code> 的 <code class="highlighter-rouge">NSMutableArray</code> 会在可变数组内存占用增加前出现一个<strong>短暂的内存分配峰值</strong>。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-nsarray-instrument.png" alt="objc-hashtable-nsarray-instrument" /></p>
+
+<p>导致这一现象的原始可能是：在将原数组中的内容移入新数组时，<strong>临时变量申请了大量的内存控件</strong>。</p>
+
+<blockquote>
+  <p>在之后关于 CoreFoundation 源代码分析的文中会介绍它们是怎么实现的。</p>
+</blockquote>
+
+<h2 id="nxhashtable-的应用">NXHashTable 的应用</h2>
+
+<p>在整个 objc/runtime 中，作为<strong>私有</strong>的数据结构 <code class="highlighter-rouge">NXHashTable</code>，直接使用了它的就是<strong>存储所有类或者元类</strong>的哈希表（在这里会忽略对元类的存储，因为实现几乎完全相同）：</p>
+
+<pre><code class="language-objectivec">static NXHashTable *realized_class_hash = nil;
+</code></pre>
+
+<p>我么可以使用 <code class="highlighter-rouge">objc_copyClassList</code> 获取类的数组：</p>
+
+<pre><code class="language-objectivec">Class *
+objc_copyClassList(unsigned int *outCount)
+{
+    rwlock_writer_t lock(runtimeLock);
+
+    realizeAllClasses();
+
+    Class *result = nil;
+    NXHashTable *classes = realizedClasses();
+    unsigned int count = NXCountHashTable(classes);
+
+    if (count &gt; 0) {
+        Class cls;
+        NXHashState state = NXInitHashState(classes);
+        result = (Class *)malloc((1+count) * sizeof(Class));
+        count = 0;
+        while (NXNextHashState(classes, &amp;state, (void **)&amp;cls)) {
+            result[count++] = cls;
+        }
+        result[count] = nil;
+    }
+
+    if (outCount) *outCount = count;
+    return result;
+}
+</code></pre>
+
+<ol>
+  <li>调用 <code class="highlighter-rouge">realizedClasses</code> 返回 <code class="highlighter-rouge">realized_class_hash</code> 哈希表</li>
+  <li>使用 <code class="highlighter-rouge">NSHashState</code> 遍历 <code class="highlighter-rouge">realized_class_hash</code> 中的类，并将所有的类存入 <code class="highlighter-rouge">result</code></li>
+</ol>
+
+<p>接下来使用上面的方法，打印出 <code class="highlighter-rouge">realized_class_hash</code> 中存储的所有类：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-copy-class-list.png" alt="objc-hashtable-copy-class-list" /></p>
+
+<h2 id="小结">小结</h2>
+
+<blockquote>
+  <p><code class="highlighter-rouge">NXHashTable</code> 在 OS X 10.1 中就已经标记为弃用了，但是依旧支持着 runtime 底层的工作。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 可以说有着<strong>非常非常</strong>久远的历史了，最早可以追溯到将近 30 多年前 NeXT 时代：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// hashtable2.mm 文件中
+</span>
+<span class="n">hashtable2</span><span class="p">.</span><span class="n">m</span>
+<span class="n">Copyright</span> <span class="mi">1989</span><span class="o">-</span><span class="mi">1996</span> <span class="n">NeXT</span> <span class="n">Software</span><span class="p">,</span> <span class="n">Inc</span><span class="p">.</span>
+<span class="n">Created</span> <span class="n">by</span> <span class="n">Bertrand</span> <span class="n">Serlet</span><span class="p">,</span> <span class="n">Feb</span> <span class="mi">89</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">NSHashTable</code> 对哈希表的实现还是非常优雅的，可以说非常标准的使用了<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists">拉链法</a>实现哈希表。</p>
+
+<p>不过现在，我们会使用 <code class="highlighter-rouge">NSHashTable</code> 来取代这个上古时代的产物。</p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+	  ]]></description>
+	</item>
+
+	<item>
+	  <title>懒惰的 initialize 方法</title>
+	  <link>/reprinted//initialize</link>
+	  <author></author>
+	  <pubDate>2016-04-30T09:50:08+00:00</pubDate>
+	  <guid>/reprinted//initialize</guid>
+	  <description><![CDATA[
+	     <blockquote>
+  <p>转自：<a href="https://draveness.me/initialize">懒惰的 initialize 方法</a></p>
+</blockquote>
+
+<blockquote>
+  <p>因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 <code class="highlighter-rouge">x86_64</code> 架构下运行的，对于在 arm64 中运行的代码会特别说明。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>这篇文章可能是对 Objective-C 源代码解析系列文章中最短的一篇了，在 Objective-C 中，我们总是会同时想到 <code class="highlighter-rouge">load</code>、<code class="highlighter-rouge">initialize</code> 这两个类方法。而这两个方法也经常在一起比较：</p>
+
+<p>在上一篇介绍 <code class="highlighter-rouge">load</code> 方法的<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/你真的了解%20load%20方法么？.md">文章</a>中，已经对 <code class="highlighter-rouge">load</code> 方法的调用时机、调用顺序进行了详细地分析，所以对于 <code class="highlighter-rouge">load</code> 方法，这里就不在赘述了。</p>
+
+<p>这篇文章会<del>假设你知道：</del>假设你是 iOS 开发者。</p>
+
+<p>本文会主要介绍：</p>
+
+<ol>
+  <li><code class="highlighter-rouge">initialize</code> 方法的调用为什么是惰性的</li>
+  <li>这货能干啥</li>
+</ol>
+
+<h2 id="initialize-的调用栈">initialize 的调用栈</h2>
+
+<p>在分析其调用栈之前，首先来解释一下，什么是惰性的。</p>
+
+<p>这是 <code class="highlighter-rouge">main.m</code> 文件中的代码：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+
+@interface XXObject : NSObject @end
+
+@implementation XXObject
+
++ (void)initialize {
+    NSLog(@"XXObject initialize");
+}
+
+@end
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool { }
+    return 0;
+}
+</code></pre>
+
+<p>主函数中的代码为空，如果我们运行这个程序：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-print-nothing.png" alt="objc-initialize-print-nothing" /></p>
+
+<p>你会发现与 <code class="highlighter-rouge">load</code> 方法不同的是，虽然我们在 <code class="highlighter-rouge">initialize</code> 方法中调用了 <code class="highlighter-rouge">NSLog</code>。但是程序运行之后没有任何输出。</p>
+
+<p>如果，我们在自动释放池中加入以下代码：</p>
+
+<pre><code class="language-objectivec">int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        __unused XXObject *object = [[XXObject alloc] init];
+    }
+    return 0;
+}
+</code></pre>
+
+<p>再运行程序：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-print-initialize.png" alt="objc-initialize-print-initialize" /></p>
+
+<p>你会发现，虽然我们没有直接调用 <code class="highlighter-rouge">initialize</code> 方法。但是，这里也打印出了 <code class="highlighter-rouge">XXObject initialize</code> 字符串。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">initialize</code> <strong>只会在对应类的方法第一次被调用时，才会调用</strong>。</p>
+</blockquote>
+
+<p>我们在 <code class="highlighter-rouge">initialize</code> 方法中打一个断点，来查看这个方法的调用栈：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-breakpoint.png" alt="objc-initialize-breakpoint" /></p>
+
+<pre><code class="language-objectivec">0 +[XXObject initialize]
+1 _class_initialize
+2 lookUpImpOrForward
+3 _class_lookupMethodAndLoadCache3
+4 objc_msgSend
+5 main
+6 start
+</code></pre>
+
+<p>直接来看调用栈中的 <code class="highlighter-rouge">lookUpImpOrForward</code> 方法，<code class="highlighter-rouge">lookUpImpOrForward</code> 方法<strong>只会在向对象发送消息，并且在类的缓存中没有找到消息的选择子时</strong>才会调用，具体可以看这篇文章，<a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/objc/从源代码看%20ObjC%20中消息的发送.md">从源代码看 ObjC 中消息的发送</a>。</p>
+
+<p>在这里，我们知道 <code class="highlighter-rouge">lookUpImpOrForward</code> 方法是 <code class="highlighter-rouge">objc_msgSend</code> 触发的就够了。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-print-selector.png" alt="objc-initialize-print-selecto" /></p>
+
+<p>在 lldb 中输入 <code class="highlighter-rouge">p sel</code> 打印选择子，会发现当前调用的方法是 <code class="highlighter-rouge">alloc</code> 方法，也就是说，<code class="highlighter-rouge">initialize</code> 方法是在 <code class="highlighter-rouge">alloc</code> 方法之前调用的，<code class="highlighter-rouge">alloc</code> 的调用导致了前者的执行。</p>
+
+<p>其中，使用 <code class="highlighter-rouge">if (initialize  &amp;&amp;  !cls-&gt;isInitialized())</code> 来判断当前类是否初始化过：</p>
+
+<pre><code class="language-objectivec">bool isInitialized() {
+   return getMeta()-&gt;data()-&gt;flags &amp; RW_INITIALIZED;
+}
+</code></pre>
+
+<blockquote>
+  <p>当前类是否初始化过的信息就保存在<a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html">元类</a>的 <code class="highlighter-rouge">class_rw_t</code> 结构体中的 <code class="highlighter-rouge">flags</code> 中。</p>
+</blockquote>
+
+<p>这是 <code class="highlighter-rouge">flags</code> 中保存的信息，它记录着跟当前类的元数据，其中第 16-31 位有如下的作用：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-objc-initialize-class_rw_t_-bits-flag.png" alt="objc-initialize-class_rw_t_-bits-flag" /></p>
+
+<p><code class="highlighter-rouge">flags</code> 的第 29 位 <code class="highlighter-rouge">RW_INITIALIZED</code> 就保存了当前类是否初始化过的信息。</p>
+
+<h2 id="_class_initialize-方法">_class_initialize 方法</h2>
+
+<p>在 <code class="highlighter-rouge">initialize</code> 的调用栈中，直接调用其方法的是下面的这个 C 语言函数：</p>
+
+<pre><code class="language-objectivec">void _class_initialize(Class cls)
+{
+    Class supercls;
+    BOOL reallyInitialize = NO;
+
+    // 1. 强制父类先调用 initialize 方法
+    supercls = cls-&gt;superclass;
+    if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) {
+        _class_initialize(supercls);
+    }
+
+    {
+        // 2. 通过加锁来设置 RW_INITIALIZING 标志位
+        monitor_locker_t lock(classInitLock);
+        if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) {
+            cls-&gt;setInitializing();
+            reallyInitialize = YES;
+        }
+    }
+
+    if (reallyInitialize) {
+        // 3. 成功设置标志位，向当前类发送 +initialize 消息
+        _setThisThreadIsInitializingClass(cls);
+
+        ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);
+
+        // 4. 完成初始化，如果父类已经初始化完成，设置 RW_INITIALIZED 标志位，
+        //    否则，在父类初始化完成之后再设置标志位。
+        monitor_locker_t lock(classInitLock);
+        if (!supercls  ||  supercls-&gt;isInitialized()) {
+            _finishInitializing(cls, supercls);
+        } else {
+            _finishInitializingAfter(cls, supercls);
+        }
+        return;
+    } else if (cls-&gt;isInitializing()) {
+        // 5. 当前线程正在初始化当前类，直接返回，否则，会等待其它线程初始化结束后，再返回
+        if (_thisThreadIsInitializingClass(cls)) {
+            return;
+        } else {
+            monitor_locker_t lock(classInitLock);
+            while (!cls-&gt;isInitialized()) {
+                classInitLock.wait();
+            }
+            return;
+        }
+    } else if (cls-&gt;isInitialized()) {
+        // 6. 初始化成功后，直接返回
+        return;
+    } else {
+        _objc_fatal("thread-safe class init in objc runtime is buggy!");
+    }
+}
+</code></pre>
+
+<p>方法的主要作用自然是向未初始化的类发送 <code class="highlighter-rouge">+initialize</code> 消息，不过会强制父类先发送 <code class="highlighter-rouge">+initialize</code>。</p>
+
+<ol>
+  <li>
+    <p>强制<strong>未初始化过的</strong>父类调用 <code class="highlighter-rouge">initialize</code> 方法</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) {
+     _class_initialize(supercls);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>通过加锁来设置 <code class="highlighter-rouge">RW_INITIALIZING</code> 标志位</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> monitor_locker_t lock(classInitLock);
+ if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) {
+     cls-&gt;setInitializing();
+     reallyInitialize = YES;
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>成功设置标志位、向当前类发送 <code class="highlighter-rouge">+initialize</code> 消息</p>
+
+    <pre><code class="language-objectivec"> ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);
+</code></pre>
+  </li>
+  <li>
+    <p>完成初始化，如果父类已经初始化完成，设置 <code class="highlighter-rouge">RW_INITIALIZED</code> 标志位。否则，在父类初始化完成之后再设置标志位</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> monitor_locker_t lock(classInitLock);
+ if (!supercls  ||  supercls-&gt;isInitialized()) {
+     _finishInitializing(cls, supercls);
+ } else {
+     _finishInitializingAfter(cls, supercls);
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>如果当前线程正在初始化当前类，直接返回，否则，会等待其它线程初始化结束后，再返回，<strong>保证线程安全</strong></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> if (_thisThreadIsInitializingClass(cls)) {
+     return;
+ } else {
+     monitor_locker_t lock(classInitLock);
+     while (!cls-&gt;isInitialized()) {
+         classInitLock.wait();
+     }
+     return;
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>初始化成功后，直接返回</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> return;
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="管理初始化队列">管理初始化队列</h2>
+
+<p>因为我们始终要保证父类的初始化方法要在子类之前调用，所以我们需要维护一个 <code class="highlighter-rouge">PendingInitializeMap</code> 的数据结构来存储<strong>当前的类初始化需要哪个父类先初始化完成</strong>。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-04-30-PendingInitializeMap.png" alt="PendingInitializeMap" /></p>
+
+<p>这个数据结构中的信息会被两个方法改变：</p>
+
+<pre><code class="language-objectivec">if (!supercls  ||  supercls-&gt;isInitialized()) {
+  _finishInitializing(cls, supercls);
+} else {
+  _finishInitializingAfter(cls, supercls);
+}
+</code></pre>
+
+<p>分别是 <code class="highlighter-rouge">_finishInitializing</code> 以及 <code class="highlighter-rouge">_finishInitializingAfter</code>，先来看一下后者是怎么实现的，也就是<strong>在父类没有完成初始化的时候</strong>调用的方法：</p>
+
+<pre><code class="language-objectivec">static void _finishInitializingAfter(Class cls, Class supercls)
+{
+    PendingInitialize *pending;
+    pending = (PendingInitialize *)malloc(sizeof(*pending));
+    pending-&gt;subclass = cls;
+    pending-&gt;next = (PendingInitialize *)NXMapGet(pendingInitializeMap, supercls);
+    NXMapInsert(pendingInitializeMap, supercls, pending);
+}
+</code></pre>
+
+<p>因为当前类的父类没有初始化，所以会将子类加入一个数据结构 <code class="highlighter-rouge">PendingInitialize</code> 中，这个数据结构其实就类似于一个保存子类的链表。这个链表会以父类为键存储到 <code class="highlighter-rouge">pendingInitializeMap</code> 中。</p>
+
+<pre><code class="language-objective">NXMapInsert(pendingInitializeMap, supercls, pending);
+</code></pre>
+
+<p>而在<strong>父类已经调用了初始化方法</strong>的情况下，对应方法 <code class="highlighter-rouge">_finishInitializing</code> 的实现就稍微有些复杂了：</p>
+
+<pre><code class="language-objectivec">static void _finishInitializing(Class cls, Class supercls)
+{
+    PendingInitialize *pending;
+
+    cls-&gt;setInitialized();
+
+    if (!pendingInitializeMap) return;
+    pending = (PendingInitialize *)NXMapGet(pendingInitializeMap, cls);
+    if (!pending) return;
+
+    NXMapRemove(pendingInitializeMap, cls);
+
+    while (pending) {
+        PendingInitialize *next = pending-&gt;next;
+        if (pending-&gt;subclass) _finishInitializing(pending-&gt;subclass, cls);
+        free(pending);
+        pending = next;
+    }
+}
+</code></pre>
+
+<p>首先，由于父类已经完成了初始化，在这里直接将当前类标记成已经初始化，然后<strong>递归地将被当前类 block 的子类标记为已初始化</strong>，再把这些当类移除 <code class="highlighter-rouge">pendingInitializeMap</code>。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>到这里，我们对 <code class="highlighter-rouge">initialize</code> 方法的研究基本上已经结束了，这里会总结一下关于其方法的特性：</p>
+
+<ol>
+  <li><code class="highlighter-rouge">initialize</code> 的调用是惰性的，它会在第一次调用当前类的方法时被调用</li>
+  <li>与 <code class="highlighter-rouge">load</code> 不同，<code class="highlighter-rouge">initialize</code> 方法调用时，所有的类都<strong>已经加载</strong>到了内存中</li>
+  <li><code class="highlighter-rouge">initialize</code> 的运行是线程安全的</li>
+  <li>子类会<strong>继承</strong>父类的 <code class="highlighter-rouge">initialize</code> 方法</li>
+</ol>
+
+<p>而其作用也非常局限，一般我们只会在 <code class="highlighter-rouge">initialize</code> 方法中进行一些常量的初始化。</p>
+
+<h2 id="参考资料">参考资料</h2>
+
+<ul>
+  <li><a href="http://www.cocoawithlove.com/2010/01/what-is-meta-class-in-objective-c.html">What is a meta-class in Objective-C?</a></li>
+  <li><a href="http://stackoverflow.com/questions/13326435/nsobject-load-and-initialize-what-do-they-do">NSObject +load and +initialize - What do they do?</a></li>
+</ul>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+
+	  ]]></description>
+	</item>
+
+
+</channel>
+</rss>

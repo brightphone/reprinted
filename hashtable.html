@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>上古时代 Objective-C 中哈希表的实现</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//hashtable" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="上古时代 Objective-C 中哈希表的实现" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//hashtable" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="上古时代 Objective-C 中哈希表的实现" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//hashtable" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "上古时代 Objective-C 中哈希表的实现",
+    "url": "/reprinted//hashtable",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">上古时代 Objective-C 中哈希表的实现</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-05-07">06 May 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/runtime'>runtime</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/hashtable">上古时代 Objective-C 中哈希表的实现</a></p>
+</blockquote>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+<blockquote>
+  <p>因为 ObjC 的 runtime 只能在 Mac OS 下才能编译，所以文章中的代码都是在 Mac OS，也就是 <code class="highlighter-rouge">x86_64</code> 架构下运行的，对于在 arm64 中运行的代码会特别说明。</p>
+</blockquote>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>文章会介绍上古时代 Objective-C 哈希表，也就是 <code class="highlighter-rouge">NXHashTable</code> ：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">NXHashTable</code> 的实现</li>
+  <li><code class="highlighter-rouge">NXHashTable</code> 的性能分析</li>
+  <li><code class="highlighter-rouge">NXHashTable</code> 的作用</li>
+</ul>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 的实现有着将近 30 年的历史，不过仍然作为重要的底层数据结构存储整个应用中的类。</p>
+
+<blockquote>
+  <p>文中会涉及一些数据结构方面的简单知识，例如<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists">拉链法</a>。</p>
+
+  <p>注意：<strong>文章中分析的不是 <code class="highlighter-rouge">NSHashTable</code> 而是 <code class="highlighter-rouge">NXHashTable</code>。</strong></p>
+</blockquote>
+
+<h2 id="nxhashtable">NXHashTable</h2>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 的实现位于 <code class="highlighter-rouge">hashtable2.mm</code> 文件，我们先来看一下 <code class="highlighter-rouge">NXHashTable</code> 的结构以及重要的接口：</p>
+
+<pre><code class="language-objectivec">typedef struct {
+    const NXHashTablePrototype *prototype;
+    unsigned count;
+    unsigned nbBuckets;
+    void *buckets;
+    const void *info;
+} NXHashTable;
+</code></pre>
+
+<p>对于结构体中的 <code class="highlighter-rouge">NXHashTablePrototype</code> 属性暂且不说，其中的 <code class="highlighter-rouge">buckets</code> 是真正用来<strong>存储数据的数组</strong>。</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTableFromZone (NXHashTablePrototype prototype, unsigned capacity, const void *info, void *z);
+unsigned NXCountHashTable (NXHashTable *table);
+int NXHashMember (NXHashTable *table, const void *data);
+void *NXHashGet (NXHashTable *table, const void *data);
+void *NXHashInsert (NXHashTable *table, const void *data);
+void *NXHashRemove (NXHashTable *table, const void *data);
+</code></pre>
+
+<p>我们会以上面的这些方法作为切入点，分析 <code class="highlighter-rouge">NXHashTable</code> 的实现。</p>
+
+<h3 id="nxcreatehashtablefromzone">NXCreateHashTableFromZone</h3>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 使用 <code class="highlighter-rouge">NXCreateHashTableFromZone</code> 方法初始化：</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTableFromZone (NXHashTablePrototype prototype, unsigned capacity, const void *info, void *z) {
+    NXHashTable			*table;
+    NXHashTablePrototype	 *proto;
+
+    table = ALLOCTABLE(z);
+    if (! prototypes) bootstrap ();
+    if (! prototype.hash) prototype.hash = NXPtrHash;
+    if (! prototype.isEqual) prototype.isEqual = NXPtrIsEqual;
+    if (! prototype.free) prototype.free = NXNoEffectFree;
+
+    proto = (NXHashTablePrototype *)NXHashGet (prototypes, &amp;prototype);
+    if (! proto) {
+        proto = (NXHashTablePrototype *) malloc(sizeof (NXHashTablePrototype));
+        bcopy ((const char*)&amp;prototype, (char*)proto, sizeof (NXHashTablePrototype));
+        (void) NXHashInsert (prototypes, proto);
+        proto = (NXHashTablePrototype *)NXHashGet (prototypes, &amp;prototype);
+    };
+    table-&gt;prototype = proto;
+    table-&gt;count = 0;
+    table-&gt;info = info;
+    table-&gt;nbBuckets = GOOD_CAPACITY(capacity);
+    table-&gt;buckets = ALLOCBUCKETS(z, table-&gt;nbBuckets);
+    return table;
+}
+</code></pre>
+
+<p>在这个方法中，绝大多数代码都是用来初始化 <code class="highlighter-rouge">table-&gt;prototype</code> 的，我们先把这部分全部忽略，分析一下简略版本的实现。</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTableFromZone (NXHashTablePrototype prototype, unsigned capacity, const void *info, void *z) {
+    NXHashTable			*table;
+    NXHashTablePrototype	 *proto;
+
+    table = ALLOCTABLE(z);
+
+    ...
+
+    table-&gt;count = 0;
+    table-&gt;info = info;
+    table-&gt;nbBuckets = GOOD_CAPACITY(capacity);
+    table-&gt;buckets = ALLOCBUCKETS(z, table-&gt;nbBuckets);
+    return table;
+}
+</code></pre>
+
+<p>其中 <code class="highlighter-rouge">ALLOCTABLE</code>、<code class="highlighter-rouge">GOOD_CAPACITY</code> 以及 <code class="highlighter-rouge">ALLOCBUCKETS</code> 都是用来辅助初始化的宏：</p>
+
+<pre><code class="language-objectivec">#define	 ALLOCTABLE(z) ((NXHashTable *) malloc_zone_malloc ((malloc_zone_t *)z,sizeof (NXHashTable)))
+#define GOOD_CAPACITY(c) (exp2m1u (log2u (c)+1))
+#define ALLOCBUCKETS(z,nb) ((HashBucket *) malloc_zone_calloc ((malloc_zone_t *)z, nb, sizeof (HashBucket)))
+</code></pre>
+
+<p><code class="highlighter-rouge">ALLOCTABLE</code> 和 <code class="highlighter-rouge">ALLOCBUCKETS</code> 只是调用了 <code class="highlighter-rouge">malloc_zone_calloc</code> 来初始化相应的结构体，而 <code class="highlighter-rouge">GOOD_CAPACITY</code> 有一些特殊，我们来举个例子说明：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>c   binary  result
+1   1       1
+2   10      3(0b11)
+6   110     7(0b111)
+100 1100100 127(0b111 1111)
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">c</code> 表示传入参数，<code class="highlighter-rouge">binary</code> 表示二进制下的参数，而 <code class="highlighter-rouge">result</code> 就是 <code class="highlighter-rouge">GOOD_CAPACITY</code> 返回的结果。</p>
+
+<blockquote>
+  <p>每次返回当前位数下的二进制最大值。</p>
+</blockquote>
+
+<p>获得 <code class="highlighter-rouge">table-&gt;nbBuckets</code> 之后，再初始化 <code class="highlighter-rouge">table-&gt;nbBuckets * sizeof (HashBucket)</code> 大小的内存空间。</p>
+
+<h4 id="nxhashtableprototype">NXHashTablePrototype</h4>
+
+<p>在继续分析其它方法之前，我们需要先知道 <code class="highlighter-rouge">NXHashTablePrototype</code> 是什么：</p>
+
+<pre><code class="language-objectivec">typedef struct {
+    uintptr_t (*hash)(const void *info, const void *data);
+    int (*isEqual)(const void *info, const void *data1, const void *data2);
+    void (*free)(const void *info, void *data);
+    int style; /* reserved for future expansion; currently 0 */
+} NXHashTablePrototype;
+</code></pre>
+
+<p><code class="highlighter-rouge">NXHashTablePrototype</code> 中存储了 <code class="highlighter-rouge">hash</code>、<code class="highlighter-rouge">isEqual</code> 和 <code class="highlighter-rouge">free</code> 的函数指针（用于获取数据的哈希、判断两个数据是否相等以及释放数据）。</p>
+
+<p>在 <code class="highlighter-rouge">hashtable2.mm</code> 文件中有一个宏 <code class="highlighter-rouge">ISEQUAL</code> 就是用了 <code class="highlighter-rouge">NXHashTablePrototype</code> 中的 <code class="highlighter-rouge">isEqual</code> 来判断两个数据是否相等：</p>
+
+<pre><code class="language-objectivec">#define ISEQUAL(table, data1, data2) ((data1 == data2) || (*table-&gt;prototype-&gt;isEqual)(table-&gt;info, data1, data2))
+</code></pre>
+
+<p>可以说，<code class="highlighter-rouge">NXHashTablePrototype</code> 中存储了一些<strong>构建哈希表必要的函数指针</strong>。</p>
+
+<blockquote>
+  <p>因为 <code class="highlighter-rouge">NXHashTable</code> 使用<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists">拉链法</a>来实现哈希表，在存入表前对数据执行 hash，然后找到对应的 buckets，如果与 buckets 中的数据相同（使用 isEqual 判断），就替换原数据，否则将数据添加到链表中。</p>
+</blockquote>
+
+<h4 id="hashbucket">HashBucket</h4>
+
+<p>在这里另一个需要注意的数据结构就是 <code class="highlighter-rouge">HashBucket</code>：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span>	<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="n">count</span><span class="p">;</span>
+    <span class="n">oneOrMany</span> <span class="n">elements</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">HashBucket</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">oneOrMany</code> 是一个 <code class="highlighter-rouge">union</code> 结构体：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">union</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">one</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span> <span class="o">**</span><span class="n">many</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">oneOrMany</span><span class="p">;</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>这么设计的主要原因是<strong>提升性能</strong>。</p>
+</blockquote>
+
+<p>如果 <code class="highlighter-rouge">HashBucket</code> 中只有一个元素，那么就直接访问 <code class="highlighter-rouge">one</code>，否则访问 <code class="highlighter-rouge">many</code>，遍历这个 <code class="highlighter-rouge">many</code> 列表。</p>
+
+<h3 id="nxcounthashtable">NXCountHashTable</h3>
+
+<p><code class="highlighter-rouge">NXCountHashTable</code> 方法应该是我们要介绍的方法中的最简单的一个，它会直接返回 <code class="highlighter-rouge">NXHashTable</code> 结构体中的 <code class="highlighter-rouge">count</code>。</p>
+
+<pre><code class="language-objectivec">unsigned NXCountHashTable (NXHashTable *table) {
+    return table-&gt;count;
+}
+</code></pre>
+
+<h3 id="nxhashmember">NXHashMember</h3>
+
+<p><code class="highlighter-rouge">NXHashMember</code> 的函数签名虽然会返回 <code class="highlighter-rouge">int</code>，其实它是一个布尔值，会判断当前的 <code class="highlighter-rouge">NXHashTable</code> 中是否包含传入的数据：</p>
+
+<pre><code class="language-objectivec">int NXHashMember (NXHashTable *table, const void *data) {
+    HashBucket	*bucket = BUCKETOF(table, data);
+    unsigned	j = bucket-&gt;count;
+    const void	**pairs;
+
+    if (! j) return 0;
+    if (j == 1) {
+        return ISEQUAL(table, data, bucket-&gt;elements.one);
+    };
+    pairs = bucket-&gt;elements.many;
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) return 1;
+        pairs ++;
+    };
+    return 0;
+}
+</code></pre>
+
+<p>使用 <code class="highlighter-rouge">BUCKETOF</code> 对 <code class="highlighter-rouge">data</code> 进行 hash，将结果与哈希表的 <code class="highlighter-rouge">buckets</code> 数取模，返回 <code class="highlighter-rouge">buckets</code> 数组中对应的 <code class="highlighter-rouge">NXHashBucket</code>。</p>
+
+<pre><code class="language-objectivec">#define BUCKETOF(table, data) (((HashBucket *)table-&gt;buckets)+((*table-&gt;prototype-&gt;hash)(table-&gt;info, data) % table-&gt;nbBuckets))
+</code></pre>
+
+<p>在获取了 <code class="highlighter-rouge">bucket</code> 之后，根据其中元素个数的不同，选择不同的分支：</p>
+
+<pre><code class="language-objectivec">if (! j) return 0;
+if (j == 1) {
+    return ISEQUAL(table, data, bucket-&gt;elements.one);
+};
+pairs = bucket-&gt;elements.many;
+while (j--) {
+    if (ISEQUAL(table, data, *pairs)) return 1;
+    pairs ++;
+};
+</code></pre>
+
+<ul>
+  <li><code class="highlighter-rouge">count == 0</code>，直接返回</li>
+  <li><code class="highlighter-rouge">count == 1</code>，使用 <code class="highlighter-rouge">ISEQUAL</code> 比较查找的数据与 <code class="highlighter-rouge">bucket-&gt;elements.one</code></li>
+  <li>
+    <p><code class="highlighter-rouge">count &gt; 1</code>，依次与 <code class="highlighter-rouge">bucket-&gt;elements.many</code> 中的值进行比较</p>
+
+    <blockquote>
+      <p>你可能觉得到这里的时间复杂度比较糟糕，然而这个列表并不会很长，具体会在 <a href="#nxhashinsert">NXHashInsert</a> 中解释。</p>
+    </blockquote>
+  </li>
+</ul>
+
+<h3 id="nxhashget">NXHashGet</h3>
+
+<blockquote>
+  <p>其实我一直觉得这个方法可能用处不是很大，尤其是在使用默认的 <code class="highlighter-rouge">NXHashTablePrototype</code> 时，因为默认的 <code class="highlighter-rouge">NXHashTablePrototype</code> 中的 <code class="highlighter-rouge">isEqual</code> 函数指针只是比较两个数据的指针是否相同。</p>
+
+  <p>其最大作用就是查看当前 <code class="highlighter-rouge">data</code> 是不是在表中。</p>
+
+  <p>如果当前数据在表中，那么这个方法只会返回一个相同的指针，没有太多的意义。</p>
+</blockquote>
+
+<p>它的实现跟上面的 <code class="highlighter-rouge">NXHashMember</code> 区别并不大，这里就不过多介绍了：</p>
+
+<pre><code class="language-objectivec">void *NXHashGet (NXHashTable *table, const void *data) {
+    HashBucket	*bucket = BUCKETOF(table, data);
+    unsigned	j = bucket-&gt;count;
+    const void	**pairs;
+
+    if (! j) return NULL;
+    if (j == 1) {
+        return ISEQUAL(table, data, bucket-&gt;elements.one)
+        ? (void *) bucket-&gt;elements.one : NULL;
+    };
+    pairs = bucket-&gt;elements.many;
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) return (void *) *pairs;
+        pairs ++;
+    };
+    return NULL;
+}
+</code></pre>
+
+<h3 id="nxhashinsert">NXHashInsert</h3>
+
+<p><code class="highlighter-rouge">NXHashInsert</code> 是 <code class="highlighter-rouge">NXHashTable</code> 中比较重要的方法，其作用就是向表中插入数据：</p>
+
+<pre><code class="language-objectivec">void *NXHashInsert (NXHashTable *table, const void *data) {
+    HashBucket *bucket = BUCKETOF(table, data);
+    unsigned j = bucket-&gt;count;
+    const void **pairs;
+    const void **newt;
+
+    if (! j) {
+        bucket-&gt;count++;
+        bucket-&gt;elements.one = data;
+        table-&gt;count++;
+        return NULL;
+    };
+    if (j == 1) {
+        if (ISEQUAL(table, data, bucket-&gt;elements.one)) {
+            const void *old = bucket-&gt;elements.one;
+            bucket-&gt;elements.one = data;
+            return (void *) old;
+        };
+        newt = ALLOCPAIRS(z, 2);
+        newt[1] = bucket-&gt;elements.one;
+        *newt = data;
+        bucket-&gt;count++;
+        bucket-&gt;elements.many = newt;
+        table-&gt;count++;
+        if (table-&gt;count &gt; table-&gt;nbBuckets) _NXHashRehash (table);
+        return NULL;
+    };
+    pairs = bucket-&gt;elements.many;
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) {
+            const void	*old = *pairs;
+            *pairs = data;
+            return (void *) old;
+        };
+        pairs ++;
+    };
+    newt = ALLOCPAIRS(z, bucket-&gt;count+1);
+    if (bucket-&gt;count) bcopy ((const char*)bucket-&gt;elements.many, (char*)(newt+1), bucket-&gt;count * PTRSIZE);
+    *newt = data;
+    FREEPAIRS (bucket-&gt;elements.many);
+    bucket-&gt;count++;
+    bucket-&gt;elements.many = newt;
+    table-&gt;count++;
+    if (table-&gt;count &gt; table-&gt;nbBuckets) _NXHashRehash (table);
+    return NULL;
+}
+</code></pre>
+
+<p>虽然这里的实现比上面的两个方法复杂得多，但是脉络仍然很清晰，我们将插入的过程分为三种情况：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">bucket-&gt;count == 0</code></li>
+  <li><code class="highlighter-rouge">bucket-&gt;count == 1</code></li>
+  <li><code class="highlighter-rouge">bucket-&gt;count &gt; 1</code></li>
+</ul>
+
+<p>如果对应的 <code class="highlighter-rouge">bucket</code> 为空：</p>
+
+<pre><code class="language-objectivec">if (! j) {
+    bucket-&gt;count++;
+    bucket-&gt;elements.one = data;
+    table-&gt;count++;
+    return NULL;
+};
+</code></pre>
+
+<p>将数据直接填入 <code class="highlighter-rouge">bucket</code>，增加 <code class="highlighter-rouge">bucket</code> 中元素的数目，以及 <code class="highlighter-rouge">table</code> 中存储的元素的数目：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-insert-empty.gif" alt="objc-hashtable-insert-empty" /></p>
+
+<p>如果原来的 <code class="highlighter-rouge">buckets</code> 中有一个元素，它会替换或者使用 <code class="highlighter-rouge">many</code> 替换原来的 <code class="highlighter-rouge">one</code>：</p>
+
+<pre><code class="language-objectivec">if (j == 1) {
+    if (ISEQUAL(table, data, bucket-&gt;elements.one)) {
+        const void	*old = bucket-&gt;elements.one;
+        bucket-&gt;elements.one = data;
+        return (void *) old;
+    };
+    newt = ALLOCPAIRS(z, 2);
+    newt[1] = bucket-&gt;elements.one;
+    *newt = data;
+    bucket-&gt;count++;
+    bucket-&gt;elements.many = newt;
+    table-&gt;count++;
+
+    ...
+
+    return NULL;
+};
+</code></pre>
+
+<p>当前数据 <code class="highlighter-rouge">data</code> 如果与 <code class="highlighter-rouge">bucket</code> 中存储的数据相同，就会更新这个数据，否则就会使用 <code class="highlighter-rouge">ALLOCPAIRS</code> 初始化一个新的数组，然后将 <code class="highlighter-rouge">data</code> 和原来的数据传入。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-insert-one.gif.gif" alt="objc-hashtable-insert-one.gif" /></p>
+
+<p>但是如果原来的 <code class="highlighter-rouge">bucket</code> 中存储的元素大于 1，那么会在链表的头部追加一个新的元素：</p>
+
+<pre><code class="language-objectivec">while (j--) {
+    if (ISEQUAL(table, data, *pairs)) {
+        const void	*old = *pairs;
+        *pairs = data;
+        return (void *) old;
+    };
+    pairs ++;
+};
+newt = ALLOCPAIRS(z, bucket-&gt;count+1);
+if (bucket-&gt;count) bcopy ((const char*)bucket-&gt;elements.many, (char*)(newt+1), bucket-&gt;count * PTRSIZE);
+*newt = data;
+FREEPAIRS (bucket-&gt;elements.many);
+bucket-&gt;count++;
+bucket-&gt;elements.many = newt;
+table-&gt;count++;
+</code></pre>
+
+<p>上面的代码使用 <code class="highlighter-rouge">bcopy</code> 将原链表中元素拷贝到新的数组 <code class="highlighter-rouge">newt</code> 中。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-insert-many.gif.gif" alt="objc-hashtable-insert-many.gif" /></p>
+
+<p>在每次添加完一个元素之后，都会进行下面的判断：</p>
+
+<pre><code class="language-objectivec">if (table-&gt;count &gt; table-&gt;nbBuckets) _NXHashRehash (table);
+</code></pre>
+
+<blockquote>
+  <p>上面的这行代码会保证<strong>哈希表中的元素数据小于等于表中的 bucket 数量</strong>。</p>
+</blockquote>
+
+<p>这就是 <code class="highlighter-rouge">buckets</code> 后面的列表非常短的原因，在理想情况下，<strong>每一个 <code class="highlighter-rouge">buckets</code> 中都只存储一个或零个元素</strong>。</p>
+
+<h4 id="_nxhashrehash">_NXHashRehash</h4>
+
+<p>如果哈希表在添加元素后，其中的数据多于 <code class="highlighter-rouge">buckets</code> 数量，就会对 <code class="highlighter-rouge">NXHashTable</code> 进行 <code class="highlighter-rouge">_NXHashRehash</code> 操作。</p>
+
+<pre><code class="language-objectivec">static void _NXHashRehash (NXHashTable *table) {
+    _NXHashRehashToCapacity (table, MORE_CAPACITY(table-&gt;nbBuckets));
+}
+</code></pre>
+
+<p>它调用 <code class="highlighter-rouge">_NXHashRehashToCapacity</code> 方法来扩大 <code class="highlighter-rouge">NXHashTable</code> 的容量（<code class="highlighter-rouge">HashBucket</code> 的个数）。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define MORE_CAPACITY(b) (b*2+1)
+</span></code></pre></div></div>
+
+<p>而 <code class="highlighter-rouge">MORE_CAPACITY</code> 会将当前哈希表的容量翻倍，并将新的容量传入 <code class="highlighter-rouge">_NXHashRehashToCapacity</code> 中：</p>
+
+<pre><code class="language-objectivec">void _NXHashRehashToCapacity (NXHashTable *table, unsigned newCapacity) {
+    NXHashTable	*old;
+    NXHashState	state;
+    void	*aux;
+    __unused void *z = ZONE_FROM_PTR(table);
+
+    old = ALLOCTABLE(z);
+    old-&gt;prototype = table-&gt;prototype; old-&gt;count = table-&gt;count;
+    old-&gt;nbBuckets = table-&gt;nbBuckets; old-&gt;buckets = table-&gt;buckets;
+    table-&gt;nbBuckets = newCapacity;
+    table-&gt;count = 0; table-&gt;buckets = ALLOCBUCKETS(z, table-&gt;nbBuckets);
+    state = NXInitHashState (old);
+    while (NXNextHashState (old, &amp;state, &amp;aux))
+        (void) NXHashInsert (table, aux);
+    freeBuckets (old, NO);
+
+    free (old-&gt;buckets);
+    free (old);
+}
+</code></pre>
+
+<ol>
+  <li>创建一个 <code class="highlighter-rouge">NXHashTable</code> 的指针指向原哈希表</li>
+  <li>改变哈希表的 <code class="highlighter-rouge">nbBuckets</code>，并重新初始化哈希表的 <code class="highlighter-rouge">buckets</code> 数组</li>
+  <li>重新将元素插入到哈希表中</li>
+  <li>释放原哈希表 <code class="highlighter-rouge">old</code> 以及 <code class="highlighter-rouge">buckets</code></li>
+</ol>
+
+<h4 id="nxhashstate">NXHashState</h4>
+
+<p>在将元素重新插入到哈希表中涉及了一个非常奇怪的结构体 <code class="highlighter-rouge">NXHashState</code>，这个结构体主要作用是遍历 <code class="highlighter-rouge">NXHashTable</code> 中的元素。</p>
+
+<pre><code class="language-objectivec">typedef struct {
+    int i;
+    int j;
+} NXHashState;
+</code></pre>
+
+<p>我们可以使用如下的代码对哈希表中的元素进行遍历：</p>
+
+<pre><code class="language-objectivec"> unsigned count = 0;
+ MyData	 *data;
+ NXHashState state = NXInitHashState(table);
+ while (NXNextHashState(table, &amp;state, &amp;data)) {
+    count++;
+ }
+</code></pre>
+
+<p>代码片段中调用了两个方法，分别是 <code class="highlighter-rouge">NXInitHashState</code> 以及 <code class="highlighter-rouge">NXNextHashState</code>：</p>
+
+<pre><code class="language-objectivec">NXHashState NXInitHashState (NXHashTable *table) {
+    NXHashState	state;
+
+    state.i = table-&gt;nbBuckets;
+    state.j = 0;
+    return state;
+};
+</code></pre>
+
+<p><code class="highlighter-rouge">NXInitHashState</code> 会将 <code class="highlighter-rouge">NXHashState</code> 指向哈希表的最末端：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-hash-state-init.png" alt="objc-hashtable-hash-state-init" /></p>
+
+<blockquote>
+  <p>这个位置其实并不属于 <code class="highlighter-rouge">NXHashTable</code>，它一定会为空。</p>
+</blockquote>
+
+<p>而每次调用 <code class="highlighter-rouge">NXNextHashState</code> 都会向『前』移动一次：</p>
+
+<pre><code class="language-objectivec">int NXNextHashState (NXHashTable *table, NXHashState *state, void **data) {
+    HashBucket		*buckets = (HashBucket *) table-&gt;buckets;
+
+    while (state-&gt;j == 0) {
+        if (state-&gt;i == 0) return NO;
+        state-&gt;i--; state-&gt;j = buckets[state-&gt;i].count;
+    }
+    state-&gt;j--;
+    buckets += state-&gt;i;
+    *data = (void *) ((buckets-&gt;count == 1)
+                      ? buckets-&gt;elements.one : buckets-&gt;elements.many[state-&gt;j]);
+    return YES;
+};
+</code></pre>
+
+<p>下面的 gif 为我们展示了每一次调用 <code class="highlighter-rouge">NXNextHashState</code> 方法之后当前的 <code class="highlighter-rouge">NXHashState</code>：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-hashstate-next.gif" alt="objc-hashtable-hashstate-next" /></p>
+
+<h3 id="nxhashremove">NXHashRemove</h3>
+
+<p>这里的 <code class="highlighter-rouge">NXHashRemove</code>在某种意义上是 <code class="highlighter-rouge">NXHashInsert</code> 的逆操作：</p>
+
+<pre><code class="language-objectivec">void *NXHashRemove (NXHashTable *table, const void *data) {
+    HashBucket	*bucket = BUCKETOF(table, data);
+    unsigned	j = bucket-&gt;count;
+    const void	**pairs;
+    const void	**newt;
+    __unused void *z = ZONE_FROM_PTR(table);
+
+    if (! j) return NULL;
+    if (j == 1) {
+        if (! ISEQUAL(table, data, bucket-&gt;elements.one)) return NULL;
+        data = bucket-&gt;elements.one;
+        table-&gt;count--; bucket-&gt;count--; bucket-&gt;elements.one = NULL;
+        return (void *) data;
+    };
+    pairs = bucket-&gt;elements.many;
+    if (j == 2) {
+        if (ISEQUAL(table, data, pairs[0])) {
+            bucket-&gt;elements.one = pairs[1]; data = pairs[0];
+        }
+        else if (ISEQUAL(table, data, pairs[1])) {
+            bucket-&gt;elements.one = pairs[0]; data = pairs[1];
+        }
+        else return NULL;
+        FREEPAIRS (pairs);
+        table-&gt;count--; bucket-&gt;count--;
+        return (void *) data;
+    };
+    while (j--) {
+        if (ISEQUAL(table, data, *pairs)) {
+            data = *pairs;
+            /* we shrink this bucket */
+            newt = (bucket-&gt;count-1)
+            ? ALLOCPAIRS(z, bucket-&gt;count-1) : NULL;
+            if (bucket-&gt;count-1 != j)
+                bcopy ((const char*)bucket-&gt;elements.many, (char*)newt, PTRSIZE*(bucket-&gt;count-j-1));
+            if (j)
+                bcopy ((const char*)(bucket-&gt;elements.many + bucket-&gt;count-j), (char*)(newt+bucket-&gt;count-j-1), PTRSIZE*j);
+            FREEPAIRS (bucket-&gt;elements.many);
+            table-&gt;count--; bucket-&gt;count--; bucket-&gt;elements.many = newt;
+            return (void *) data;
+        };
+        pairs ++;
+    };
+    return NULL;
+}
+</code></pre>
+
+<p>它的实现也分为三种情况，不过在这里就不多说了。</p>
+
+<h2 id="nxhashtable-的性能">NXHashTable 的性能</h2>
+
+<p>在已经熟悉了 <code class="highlighter-rouge">NXHashTable</code> 的具体实现之后，我们要分析插入<strong>不同数据量级</strong>的情况下，所需要的时间，这里是主程序的代码，分别测试了在 <code class="highlighter-rouge">100, 1000, 10000, 100000, 1000000, 2000000, 3000000, 5000000, 10000000</code> 数据下 <code class="highlighter-rouge">NXHashTable</code> 的性能表现：</p>
+
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import "hashtable2.h"
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSArray&lt;NSNumber *&gt; *capacities = @[
+            @100,
+            @1000,
+            @10000,
+            @100000,
+            @1000000,
+            @2000000,
+            @3000000,
+            @5000000,
+            @10000000
+        ];
+
+        for (NSNumber *capacity in capacities) {
+            NXHashTable *hashTable = NXCreateHashTable(NXPtrPrototype, 0, NULL);
+            NSDate *methodStart = [NSDate date];
+            for (NSInteger i = 0; i &lt; capacity.integerValue; i++) {
+                NSString *value = [NSString stringWithFormat:@"%ld", (long)i];
+                NXHashInsert(hashTable, (__bridge void *)value);
+            }
+            NSDate *methodFinish = [NSDate date];
+            NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
+            NSLog(@"Capacities: %@, executionTime = %f, meanTime = %.10f", capacity, executionTime, executionTime / capacity.integerValue);
+
+            free(hashTable);
+        }
+
+    }
+    return 0;
+}
+</code></pre>
+
+<p>代码中初始化了一个 <code class="highlighter-rouge">capacities</code> 存储需要测量的数据量级，然后调用 <code class="highlighter-rouge">NXHashInsert</code> 方法将相当数量级的数据添加到哈希表中：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000334</td>
+      <td style="text-align: right">0.0000033402</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.001962</td>
+      <td style="text-align: right">0.0000019619</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.022001</td>
+      <td style="text-align: right">0.0000022001</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.349998</td>
+      <td style="text-align: right">0.0000035000</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">2.622551</td>
+      <td style="text-align: right">0.0000026226</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">4.165023</td>
+      <td style="text-align: right">0.0000020825</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">6.973098</td>
+      <td style="text-align: right">0.0000023244</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">13.179743</td>
+      <td style="text-align: right">0.0000026359</td>
+    </tr>
+    <tr>
+      <td style="text-align: right"><strong>10000000</strong></td>
+      <td style="text-align: right"><strong>53.387356</strong></td>
+      <td style="text-align: right"><strong>0.0000053387</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在对 <code class="highlighter-rouge">NXHashTable</code> 的性能测试中，当数据量小于 5000000 时，执行时间的增长还是线性的，平均时间也基本稳定，但是一旦数据量达到了千万级，执行时间就会出现显著的增长。</p>
+
+<p>如果仅仅在哈希表中插入数据，相信其时间增长应该都是线性的，这里出现问题的原因推测是<strong>在对哈希表进行 Rehash 的时候，迁移原数据至新的数组所造成的</strong>。</p>
+
+<p>如何避免哈希表的 Rehash 呢，重新回顾一下创建哈希表的函数：</p>
+
+<pre><code class="language-objectivec">NXHashTable *NXCreateHashTable (NXHashTablePrototype prototype, unsigned capacity, const void *info);
+</code></pre>
+
+<p>这个函数的签名中包含一个 <code class="highlighter-rouge">capacity</code> 的参数，我们在上面的代码中传入了 0，也就是最开始的 <code class="highlighter-rouge">buckets</code> 数为 0，但是它的数目并不是固定的，它会随着哈希表中数据的增多，逐渐变大。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">capacity</code> 只是一个提示，帮助 NXHashTable 了解其中会存储多少数据。</p>
+</blockquote>
+
+<p>如果在创建 <code class="highlighter-rouge">NXHashTable</code> 时传入 <code class="highlighter-rouge">capacity.integerValue</code>：</p>
+
+<pre><code class="language-objectivec">  NXHashTable *hashTable = NXCreateHashTable(NXPtrPrototype, capacity.integerValue, NULL);
+</code></pre>
+
+<p>重新运行代码，测量性能：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000740</td>
+      <td style="text-align: right">0.0000073999</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.003442</td>
+      <td style="text-align: right">0.0000034420</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.023341</td>
+      <td style="text-align: right">0.0000023341</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.215209</td>
+      <td style="text-align: right">0.0000021521</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">1.836802</td>
+      <td style="text-align: right">0.0000018368</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">3.683246</td>
+      <td style="text-align: right">0.0000018416</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">5.474610</td>
+      <td style="text-align: right">0.0000018249</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">10.576254</td>
+      <td style="text-align: right">0.0000021153</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000000</td>
+      <td style="text-align: right">46.725459</td>
+      <td style="text-align: right">0.0000046725</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>虽然在测试 <code class="highlighter-rouge">10,000,000</code> 数据时其平均时间依然是 <code class="highlighter-rouge">5,000,000</code> 时的二倍，不过整体的性能都有所提升，然而这部分性能的损耗暂时还不是很清楚原因。</p>
+
+<p>如果我们使用 Instrument 对有无 <code class="highlighter-rouge">capacity</code> 的情况进行比较（这是在使用 <code class="highlighter-rouge">2,000,000</code> 数据时进行的测试）：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-instrument.png" alt="objc-hashtable-instrument" /></p>
+
+<p>没有传入 <code class="highlighter-rouge">capacity</code> 的哈希表会在多次插入之后出现一个峰值（由于 Rehash 引起的，其宽度就是 Rehash 使用的时间），而传入 <code class="highlighter-rouge">capacity</code> 的哈希表会在代码刚运行时就初始化足够大的数组。</p>
+
+<h2 id="nsmutablearray-性能">NSMutableArray 性能</h2>
+
+<blockquote>
+  <p>这部分只算是一个小插曲，你可以选择跳过这一小节的内容。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">NSMutableArray</code> 的构造器 <code class="highlighter-rouge">- (instancetype)initWithCapacity:(NSUInteger)numItems</code> 也有一个参数 <code class="highlighter-rouge">capacity</code>，虽然数组和哈希表是两种数据结构。</p>
+
+<blockquote>
+  <p>不过我们这里主要研究的是：<strong>传入 <code class="highlighter-rouge">capacity</code> 是否会对性能造成影响</strong>。</p>
+</blockquote>
+
+<p>首先是使用 <code class="highlighter-rouge">init</code> 创建的 <code class="highlighter-rouge">NSMutableArray</code> 数组，也就是没有传入 <code class="highlighter-rouge">capacity</code>：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000539</td>
+      <td style="text-align: right">0.0000053900</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.003185</td>
+      <td style="text-align: right">0.0000031850</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.074033</td>
+      <td style="text-align: right">0.0000074033</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.370899</td>
+      <td style="text-align: right">0.0000037090</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">1.504855</td>
+      <td style="text-align: right">0.0000015049</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">2.852519</td>
+      <td style="text-align: right">0.0000014263</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">3.995536</td>
+      <td style="text-align: right">0.0000013318</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">6.833879</td>
+      <td style="text-align: right">0.0000013668</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000000</td>
+      <td style="text-align: right">14.444605</td>
+      <td style="text-align: right">0.0000014445</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>下面是使用 <code class="highlighter-rouge">initWithCapacity:</code> 创建的数组：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Capacities</th>
+      <th style="text-align: right">Execution Time</th>
+      <th style="text-align: right">Mean Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">100</td>
+      <td style="text-align: right">0.000256</td>
+      <td style="text-align: right">0.0000025600</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000</td>
+      <td style="text-align: right">0.001775</td>
+      <td style="text-align: right">0.0000017750</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000</td>
+      <td style="text-align: right">0.015906</td>
+      <td style="text-align: right">0.0000015906</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">100000</td>
+      <td style="text-align: right">0.174376</td>
+      <td style="text-align: right">0.0000017438</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1000000</td>
+      <td style="text-align: right">1.650481</td>
+      <td style="text-align: right">0.0000016505</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2000000</td>
+      <td style="text-align: right">2.802310</td>
+      <td style="text-align: right">0.0000014012</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3000000</td>
+      <td style="text-align: right">4.451261</td>
+      <td style="text-align: right">0.0000014838</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5000000</td>
+      <td style="text-align: right">7.093753</td>
+      <td style="text-align: right">0.0000014188</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">10000000</td>
+      <td style="text-align: right">14.598415</td>
+      <td style="text-align: right">0.0000014598</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>你可以在表格中看到，两者在执行效率上并没有显著的差异或者区别。</p>
+
+<p>但是如果使用 instrument 来查看两者的内存分配，可以很明显的看到，没有传入 <code class="highlighter-rouge">capacity</code> 的 <code class="highlighter-rouge">NSMutableArray</code> 会在可变数组内存占用增加前出现一个<strong>短暂的内存分配峰值</strong>。</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-nsarray-instrument.png" alt="objc-hashtable-nsarray-instrument" /></p>
+
+<p>导致这一现象的原始可能是：在将原数组中的内容移入新数组时，<strong>临时变量申请了大量的内存控件</strong>。</p>
+
+<blockquote>
+  <p>在之后关于 CoreFoundation 源代码分析的文中会介绍它们是怎么实现的。</p>
+</blockquote>
+
+<h2 id="nxhashtable-的应用">NXHashTable 的应用</h2>
+
+<p>在整个 objc/runtime 中，作为<strong>私有</strong>的数据结构 <code class="highlighter-rouge">NXHashTable</code>，直接使用了它的就是<strong>存储所有类或者元类</strong>的哈希表（在这里会忽略对元类的存储，因为实现几乎完全相同）：</p>
+
+<pre><code class="language-objectivec">static NXHashTable *realized_class_hash = nil;
+</code></pre>
+
+<p>我么可以使用 <code class="highlighter-rouge">objc_copyClassList</code> 获取类的数组：</p>
+
+<pre><code class="language-objectivec">Class *
+objc_copyClassList(unsigned int *outCount)
+{
+    rwlock_writer_t lock(runtimeLock);
+
+    realizeAllClasses();
+
+    Class *result = nil;
+    NXHashTable *classes = realizedClasses();
+    unsigned int count = NXCountHashTable(classes);
+
+    if (count &gt; 0) {
+        Class cls;
+        NXHashState state = NXInitHashState(classes);
+        result = (Class *)malloc((1+count) * sizeof(Class));
+        count = 0;
+        while (NXNextHashState(classes, &amp;state, (void **)&amp;cls)) {
+            result[count++] = cls;
+        }
+        result[count] = nil;
+    }
+
+    if (outCount) *outCount = count;
+    return result;
+}
+</code></pre>
+
+<ol>
+  <li>调用 <code class="highlighter-rouge">realizedClasses</code> 返回 <code class="highlighter-rouge">realized_class_hash</code> 哈希表</li>
+  <li>使用 <code class="highlighter-rouge">NSHashState</code> 遍历 <code class="highlighter-rouge">realized_class_hash</code> 中的类，并将所有的类存入 <code class="highlighter-rouge">result</code></li>
+</ol>
+
+<p>接下来使用上面的方法，打印出 <code class="highlighter-rouge">realized_class_hash</code> 中存储的所有类：</p>
+
+<p><img src="http://7xrlu3.com1.z0.glb.clouddn.com/2016-05-07-objc-hashtable-copy-class-list.png" alt="objc-hashtable-copy-class-list" /></p>
+
+<h2 id="小结">小结</h2>
+
+<blockquote>
+  <p><code class="highlighter-rouge">NXHashTable</code> 在 OS X 10.1 中就已经标记为弃用了，但是依旧支持着 runtime 底层的工作。</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">NXHashTable</code> 可以说有着<strong>非常非常</strong>久远的历史了，最早可以追溯到将近 30 多年前 NeXT 时代：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// hashtable2.mm 文件中
+</span>
+<span class="n">hashtable2</span><span class="p">.</span><span class="n">m</span>
+<span class="n">Copyright</span> <span class="mi">1989</span><span class="o">-</span><span class="mi">1996</span> <span class="n">NeXT</span> <span class="n">Software</span><span class="p">,</span> <span class="n">Inc</span><span class="p">.</span>
+<span class="n">Created</span> <span class="n">by</span> <span class="n">Bertrand</span> <span class="n">Serlet</span><span class="p">,</span> <span class="n">Feb</span> <span class="mi">89</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">NSHashTable</code> 对哈希表的实现还是非常优雅的，可以说非常标准的使用了<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists">拉链法</a>实现哈希表。</p>
+
+<p>不过现在，我们会使用 <code class="highlighter-rouge">NSHashTable</code> 来取代这个上古时代的产物。</p>
+
+<iframe src="http://ghbtns.com/github-btn.html?user=draveness&amp;type=follow&amp;size=large" height="30" width="240" frameborder="0" scrolling="0" style="width:240px; height: 30px;" allowtransparency="true"></iframe>
+
+<blockquote>
+  <p>关注仓库，及时获得更新：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=上古时代 Objective-C 中哈希表的实现&amp;url=hashtable"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=hashtable"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=hashtable"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/autoreleasepool">
+            <section class="post">
+                <h2>自动释放池的前世今生 ---- 深入解析 autoreleasepool</h2>
+                <p>> 转自：[自动释放池的前世今生 ---- 深入解析 autoreleasepool](https://draveness.me/autoreleasepool) > 关注仓库，及时获得更新：[iOS-Source-Code-Analyze](https://github.com/draveness/iOS-Source-Code-Analyze) > > 由于 Objective-C 中的内存管理是一个比较大的话题，所以会分为两篇文章来对内存管理中的一些机制进行剖析，一部分分析自动释放池以及 `autorelease` 方法，另一部分分析 `retain`、`release`...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/night">
+            <section class="post">
+                <h2>成熟的夜间模式解决方案</h2>
+                <p>转自：成熟的夜间模式解决方案 关注仓库，及时获得更新：iOS-Source-Code-Analyze 从开始写 DKNightVersion 这个框架到现在已经将近一年了，目前整个框架的设计也趋于稳定。 其实夜间模式的实现就是相当于多主题加颜色管理。而最新版本的 DKNightVersion 已经很好的解决了这个问题。 在正式介绍目前版本的实现之前，我会先简单介绍一下 1.0 时代的 DKNightVersion 的实现，为各位读者带来一些新的思路，也确实想梳理一下这个框架是如何演变的。 我们会以对 backgroundColor...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>

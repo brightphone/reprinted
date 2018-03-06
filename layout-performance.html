@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Document Settings -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Meta -->
+    <title>从 Auto Layout 的布局算法谈性能</title>
+    <meta name="description" content="" />
+
+    <!-- Mobile Meta -->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand icon -->
+    <link rel="shortcut icon" href="/reprinted/assets/images/favicon.ico" >
+
+    <!-- Styles'n'Scripts -->
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" type="text/css" href="/reprinted/assets/css/syntax.css" />
+
+    <!-- highlight.js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/default.min.css">
+    <style>.hljs { background: none; }</style>
+
+    <!-- Ghost outputs important style and meta data with this tag -->
+        <link rel="canonical" href="/reprinted//layout-performance" />
+    <meta name="referrer" content="origin" />
+    <link rel="next" href="/reprinted/page2/" />
+
+    <meta property="og:site_name" content="" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="从 Auto Layout 的布局算法谈性能" />
+    <meta property="og:description" content="" />
+    <meta property="og:url" content="/reprinted//layout-performance" />
+    <meta property="og:image" content="/reprinted/assets/images/cover2.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="从 Auto Layout 的布局算法谈性能" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:url" content="/reprinted//layout-performance" />
+    <meta name="twitter:image:src" content="/reprinted/assets/images/cover2.jpg" />
+
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Website",
+    "publisher": "",
+    "name": "从 Auto Layout 的布局算法谈性能",
+    "url": "/reprinted//layout-performance",
+    "image": "/reprinted/assets/images/cover2.jpg",
+    "description": ""
+}
+    </script>
+
+    <meta name="generator" content="Jekyll 3.0.0" />
+    <link rel="alternate" type="application/rss+xml" title="" href="/reprinted/feed.xml" />
+
+
+</head>
+<body class="home-template nav-closed">
+
+    <!-- The blog navigation links -->
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        <li class="nav-home " role="presentation"><a href="/reprinted/">Home</a></li>
+        <li class="nav-about " role="presentation"><a href="/reprinted/about">About</a></li>
+        <li class="nav-ios " role="presentation"><a href="/reprinted/tag/ios">iOS</a></li>
+        <li class="nav-objective-c " role="presentation"><a href="/reprinted/tag/objective-c">objective-c</a></li>
+        <li class="nav-swift " role="presentation"><a href="/reprinted/tag/swift">Swift</a></li>
+        <li class="nav-others " role="presentation"><a href="/reprinted/tag/others">others</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="/reprinted/feed.xml">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        <!-- All the main content gets inserted here, index.hbs, post.hbs, etc -->
+        <!-- default -->
+
+<!-- The comment above "< default" means - insert everything in this file into -->
+    <!-- the [body] of the default.hbs template, which contains our header/footer. -->
+
+<!-- Everything inside the #post tags pulls data from the post -->
+<!-- #post -->
+
+<header class="main-header post-head " style="background-image: url(/reprinted/assets/images/cover2.jpg) ">
+    <nav class="main-nav  overlay  clearfix">
+        <a class="blog-logo" href="/reprinted/"><img src="/reprinted/assets/images/ghost.png" alt="Blog Logo" /></a>
+        
+            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post tag-fiction">
+
+        <header class="post-header">
+            <h1 class="post-title">从 Auto Layout 的布局算法谈性能</h1>
+            <section class="post-meta">
+            <!-- <a href='/reprinted/'></a> -->
+
+            
+                
+                    <a href='/reprinted/author/Draveness'>Draveness</a>
+                
+            
+            <time class="post-date" datetime="2016-08-31">31 Aug 2016</time>
+                <!-- [[tags prefix=" on "]] -->
+                
+                on
+                
+                    
+                       <a href='/reprinted/tag/iOS'>iOS</a>,
+                    
+                
+                    
+                       <a href='/reprinted/tag/ASDK'>ASDK</a>
+                    
+                
+                
+            </section>
+        </header>
+
+        <section class="post-content">
+
+            <blockquote>
+  <p>转自：<a href="https://draveness.me/layout-performance">从 Auto Layout 的布局算法谈性能</a></p>
+</blockquote>
+
+<blockquote>
+  <p>这是使用 ASDK 性能调优系列的第二篇文章，前一篇文章中讲到了如何提升 iOS 应用的渲染性能，你可以点击 <a href="https://github.com/Draveness/iOS-Source-Code-Analyze/blob/master/contents/AsyncDisplayKit/提升%20iOS%20界面的渲染性能.md">这里</a> 了解这部分的内容。</p>
+</blockquote>
+
+<p>在上一篇文章中，我们提到了 iOS 界面的渲染过程以及如何对渲染过程进行优化。ASDK 的做法是将渲染绘制的工作抛到后台线程进行，并在每次 Runloop 结束时，将绘制结果交给 <code class="highlighter-rouge">CALayer</code> 进行展示。</p>
+
+<p>而这篇文章就要从 iOS 中影响性能的另一大杀手，也就是万恶之源 Auto Layout（自动布局）来分析如何对 iOS 应用的性能进行优化以及 Auto Layout 到底为什么会影响性能？</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-box-layout.jpg-1000width" alt="box-layout" /></p>
+
+<h2 id="把-auto-layout-批判一番">把 Auto Layout 批判一番</h2>
+
+<p>由于在 2012 年苹果发布了 4.0 寸的 iPhone5，在 iOS 平台上出现了不同尺寸的移动设备，使得原有的 <code class="highlighter-rouge">frame</code> 布局方式无法很好地适配不同尺寸的屏幕，所以，为了解决这一问题 Auto Layout 就诞生了。</p>
+
+<p>Auto Layout 的诞生并没有如同苹果的其它框架一样收到开发者的好评，它自诞生的第一天起就饱受 iOS 开发者的批评，其蹩脚、冗长的语法使得它在刚刚面世就被无数开发者吐槽，写了几个屏幕的代码都不能完成一个简单的布局，哪怕是 VFL（Visual Format Language）也拯救不了它。</p>
+
+<p>真正使 Auto Layout 大规模投入使用的应该还是 <a href="https://github.com/SnapKit/Masonry">Masonry</a>，它使用了链式的语法对 Auto Layout 进行了很好的封装，使得 Auto Layout 更加简单易用；时至今日，开发者也在日常使用中发现了 Masonry 的各种问题，于是出现了各种各样的布局框架，不过这都是后话了。</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-masonry.jpg-1000width" alt="masonry" /></p>
+
+<h2 id="auto-layout-的原理和-cassowary">Auto Layout 的原理和 Cassowary</h2>
+
+<p>Auto Layout 的原理其实非常简单，在这里通过一个例子先简单的解释一下：</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-view-demonstrate.png-1000width" alt="view-demonstrate" /></p>
+
+<p>iOS 中视图所需要的布局信息只有两个，分别是 <code class="highlighter-rouge">origin/center</code> 和 <code class="highlighter-rouge">size</code>，在这里我们以 <code class="highlighter-rouge">origin &amp; size</code> 为例，也就是 <code class="highlighter-rouge">frame</code> 时代下布局的需要的两个信息；这两个信息由四部分组成：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">x</code> &amp; <code class="highlighter-rouge">y</code></li>
+  <li><code class="highlighter-rouge">width</code> &amp; <code class="highlighter-rouge">height</code></li>
+</ul>
+
+<p>以左上角的 <code class="highlighter-rouge">(0, 0)</code> 为坐标的原点，找到坐标 <code class="highlighter-rouge">(x, y)</code>，然后绘制一个大小为 <code class="highlighter-rouge">(width, height)</code> 的矩形，这样就完成了一个最简单的布局。而 Auto Layout 的布局方式与上面所说的 <code class="highlighter-rouge">frame</code> 有些不同，<code class="highlighter-rouge">frame</code> 表示与父视图之间的绝对距离，但是 Auto Layout 中大部分的约束都是<strong>描述性的</strong>，表示视图间相对距离，以上图为例：</p>
+
+<pre><code class="language-objectivec">A.left = Superview.left + 50
+A.top  = Superview.top + 30
+A.width  = 100
+A.height = 100
+
+B.left = (A.left + A.width)/(A.right) + 30
+B.top  = A.top
+B.width  = A.width
+B.height = A.height
+</code></pre>
+
+<p>虽然上面的约束很好的表示了各个视图之间的关系，但是 Auto Layout 实际上并没有改变原有的 Hard-Coded 形式的布局方式，只是将原有没有太多意义的 <code class="highlighter-rouge">(x, y)</code> 值，变成了描述性的代码。</p>
+
+<p>我们仍然需要知道布局信息所需要的四部分 <code class="highlighter-rouge">x</code>、<code class="highlighter-rouge">y</code>、<code class="highlighter-rouge">width</code> 以及 <code class="highlighter-rouge">height</code>。换句话说，我们要求解上述的<strong>八元一次</strong>方程组，将每个视图所需要的信息解出来；Cocoa 会在运行时求解上述的方程组，最终使用 <code class="highlighter-rouge">frame</code> 来绘制视图。</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-layout-phase.png-1000width" alt="layout-phase" /></p>
+
+<h3 id="cassowary-算法">Cassowary 算法</h3>
+
+<p>在上世纪 90 年代，一个名叫 <a href="https://en.wikipedia.org/wiki/Cassowary_(software)">Cassowary</a> 的布局算法解决了用户界面的布局问题，它通过将布局问题抽象成线性等式和不等式约束来进行求解。</p>
+
+<p>Auto Layout 其实就是对 Cassowary 算法的一种实现，但是这里并不会对它展开介绍，有兴趣的读者可以在文章最后的 Reference 中了解一下 Cassowary 算法相关的文章。</p>
+
+<blockquote>
+  <p>Auto Layout 的原理就是对<strong>线性方程组或者不等式</strong>的求解。</p>
+</blockquote>
+
+<h2 id="auto-layout-的性能">Auto Layout 的性能</h2>
+
+<p>在使用 Auto Layout 进行布局时，可以指定一系列的约束，比如视图的高度、宽度等等。而每一个约束其实都是一个简单的线性等式或不等式，整个界面上的所有约束在一起就<strong>明确地（没有冲突）</strong>定义了整个系统的布局。</p>
+
+<blockquote>
+  <p>在涉及冲突发生时，Auto Layout 会尝试 break 一些优先级低的约束，尽量满足最多并且优先级最高的约束。</p>
+</blockquote>
+
+<p>因为布局系统在最后仍然需要通过 <code class="highlighter-rouge">frame</code> 来进行，所以 Auto Layout 虽然为开发者在描述布局时带来了一些好处，不过它相比原有的布局系统加入了从约束计算 <code class="highlighter-rouge">frame</code> 的过程，而在这里，我们需要了解 Auto Layout 的布局性能如何。</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-performance-loss.jpeg" alt="performance-loss" /></p>
+
+<p>因为使用 Cassowary 算法解决约束问题就是对线性等式或不等式求解，所以其时间复杂度就是<strong>多项式时间</strong>的，不难推测出，在处理极其复杂的 UI 界面时，会造成性能上的巨大损失。</p>
+
+<p>在这里我们会对 Auto Layout 的性能进行测试，为了更明显的展示  Auto Layout 的性能，我们通过 <code class="highlighter-rouge">frame</code> 的性能建立一条基准线<strong>以消除对象的创建和销毁、视图的渲染、视图层级的改变带来的影响</strong>。</p>
+
+<blockquote>
+  <p>你可以在 <a href="https://github.com/Draveness/iOS-Source-Code-Analyze/tree/master/contents/AsyncDisplayKit/Layout">这里</a> 找到这次对 Layout 性能测量使用的代码。</p>
+</blockquote>
+
+<p>代码分别使用 Auto Layout 和 <code class="highlighter-rouge">frame</code> 对 N 个视图进行布局，测算其运行时间。</p>
+
+<p>使用 AutoLayout 时，每个视图会随机选择两个视图对它的 <code class="highlighter-rouge">top</code> 和 <code class="highlighter-rouge">left</code> 进行约束，随机生成一个数字作为 <code class="highlighter-rouge">offset</code>；同时，还会用几个优先级高的约束保证视图的布局不会超出整个 <code class="highlighter-rouge">keyWindow</code>。</p>
+
+<p>而下图就是对 100~1000 个视图布局所需要的时间的折线图。</p>
+
+<blockquote>
+  <p>这里的数据是在 OS X EL Captain，Macbook Air (13-inch Mid 2013）上的 iPhone 6s Plus 模拟器上采集的， Xcode 版本为 7.3.1。在其他设备上可能不会获得一致的信息，由于笔者的 iPhone 升级到了 iOS 10，所以没有办法真机测试，最后的结果可能会有一定的偏差。</p>
+</blockquote>
+
+<p><img src="https://img.draveness.me/2016-08-31-performance-chart-100-1000.jpeg" alt="performance-chart-100-1000" /></p>
+
+<p>从图中可以看到，使用 Auto Layout 进行布局的时间会是只使用 <code class="highlighter-rouge">frame</code> 的 <strong>16 倍</strong>左右，虽然这里的测试结果可能<strong>受外界条件影响差异</strong>比较大，不过 Auto Layout 的性能相比 <code class="highlighter-rouge">frame</code> 确实差很多，如果去掉设置 <code class="highlighter-rouge">frame</code> 的过程消耗的时间，Auto Layout 过程进行的计算量也是非常巨大的。</p>
+
+<p>在上一篇文章中，我们曾经提到，想要让 iOS 应用的视图保持 60 FPS 的刷新频率，我们必须在 <strong>1/60 = 16.67 ms</strong> 之内完成包括布局、绘制以及渲染等操作。</p>
+
+<p>也就是说如果当前界面上的视图大于 100 的话，使用 Auto Layout 是很难达到绝对流畅的要求的；而在使用 <code class="highlighter-rouge">frame</code> 时，同一个界面下哪怕有 500 个视图，也是可以在 16.67 ms 之内完成布局的。不过在一般情况下，在 iOS 的整个 <code class="highlighter-rouge">UIWindow</code> 中也不会一次性出现如此多的视图。</p>
+
+<p>我们更关心的是，在日常开发中难免会使用 Auto Layout 进行布局，既然有 16.67 ms 这个限制，那么在界面上出现了多少个视图时，我才需要考虑其它的布局方式呢？在这里，我们将需要布局的视图数量减少一个量级，重新绘制一个图表：</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-performance-layout-10-90.jpeg" alt="performance-layout-10-90" /></p>
+
+<p>从图中可以看出，当对 <strong>30 个左右视图</strong>使用 Auto Layout 进行布局时，所需要的时间就会在 16.67 ms 左右，当然这里不排除一些其它因素的影响；到目前为止，会得出一个大致的结论，使用 Auto Layout 对复杂的 UI 界面进行布局时（大于 30 个视图）就会对性能有严重的影响（同时与设备有关，文章中不会考虑设备性能的差异性）。</p>
+
+<p>上述对 Auto Layout 的使用还是比较简单的，而在日常使用中，使用嵌套的视图层级又非常正常。</p>
+
+<blockquote>
+  <p>在笔者对嵌套视图层级中使用 Auto Layout 进行布局时，当视图的数量超过了 500 时，模拟器直接就 crash 了，所以这里没有超过 500 个视图的数据。</p>
+</blockquote>
+
+<p>我们对嵌套视图数量在 100~500 之间布局时间进行测量，并与 Auto Layout 进行比较：</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-performance-nested-autolayout-frame.jpeg" alt="performance-nested-autolayout-frame" /></p>
+
+<p>在视图数量大于 200 之后，随着视图数量的增加，使用 Auto Layout 对嵌套视图进行布局的时间相比非嵌套的布局成倍增长。</p>
+
+<p>虽然说 Auto Layout 为开发者在多尺寸布局上提供了遍历，而且<strong>支持跨越视图层级</strong>的约束，但是由于其实现原理导致其时间复杂度为<strong>多项式时间</strong>，其性能损耗是仅使用 <code class="highlighter-rouge">frame</code> 的十几倍，所以在处理庞大的 UI 界面时表现差强人意。</p>
+
+<blockquote>
+  <p>在三年以前，有一篇关于 Auto Layout 性能分析的文章，可以点击这里了解这篇文章的内容 <a href="http://floriankugler.com/2013/04/22/auto-layout-performance-on-ios/">Auto Layout Performance on iOS</a>。</p>
+</blockquote>
+
+<h2 id="asdk-的布局引擎">ASDK 的布局引擎</h2>
+
+<p>Auto Layout 不止在复杂 UI 界面布局的表现不佳，它还会强制视图在主线程上布局；所以在 ASDK 中提供了另一种可以在后台线程中运行的布局引擎，它的结构大致是这样的：</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-layout-hierarchy.png-1000width" alt="layout-hierarchy" /></p>
+
+<p><code class="highlighter-rouge">ASLayoutSpec</code> 与下面的所有的 Spec 类都是继承关系，在视图需要布局时，会调用 <code class="highlighter-rouge">ASLayoutSpec</code> 或者它的子类的 <code class="highlighter-rouge">- measureWithSizeRange:</code> 方法返回一个用于布局的对象 <a href="#aslayout">ASLayout</a>。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">ASLayoutable</code> 是 ASDK 中一个协议，遵循该协议的类实现了一系列的布局方法。</p>
+</blockquote>
+
+<p>当我们使用 ASDK 布局时，需要做下面四件事情中的一件：</p>
+
+<ul>
+  <li>提供 <code class="highlighter-rouge">layoutSpecBlock</code></li>
+  <li>覆写 <code class="highlighter-rouge">- layoutSpecThatFits:</code> 方法</li>
+  <li>覆写 <code class="highlighter-rouge">- calculateSizeThatFits:</code> 方法</li>
+  <li>覆写 <code class="highlighter-rouge">- calculateLayoutThatFits:</code> 方法</li>
+</ul>
+
+<p>只有做上面四件事情中的其中一件才能对 ASDK 中的视图或者说结点进行布局。</p>
+
+<p>方法 <code class="highlighter-rouge">- calculateSizeThatFits:</code> 提供了手动布局的方式，通过在该方法内对 <code class="highlighter-rouge">frame</code> 进行计算，返回一个当前视图的 <code class="highlighter-rouge">CGSize</code>。</p>
+
+<p>而 <code class="highlighter-rouge">- layoutSpecThatFits:</code> 与 <code class="highlighter-rouge">layoutSpecBlock</code> 其实没什么不同，只是前者通过覆写方法返回 <code class="highlighter-rouge">ASLayoutSpec</code>；后者通过 block 的形式提供一种不需要子类化就可以完成布局的方法，两者可以看做是完全等价的。</p>
+
+<p><code class="highlighter-rouge">- calculateLayoutThatFits:</code> 方法有一些不同，它把上面的两种布局方式：手动布局和 Spec 布局封装成了一个接口，这样，无论是 <code class="highlighter-rouge">CGSize</code> 还是 <code class="highlighter-rouge">ASLayoutSpec</code> 最后都会以 <code class="highlighter-rouge">ASLayout</code> 的形式返回给方法调用者。</p>
+
+<h3 id="手动布局">手动布局</h3>
+
+<p>这里简单介绍一下手动布局使用的 <code class="highlighter-rouge">-[ASDisplayNode calculatedSizeThatFits:]</code> 方法，这个方法与 <code class="highlighter-rouge">UIView</code> 中的 <code class="highlighter-rouge">-[UIView sizeThatFits:]</code> 非常相似，其区别只是在 ASDK 中，所有的计算出的大小都会通过缓存来提升性能。</p>
+
+<pre><code class="language-objectivec">- (CGSize)calculateSizeThatFits:(CGSize)constrainedSize {
+  return _preferredFrameSize;
+}
+</code></pre>
+
+<p>子类可以在这个方法中进行计算，通过覆写这个方法返回一个合适的大小，不过一般情况下都不会使用手动布局的方式。</p>
+
+<h3 id="使用-aslayoutspec-布局">使用 ASLayoutSpec 布局</h3>
+
+<p>在 ASDK 中，更加常用的是使用 <code class="highlighter-rouge">ASLayoutSpec</code> 布局，在上面提到的 <code class="highlighter-rouge">ASLayout</code> 是一个保存布局信息的媒介，而真正计算视图布局的代码都在 <code class="highlighter-rouge">ASLayoutSpec</code> 中；所有 ASDK 中的布局（手动 / Spec）都是由 <code class="highlighter-rouge">-[ASLayoutable measureWithSizeRange:]</code> 方法触发的，在这里我们以 <code class="highlighter-rouge">ASDisplayNode</code> 的调用栈为例看一下方法的执行过程：</p>
+
+<pre><code class="language-objectivec">-[ASDisplayNode measureWithSizeRange:]
+	-[ASDisplayNode shouldMeasureWithSizeRange:]
+	-[ASDisplayNode calculateLayoutThatFits:]
+		-[ASDisplayNode layoutSpecThatFits:]
+		-[ASLayoutSpec measureWithSizeRange:]
+		+[ASLayout layoutWithLayoutableObject:constrainedSizeRange:size:sublayouts:]
+		-[ASLayout filteredNodeLayoutTree]
+</code></pre>
+
+<p>ASDK 的文档中推荐在子类中覆写 <code class="highlighter-rouge">- layoutSpecThatFits:</code> 方法，返回一个用于布局的 <code class="highlighter-rouge">ASLayoutSpec</code> 对象，然后使用 <code class="highlighter-rouge">ASLayoutSpec</code> 中的 <code class="highlighter-rouge">- measureWithSizeRange:</code> 方法对它指定的视图进行布局，不过通过覆写 <a href="#asdk-的布局引擎">ASDK 的布局引擎</a> 一节中的其它方法也都是可以的。</p>
+
+<p>如果我们使用 <code class="highlighter-rouge">ASStackLayoutSpec</code> 对视图进行布局的话，方法调用栈大概是这样的：</p>
+
+<pre><code class="language-objectivec">-[ASDisplayNode measureWithSizeRange:]
+	-[ASDisplayNode shouldMeasureWithSizeRange:]
+	-[ASDisplayNode calculateLayoutThatFits:]
+		-[ASDisplayNode layoutSpecThatFits:]
+		-[ASStackLayoutSpec measureWithSizeRange:]
+			ASStackUnpositionedLayout::compute
+			ASStackPositionedLayout::compute			ASStackBaselinePositionedLayout::compute		+[ASLayout layoutWithLayoutableObject:constrainedSizeRange:size:sublayouts:]
+		-[ASLayout filteredNodeLayoutTree]
+</code></pre>
+
+<p>这里只是执行了 <code class="highlighter-rouge">ASStackLayoutSpec</code> 对应的 <code class="highlighter-rouge">- measureWithSizeRange:</code> 方法，对其中的视图进行布局。在 <code class="highlighter-rouge">- measureWithSizeRange:</code> 中调用了一些 C++ 方法 <code class="highlighter-rouge">ASStackUnpositionedLayout</code>、<code class="highlighter-rouge">ASStackPositionedLayout</code> 以及 <code class="highlighter-rouge">ASStackBaselinePositionedLayout</code> 的 <code class="highlighter-rouge">compute</code> 方法，这些方法完成了对 <code class="highlighter-rouge">ASStackLayoutSpec</code> 中视图的布局。</p>
+
+<p>相比于 Auto Layout，ASDK 实现了一种完全不同的布局方式；比较类似与前端开发中的 <code class="highlighter-rouge">Flexbox</code> 模型，而 ASDK 其实就实现了 <code class="highlighter-rouge">Flexbox</code> 的一个子集。</p>
+
+<p>在 ASDK 1.0 时代，很多开发者都表示希望 ASDK 中加入 ComponentKit 的布局引擎；而现在，ASDK 布局引擎的大部分代码都是从 <a href="http://componentkit.org">ComponentKit</a> 中移植过来的（ComponentKit 是另一个 Facebook 团队开发的用于布局的框架）。</p>
+
+<h4 id="aslayout">ASLayout</h4>
+
+<p><code class="highlighter-rouge">ASLayout</code> 表示当前的结点在布局树中的大小和位置；当然，它还有一些其它的奇怪的属性：</p>
+
+<pre><code class="language-objectivec">@interface ASLayout : NSObject
+
+@property (nonatomic, weak, readonly) id&lt;ASLayoutable&gt; layoutableObject;
+@property (nonatomic, readonly) CGSize size;
+@property (nonatomic, readwrite) CGPoint position;
+@property (nonatomic, readonly) NSArray&lt;ASLayout *&gt; *sublayouts;
+@property (nonatomic, readonly) CGRect frame;
+
+...
+
+@end
+</code></pre>
+
+<p>代码中的 <code class="highlighter-rouge">layoutableObject</code> 表示当前的对象，<code class="highlighter-rouge">sublayouts</code> 表示当前视图的子布局 <code class="highlighter-rouge">ASLayout</code> 数组。</p>
+
+<p>整个类的实现都没有什么值得多说的，除了大量的构造方法，唯一一个做了一些事情的就是 <code class="highlighter-rouge">-[ASLayout filteredNodeLayoutTree]</code> 方法了：</p>
+
+<pre><code class="language-objectivec">- (ASLayout *)filteredNodeLayoutTree {
+  NSMutableArray *flattenedSublayouts = [NSMutableArray array];
+  struct Context {
+	ASLayout *layout;
+	CGPoint absolutePosition;
+  };
+  std::queue&lt;Context&gt; queue;
+  queue.push({self, CGPointMake(0, 0)});
+  while (!queue.empty()) {
+	Context context = queue.front();
+	queue.pop();
+
+	if (self != context.layout &amp;&amp; context.layout.type == ASLayoutableTypeDisplayNode) {
+	  ASLayout *layout = [ASLayout layoutWithLayout:context.layout position:context.absolutePosition];
+	  layout.flattened = YES;
+	  [flattenedSublayouts addObject:layout];
+	}
+
+	for (ASLayout *sublayout in context.layout.sublayouts) {
+	  if (sublayout.isFlattened == NO) queue.push({sublayout, context.absolutePosition + sublayout.position});
+  }
+
+  return [ASLayout layoutWithLayoutableObject:_layoutableObject
+						 constrainedSizeRange:_constrainedSizeRange
+										 size:_size
+								   sublayouts:flattenedSublayouts];
+}
+</code></pre>
+
+<p>而这个方法也只是将 <code class="highlighter-rouge">sublayouts</code> 中的内容展平，然后实例化一个新的 <code class="highlighter-rouge">ASLayout</code> 对象。</p>
+
+<h4 id="aslayoutspec">ASLayoutSpec</h4>
+
+<p><code class="highlighter-rouge">ASLayoutSpec</code> 的作用更像是一个抽象类，在真正使用 ASDK 的布局引擎时，都不会直接使用这个类，而是会用类似 <code class="highlighter-rouge">ASStackLayoutSpec</code>、<code class="highlighter-rouge">ASRelativeLayoutSpec</code>、<code class="highlighter-rouge">ASOverlayLayoutSpec</code> 以及 <code class="highlighter-rouge">ASRatioLayoutSpec</code> 等子类。</p>
+
+<p>笔者不打算一行一行代码深入讲解其内容，简单介绍一下最重要的 <code class="highlighter-rouge">ASStackLayoutSpec</code>。</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-stack.jpg-1000width" alt="stack" /></p>
+
+<p><code class="highlighter-rouge">ASStackLayoutSpec</code> 从 <code class="highlighter-rouge">Flexbox</code> 中获得了非常多的灵感，比如说 <code class="highlighter-rouge">justifyContent</code>、<code class="highlighter-rouge">alignItems</code> 等属性，它和苹果的 <code class="highlighter-rouge">UIStackView</code> 比较类似，不过底层并没有使用 Auto Layout 进行计算。如果没有接触过 <code class="highlighter-rouge">ASStackLayoutSpec</code> 的开发者，可以通过这个小游戏 <a href="http://nguyenhuy.github.io/froggy-asdk-layout/">Foggy-ASDK-Layout</a> 快速学习 <code class="highlighter-rouge">ASStackLayoutSpec</code> 的使用。</p>
+
+<h3 id="关于缓存以及异步并发">关于缓存以及异步并发</h3>
+
+<p>因为计算视图的 <code class="highlighter-rouge">CGRect</code> 进行布局是一种非常昂贵的操作，所以 ASDK 在这里面加入了缓存机制，在每次执行 <code class="highlighter-rouge">- measureWithSizeRange:</code> 方法时，都会通过 <code class="highlighter-rouge">-shouldMeasureWithSizeRange:</code> 判断是否需要重新计算布局：</p>
+
+<pre><code class="language-objectivec">- (BOOL)shouldMeasureWithSizeRange:(ASSizeRange)constrainedSize {
+  return [self _hasDirtyLayout] || !ASSizeRangeEqualToSizeRange(constrainedSize, _calculatedLayout.constrainedSizeRange);
+}
+
+- (BOOL)_hasDirtyLayout {
+  return _calculatedLayout == nil || _calculatedLayout.isDirty;
+}
+</code></pre>
+
+<p>在一般情况下，只有当前结点被标记为 <code class="highlighter-rouge">dirty</code> 或者这一次布局传入的 <code class="highlighter-rouge">constrainedSize</code> 不同时，才需要进行重新计算。在不需要重新计算布局的情况下，只需要直接返回 <code class="highlighter-rouge">_calculatedLayout</code> 布局对象就可以了。</p>
+
+<p>因为 ASDK 实现的布局引擎其实只是对 <code class="highlighter-rouge">frame</code> 的计算，所以无论是在主线程还是后台的异步并发进程中都是可以执行的，也就是说，你可以在任意线程中调用 <code class="highlighter-rouge">- measureWithSizeRange:</code> 方法，ASDK 中的一些 <code class="highlighter-rouge">ViewController</code> 比如：<code class="highlighter-rouge">ASDataViewController</code> 就会在后台并发进程中执行该方法：</p>
+
+<pre><code class="language-objectivec">- (NSArray&lt;ASCellNode *&gt; *)_layoutNodesFromContexts:(NSArray&lt;ASIndexedNodeContext *&gt; *)contexts {
+  ...
+
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_apply(nodeCount, queue, ^(size_t i) {
+	ASIndexedNodeContext *context = contexts[i];
+	ASCellNode *node = [context allocateNode];
+	if (node == nil) node = [[ASCellNode alloc] init];
+
+	CGRect frame = CGRectZero;
+	frame.size = [node measureWithSizeRange:context.constrainedSize].size;
+	node.frame = frame;
+
+	[ASDataController _didLayoutNode];
+  });
+
+  ...
+
+  return nodes;
+}
+</code></pre>
+
+<blockquote>
+  <p>上述代码做了比较大的修改，将原有一些方法调用放到了当前方法中，并省略了大量的代码。</p>
+</blockquote>
+
+<h3 id="关于性能的对比">关于性能的对比</h3>
+
+<p>由于 ASDK 的布局引擎的问题，其性能比较难以测试，在这里只对 ASDK 使用 <code class="highlighter-rouge">ASStackLayoutSpec</code> 的<strong>布局计算时间</strong>进行了测试，不包括视图的渲染以及其它时间：</p>
+
+<p><img src="https://img.draveness.me/2016-08-31-async-node-calculate.jpeg" alt="async-node-calculate" /></p>
+
+<p>测试结果表明 <code class="highlighter-rouge">ASStackLayoutSpec</code> 花费的布局时间与结点的数量成正比，哪怕计算 100 个视图的布局也只需要 <strong>8.89 ms</strong>，虽然这里没有包括视图的渲染时间，不过与 Auto Layout 相比性能还是有比较大的提升。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>其实 ASDK 的布局引擎大部分都是对 ComponentKit 的封装，不过由于摆脱了 Auto Layout 这一套低效但是通用的布局方式，ASDK 的布局计算不仅在后台并发线程中进行、而且通过引入 <code class="highlighter-rouge">Flexbox</code> 提升了布局的性能，但是 ASDK 的使用相对比较复杂，如果只想对布局性能进行优化，更推荐单独使用 ComponentKit 框架。</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://stacks.11craft.com/cassowary-cocoa-Auto Layout-and-enaml-constraints.html">Cassowary, Cocoa Auto Layout, and enaml constraints</a></li>
+  <li><a href="http://cassowary.readthedocs.io/en/latest/topics/theory.html">Solving constraint systems</a></li>
+  <li><a href="http://floriankugler.com/2013/04/22/auto-layout-performance-on-ios/">Auto Layout Performance on iOS</a></li>
+  <li><a href="https://constraints.cs.washington.edu/cassowary/cassowary-tr.pdf">The Cassowary Linear Arithmetic Constraint Solving Algorithm: Interface and Implementation</a></li>
+  <li><a href="http://constraints.cs.washington.edu/solvers/cassowary-tochi.pdf">The Cassowary Linear Arithmetic Constraint Solving Algorithm</a></li>
+  <li><a href="http://constraints.cs.washington.edu/solvers/uist97.pdf">Solving Linear Arithmetic Constraints for User Interface Applications</a></li>
+  <li><a href="https://medium.com/@jasonyuh/asyncdisplaykit介绍-二-布局系统-1f1a674cf644#.8jskykm15">AsyncDisplayKit 介绍（二）布局系统</a></li>
+</ul>
+
+<blockquote>
+  <p>Github Repo：<a href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+
+</blockquote>
+
+<blockquote>
+
+  <p>Source: http://draveness.me/layout-performance</p>
+</blockquote>
+
+
+        </section>
+
+        <footer class="post-footer">
+
+            <!-- Everything inside the #author tags pulls data from the author -->
+            <!-- #author-->
+            
+                
+                    
+                        <figure class="author-image">
+                            <a class="img" href="/reprinted/author/Draveness" style="background-image: url(/reprinted/assets/images/draven.png)"><span class="hidden">Draveness's Picture</span></a>
+                        </figure>
+                    
+
+                    <section class="author">
+                        <h4><a href="/reprinted/author/Draveness">Draveness</a></h4>
+
+                        
+                            <p>Read <a href="/reprinted/author/Draveness">more posts</a> by this author.</p>
+                        
+                        <div class="author-meta">
+                            <span class="author-location icon-location"> Beijing, China</span>
+                            <span class="author-link icon-link"><a href="https://draveness.me/index"> draveness.me/index</a></span>
+                        </div>
+                    </section>
+
+                    <!-- /author  -->
+
+                    <section class="share">
+                        <h4>Share this post</h4>
+                        <a class="icon-twitter" href="http://twitter.com/share?text=从 Auto Layout 的布局算法谈性能&amp;url=layout-performance"
+                            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                            <span class="hidden">Twitter</span>
+                        </a>
+                        <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=layout-performance"
+                            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                            <span class="hidden">Facebook</span>
+                        </a>
+                        <a class="icon-google-plus" href="https://plus.google.com/share?url=layout-performance"
+                           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                            <span class="hidden">Google+</span>
+                        </a>
+                    </section>
+                
+            
+            <!-- Add Disqus Comments -->
+            
+
+        </footer>
+
+    </article>
+
+</main>
+<aside class="read-next">
+
+    <!-- [[! next_post ]] -->
+    
+        <a class="read-next-story " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/cocoapods">
+            <section class="post">
+                <h2>CocoaPods 都做了什么？</h2>
+                <p>> 转自：[CocoaPods 都做了什么？](https://draveness.me/cocoapods) 稍有 iOS 开发经验的人应该都是用过 CocoaPods，而对于 CI、CD 有了解的同学也都知道 Fastlane。而这两个在 iOS 开发中非常便捷的第三方库都是使用 Ruby 来编写的，这是为什么？ 先抛开这个话题不谈，我们来看一下...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /next_post ]] -->
+    <!-- [[! prev_post ]] -->
+    
+        <a class="read-next-story prev " style="background-image: url(/reprinted/assets/images/cover2.jpg)" href="/reprinted/asdk-rendering">
+            <section class="post">
+                <h2>使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能</h2>
+                <p>转自：使用 ASDK 性能调优 - 提升 iOS 界面的渲染性能 这一系列的文章会从几个方面对 ASDK 在性能调优方面策略的实现进行分析，帮助读者理解 ASDK 如何做到使复杂的 UI 界面达到 60...</p>
+            </section>
+        </a>
+    
+    <!-- [[! /prev_post ]] -->
+</aside>
+
+<!-- /post -->
+
+
+        <!-- The tiny footer at the very bottom -->
+        <footer class="site-footer clearfix">
+          <section class="copyright"><a href="/reprinted/"></a> &copy; 2018</section>
+          <section class="poweredby">Proudly published with <a href="https://jekyllrb.com/">Jekyll</a> using <a href="https://github.com/jekyller/jasper">Jasper</a></section>
+        </footer>
+    </div>
+    <!-- highlight.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- jQuery needs to come before `` so that jQuery can be used in code injection -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Ghost outputs important scripts and data with this tag -->
+    <!--  -->
+    <!-- Add Google Analytics  -->
+        <!-- Google Analytics Tracking code -->
+     <script>
+	    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	    ga('create', 'UA-69281367-1', 'auto');
+	    ga('send', 'pageview');
+
+     </script>
+    <!-- Fitvids makes video embeds responsive and awesome -->
+    <script type="text/javascript" src="/reprinted/assets/js/jquery.fitvids.js"></script>
+    <!-- The main JavaScript file for Casper -->
+    <script type="text/javascript" src="/reprinted/assets/js/index.js"></script>
+
+</body>
+</html>
